@@ -7,12 +7,13 @@ export default function FontDebugger() {
     // #region agent log
     // 检查字体文件加载状态
     const checkFontFiles = () => {
-      const basePath = window.location.pathname.split('/')[1] || '';
-      const fontPaths = [
-        '/fonts/icofont/icofont.woff2',
-        '/guidelines-site/fonts/icofont/icofont.woff2',
-        basePath ? `/${basePath}/fonts/icofont/icofont.woff2` : '/fonts/icofont/icofont.woff2'
-      ];
+      const baseSegment = window.location.pathname.split('/')[1];
+      const assetPrefix =
+        (window as any).__NEXT_DATA__?.assetPrefix?.replace(/\/$/, '') ||
+        (baseSegment ? `/${baseSegment}` : '');
+      const basePath = assetPrefix || '';
+      const fontUrl = `${assetPrefix}/fonts/icofont/icofont.woff2`;
+      const fontPaths = [fontUrl];
       
       fontPaths.forEach((path, idx) => {
         fetch(path, { method: 'HEAD' })

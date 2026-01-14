@@ -54,3 +54,22 @@ cssFiles.forEach(cssFilePath => {
 });
 
 console.log(`Font path fix completed! Fixed ${fixedCount} files.`);
+
+// 3. 兜底旧路径：复制字体到 out/fonts/iconfont/*，防止历史 CSS 请求 /fonts/iconfont/iconfont.woff2
+try {
+  const srcDir = path.join(outDir, 'fonts', 'icofont');
+  const legacyDir = path.join(outDir, 'fonts', 'iconfont');
+  if (fs.existsSync(srcDir)) {
+    fs.mkdirSync(legacyDir, { recursive: true });
+    ['woff2', 'woff', 'ttf', 'css'].forEach(ext => {
+      const srcFile = path.join(srcDir, `icofont.${ext}`);
+      const dstFile = path.join(legacyDir, `iconfont.${ext}`);
+      if (fs.existsSync(srcFile)) {
+        fs.copyFileSync(srcFile, dstFile);
+        console.log(`Copied legacy font file: ${path.relative(outDir, dstFile)}`);
+      }
+    });
+  }
+} catch (e) {
+  console.warn('Legacy font copy failed:', e);
+}
