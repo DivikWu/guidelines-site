@@ -21,7 +21,7 @@ export default function RootLayout({
         {/* 预加载字体文件 - Next.js 会自动处理 basePath */}
         <link
           rel="preload"
-          href="/fonts/icofont/icofont.woff2"
+          href="/guidelines-site/fonts/icofont/icofont.woff2"
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
