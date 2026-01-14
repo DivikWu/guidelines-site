@@ -1,4 +1,5 @@
 /* 导入字体定义，使用 @import 引用单独的 CSS 文件 */
+/* 构建脚本会将 /fonts/ 替换为 /guidelines-site/fonts/ */
 @import "/fonts/icofont/icofont.css";
 
 :root {

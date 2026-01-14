@@ -28,23 +28,19 @@ cssFiles.forEach(cssFilePath => {
   const originalContent = content;
   
   // 1. 替换 @import 路径：@import "/fonts/icofont/icofont.css" -> @import "/guidelines-site/fonts/icofont/icofont.css"
-  if (content.includes('@import') && content.includes('/fonts/icofont/')) {
+  if (content.includes('@import') && content.includes('/fonts/')) {
     content = content.replace(
-      /@import\s+["']\/fonts\/icofont\//g,
-      `@import "${basePath}/fonts/icofont/`
+      /@import\s+["']\/fonts\//g,
+      `@import "${basePath}/fonts/`
     );
   }
   
-  // 2. 替换 url() 中的字体路径：url("/fonts/ -> url("/guidelines-site/fonts/
-  if (content.includes('/fonts/icofont/')) {
-    // 匹配 url(/fonts/ 或 url("/fonts/ 或 url('./fonts/ 或 url("./fonts/
+  // 2. 替换所有 url() 中的字体路径：url("/fonts/ -> url("/guidelines-site/fonts/
+  // 这包括 icofont.css 文件本身中的路径
+  if (content.includes('/fonts/')) {
+    // 匹配 url(/fonts/ 或 url("/fonts/ 或 url('/fonts/
     content = content.replace(
       /url\((["']?)\/fonts\//g,
-      `url($1${basePath}/fonts/`
-    );
-    // 也处理相对路径的情况（虽然现在使用相对路径，但为了兼容性保留）
-    content = content.replace(
-      /url\((["']?)\.\/fonts\//g,
       `url($1${basePath}/fonts/`
     );
   }
