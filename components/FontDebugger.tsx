@@ -66,7 +66,7 @@ export default function FontDebugger() {
           });
       });
       
-      // 检查 CSS 中定义的字体路径
+      // 检查 CSS 中定义的字体路径和图标规则
       const styleSheets = Array.from(document.styleSheets);
       styleSheets.forEach((sheet, sheetIdx) => {
         try {
@@ -85,8 +85,33 @@ export default function FontDebugger() {
                 },
                 timestamp: Date.now(),
                 sessionId: 'debug-session',
-                runId: 'run1',
+                runId: 'run2',
                 hypothesisId: 'A'
+              };
+              fetch('http://127.0.0.1:7243/ingest/bec5ef14-f4e7-4569-92de-812c24e45b28', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(logData)
+              }).catch(() => {
+                console.log('[DEBUG]', JSON.stringify(logData));
+              });
+            }
+            // 检查图标类的 content 规则
+            if (rule instanceof CSSStyleRule && rule.selectorText && rule.selectorText.includes('ds-icon-dashboard-circle')) {
+              const content = rule.style.getPropertyValue('content');
+              const logData = {
+                location: 'FontDebugger.tsx:checkFontFiles',
+                message: 'Icon class rule found',
+                data: {
+                  selector: rule.selectorText,
+                  content,
+                  fontFamily: rule.style.getPropertyValue('font-family'),
+                  basePath
+                },
+                timestamp: Date.now(),
+                sessionId: 'debug-session',
+                runId: 'run2',
+                hypothesisId: 'C'
               };
               fetch('http://127.0.0.1:7243/ingest/bec5ef14-f4e7-4569-92de-812c24e45b28', {
                 method: 'POST',
@@ -100,6 +125,36 @@ export default function FontDebugger() {
         } catch (e) {
           // 跨域样式表可能无法访问
         }
+      });
+      
+      // 检查实际图标元素的 computed style
+      const iconElements = document.querySelectorAll('.ds-icon-dashboard-circle');
+      iconElements.forEach((el, idx) => {
+        const computed = window.getComputedStyle(el, '::before');
+        const logData = {
+          location: 'FontDebugger.tsx:checkFontFiles',
+          message: 'Icon element computed style',
+          data: {
+            elementIndex: idx,
+            fontFamily: computed.fontFamily,
+            content: computed.content,
+            display: computed.display,
+            visibility: computed.visibility,
+            className: el.className,
+            basePath
+          },
+          timestamp: Date.now(),
+          sessionId: 'debug-session',
+          runId: 'run2',
+          hypothesisId: 'C'
+        };
+        fetch('http://127.0.0.1:7243/ingest/bec5ef14-f4e7-4569-92de-812c24e45b28', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(logData)
+        }).catch(() => {
+          console.log('[DEBUG]', JSON.stringify(logData));
+        });
       });
       
       // 检查网络请求中的字体文件

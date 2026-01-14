@@ -25,23 +25,35 @@ console.log(`Found ${cssFiles.length} CSS files`);
 let fixedCount = 0;
 cssFiles.forEach(cssFilePath => {
   let content = fs.readFileSync(cssFilePath, 'utf8');
+  const originalContent = content;
   
-  // 检查是否包含字体路径
+  // 1. 替换 @import 路径：@import "/fonts/icofont/icofont.css" -> @import "/guidelines-site/fonts/icofont/icofont.css"
+  if (content.includes('@import') && content.includes('/fonts/icofont/')) {
+    content = content.replace(
+      /@import\s+["']\/fonts\/icofont\//g,
+      `@import "${basePath}/fonts/icofont/`
+    );
+  }
+  
+  // 2. 替换 url() 中的字体路径：url("/fonts/ -> url("/guidelines-site/fonts/
   if (content.includes('/fonts/icofont/')) {
-    // 替换字体路径：/fonts/ -> /guidelines-site/fonts/
-    const originalContent = content;
-    // 匹配 url(/fonts/ 或 url("/fonts/ 或 url('/fonts/
+    // 匹配 url(/fonts/ 或 url("/fonts/ 或 url('./fonts/ 或 url("./fonts/
     content = content.replace(
       /url\((["']?)\/fonts\//g,
       `url($1${basePath}/fonts/`
     );
-    
-    if (content !== originalContent) {
-      fs.writeFileSync(cssFilePath, content, 'utf8');
-      const relativePath = path.relative(outDir, cssFilePath);
-      console.log(`Fixed font paths in: ${relativePath}`);
-      fixedCount++;
-    }
+    // 也处理相对路径的情况（虽然现在使用相对路径，但为了兼容性保留）
+    content = content.replace(
+      /url\((["']?)\.\/fonts\//g,
+      `url($1${basePath}/fonts/`
+    );
+  }
+  
+  if (content !== originalContent) {
+    fs.writeFileSync(cssFilePath, content, 'utf8');
+    const relativePath = path.relative(outDir, cssFilePath);
+    console.log(`Fixed font paths in: ${relativePath}`);
+    fixedCount++;
   }
 });
 
