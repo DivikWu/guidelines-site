@@ -1,6 +1,7 @@
-/* 内联字体定义，确保 Next.js 正确处理 basePath */
+/* 内联字体定义，使用绝对路径，构建后脚本会替换为带 basePath 的路径 */
 @font-face {
   font-family: "iconfont";
+  /* 使用占位符，构建后会被替换为正确的路径 */
   src: url("/fonts/icofont/icofont.woff2") format("woff2"),
        url("/fonts/icofont/icofont.woff") format("woff"),
        url("/fonts/icofont/icofont.ttf") format("truetype");
