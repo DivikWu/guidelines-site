@@ -15,6 +15,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-CN">
+      <head>
+        {/* 预加载字体文件，提升加载性能 */}
+        <link
+          rel="preload"
+          href="/fonts/icofont/icofont.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body>
         <TokenProvider>{children}</TokenProvider>
       </body>

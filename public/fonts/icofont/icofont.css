@@ -1,5 +1,6 @@
 @font-face {
   font-family: "iconfont";
+  /* 使用绝对路径，Next.js 会自动处理 basePath */
   src: url("/fonts/icofont/icofont.woff2") format("woff2"),
        url("/fonts/icofont/icofont.woff") format("woff"),
        url("/fonts/icofont/icofont.ttf") format("truetype");
