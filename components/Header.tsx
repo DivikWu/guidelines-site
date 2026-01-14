@@ -3,12 +3,11 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTokenTheme } from './TokenProvider';
 import Logo from './Logo';
+import Icon from './Icon';
 import SearchResults, { SearchResult } from './SearchResults';
 import { DocPage } from '../data/docs';
 
-// 图标资源路径（本地 SVG 图片存储在 public/icons 目录）
-const languageIconUrl = '/icons/language-icon.svg'; // icon / language-circle
-const sunIconUrl = '/icons/sun-icon.svg'; // icon / sun-01
+
 
 interface HeaderProps {
   onToggleSidebar: () => void;
@@ -244,21 +243,19 @@ export default function Header({ onToggleSidebar, docs = [], onSearchSelect }: H
       </div>
       <div className="header__actions">
         <button onClick={toggle} aria-label="Toggle theme" title="主题">
-          <img 
-            src={sunIconUrl} 
-            alt="Theme" 
-            width={20}
-            height={20}
-            className="header__action-icon"
+          <Icon 
+            name="ds-icon-sun-01" 
+            title="Theme"
+            size={20}
+            className="header__action-icon leading-none"
           />
         </button>
         <button aria-label="Language" title="语言">
-          <img 
-            src={languageIconUrl} 
-            alt="Language" 
-            width={20}
-            height={20}
-            className="header__action-icon"
+          <Icon 
+            name="ds-icon-language-circle" 
+            title="Language"
+            size={20}
+            className="header__action-icon leading-none"
           />
         </button>
       </div>

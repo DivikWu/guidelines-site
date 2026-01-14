@@ -1,6 +1,7 @@
 'use client';
 
 import { navigationConfig } from '../config/navigation';
+import Icon from './Icon';
 
 export default function IconNav({ 
   className = '',
@@ -22,14 +23,11 @@ export default function IconNav({
           title={section.label}
         >
           <span className="icon-nav__icon">
-            <img 
-              src={section.iconPath} 
-              alt={section.label}
-              width={20}
-              height={20}
-              style={{ display: 'block' }}
-              loading={section.id === 'foundations' ? 'eager' : 'lazy'}
-              fetchPriority={section.id === 'foundations' ? 'high' : 'auto'}
+            <Icon 
+              name={section.iconClass}
+              title={section.label}
+              size={20}
+              className="block leading-none"
             />
           </span>
           <span className="icon-nav__label">{section.label}</span>

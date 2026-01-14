@@ -1,3 +1,5 @@
+@import "/fonts/icofont/icofont.css";
+
 :root {
   /* color semantics -> tokens */
   --color-text-primary: var(--yami-color-text-primary-light);
@@ -246,7 +248,290 @@ body {
   z-index: 10;
 }
 
-/* 小屏下强制隐藏 TokenNav，避免占位 - 在移动端媒体查询中处理 */
+/* 小屏（≤1023px）下默认隐藏 IconNav 和 TokenNav，避免占位 */
+@media (max-width: 1023px) {
+  .app-body {
+    padding-left: 0 !important; /* 移除左侧间距，内容区占满宽度 */
+  }
+  
+  .icon-nav {
+    display: none !important; /* 小屏下完全隐藏，使用 NavDrawer 替代 */
+  }
+  
+  .token-nav {
+    display: none !important; /* 小屏下完全隐藏，使用 NavDrawer 替代 */
+  }
+  
+  .content {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+}
+
+/* NavDrawer - 小屏单列导航抽屉 */
+.nav-drawer-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: calc(var(--yami-z-index-modal-backdrop, 1040) + 5); /* 在 header 之下，但足够高 */
+  opacity: 0;
+  transition: opacity var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out);
+  pointer-events: none;
+}
+
+.nav-drawer-overlay.active {
+  display: block;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.nav-drawer-panel {
+  position: fixed;
+  left: 0;
+  top: var(--header-height);
+  width: min(440px, 90vw); /* 减少宽度：左列200px + 右列240px */
+  max-width: 440px;
+  height: calc(100vh - var(--header-height));
+  background: var(--background-primary, var(--color-surface));
+  box-shadow: var(--shadow-2);
+  z-index: calc(var(--yami-z-index-modal, 1050) + 10); /* 确保在 header 之上 */
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out);
+  overflow: hidden;
+  pointer-events: auto; /* 确保 panel 内可点击 */
+}
+
+.nav-drawer-panel.open {
+  transform: translateX(0);
+}
+
+/* 左右两列容器 */
+.nav-drawer__container {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* 左列：一级导航 */
+.nav-drawer__primary {
+  flex: 0 0 clamp(140px, 35vw, 200px); /* 固定宽度，响应式 */
+  min-width: 140px;
+  max-width: 200px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--divider-normal, var(--border-normal, var(--color-border)));
+  background: var(--background-primary, var(--color-surface));
+  overflow: hidden;
+}
+
+/* Section 切换区域（左列内） */
+.nav-drawer__sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-050, 4px);
+  padding: var(--spacing-100, 8px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+}
+
+.nav-drawer__section-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-100, 8px);
+  padding: var(--spacing-100, 8px) var(--spacing-150, 12px);
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-full, var(--radius-full));
+  cursor: pointer;
+  color: var(--foreground-primary, var(--color-text-primary));
+  font-family: var(--body-m-font-family, var(--font-family-brand));
+  font-size: var(--body-m-size, 14px);
+  line-height: var(--body-m-line-height, 20px);
+  text-align: left;
+  transition: background-color 0.2s;
+  width: 100%; /* 左列内占满宽度 */
+  justify-content: flex-start;
+}
+
+.nav-drawer__section-item:hover {
+  background: var(--fill-secondary, var(--yami-color-palette-neutral-100));
+}
+
+.nav-drawer__section-item.active {
+  background: var(--fill-secondary, var(--yami-color-palette-neutral-100));
+  color: var(--foreground-primary, var(--color-text-primary));
+}
+
+/* 右列：二级导航 */
+.nav-drawer__secondary {
+  flex: 1 1 auto; /* 自适应占满剩余宽度 */
+  min-width: 0; /* 防止 flex 子项溢出 */
+  max-width: 240px; /* 限制二级导航最大宽度 */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--background-primary, var(--color-surface));
+}
+
+.nav-drawer__header {
+  border-bottom: 1px solid var(--divider-normal, var(--border-normal, var(--color-border)));
+  padding: var(--spacing-100, 8px) var(--spacing-150, 12px);
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.nav-drawer__title {
+  font-family: var(--heading-s-font-family, var(--font-family-brand));
+  font-weight: var(--heading-s-weight, var(--fw-medium));
+  font-size: var(--heading-s-size, 16px);
+  line-height: var(--heading-s-line-height, 20px);
+  color: var(--foreground-primary, var(--color-text-primary));
+  margin: 0;
+  text-align: left;
+}
+
+.nav-drawer__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-050, 4px);
+  padding: var(--spacing-100, 8px);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.nav-drawer__item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-100, 8px);
+  height: 36px;
+  padding: var(--spacing-100, 8px) var(--spacing-150, 12px);
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-full, var(--radius-full));
+  cursor: pointer;
+  color: var(--foreground-primary, var(--color-text-primary));
+  font-family: var(--body-m-font-family, var(--font-family-brand));
+  font-weight: var(--body-m-font-weight, var(--fw-regular));
+  font-size: var(--body-m-size, 14px);
+  line-height: var(--body-m-line-height, 20px);
+  text-align: left;
+  transition: background-color 0.2s;
+}
+
+.nav-drawer__item:hover {
+  background: var(--fill-secondary, var(--yami-color-palette-neutral-100));
+}
+
+.nav-drawer__item.active {
+  background: var(--fill-secondary, var(--yami-color-palette-neutral-100));
+  color: var(--foreground-primary, var(--color-text-primary));
+}
+
+.nav-drawer__item:not(.active) {
+  color: var(--text-secondary, var(--foreground-secondary, var(--color-text-secondary)));
+}
+
+.nav-drawer__item-icon {
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.nav-drawer__item-label {
+  flex: 1;
+}
+
+.nav-drawer__empty {
+  padding: var(--spacing-300, 24px);
+  text-align: center;
+}
+
+.nav-drawer__empty-text {
+  color: var(--text-secondary, var(--foreground-secondary, var(--color-text-secondary)));
+  font-size: var(--body-m-size, 14px);
+  margin: 0;
+}
+
+/* 小屏下显示 NavDrawer */
+@media (max-width: 1023px) {
+  .nav-drawer-overlay.active {
+    display: block;
+  }
+  
+  .nav-drawer-panel.open {
+    transform: translateX(0);
+    display: flex; /* 确保打开时显示 */
+  }
+  
+  /* 小屏幕下固定左列宽度为 200px */
+  .nav-drawer__primary {
+    flex: 0 0 200px;
+    min-width: 200px;
+    max-width: 200px;
+    width: 200px;
+  }
+}
+
+/* 窄屏降级：< 360px 时改为上下布局 */
+@media (max-width: 359px) {
+  .nav-drawer-panel {
+    width: min(320px, 95vw);
+    max-width: 320px;
+  }
+  
+  .nav-drawer__container {
+    flex-direction: column; /* 改为上下布局 */
+  }
+  
+  .nav-drawer__primary {
+    flex: 0 0 auto; /* 取消固定宽度 */
+    min-width: 0;
+    max-width: none;
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--divider-normal, var(--border-normal, var(--color-border)));
+    max-height: 40vh; /* 限制左列最大高度 */
+  }
+  
+  .nav-drawer__sections {
+    flex-direction: row; /* 一级导航改为横向滚动 */
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: var(--spacing-050, 4px) var(--spacing-100, 8px);
+    gap: var(--spacing-050, 4px);
+  }
+  
+  .nav-drawer__section-item {
+    flex-shrink: 0; /* 防止按钮压缩 */
+    white-space: nowrap;
+  }
+  
+  .nav-drawer__secondary {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+}
+
+/* 桌面端隐藏 NavDrawer */
+@media (min-width: 1024px) {
+  .nav-drawer-overlay {
+    display: none !important;
+  }
+  
+  .nav-drawer-panel {
+    display: none !important;
+  }
+}
 
 .token-nav__header {
   border-bottom: 1px solid var(--divider-normal, var(--border-normal, var(--color-border)));
@@ -332,7 +617,7 @@ body {
 .header {
   position: sticky;
   top: 0;
-  z-index: var(--yami-z-index-fixed, 1030);
+  z-index: calc(var(--yami-z-index-modal, 1050) + 20); /* 确保 header 始终在最上层，hamburger 可点击 */
   height: var(--header-height);
   display: flex;
   align-items: center;
@@ -926,18 +1211,27 @@ body {
     position: static;
   }
   .token-nav {
-    position: fixed;
+    position: fixed !important; /* 强制 fixed，覆盖 desktop 的 sticky */
     left: 240px;
     top: var(--header-height);
     width: 240px;
+    min-width: 0 !important; /* 移除 min-width，避免占位 */
     height: calc(100vh - var(--header-height));
-    transform: translateX(-100%);
+    transform: translateX(-100%); /* 默认隐藏 */
     transition: transform var(--yami-animation-duration-normal) var(--yami-animation-easing-ease-out);
     box-shadow: var(--shadow-2);
     z-index: var(--yami-z-index-popover);
     overflow-y: auto;
+    display: flex !important; /* 确保显示，但通过 transform 隐藏 */
+    margin: 0;
   }
-  .token-nav.open { transform: translateX(0); }
+  .token-nav:not(.open) {
+    /* 未打开时保持隐藏 */
+    transform: translateX(-100%);
+  }
+  .token-nav.open { 
+    transform: translateX(0); /* 打开时显示 */
+  }
   .content { 
     padding: var(--spacing-300) var(--spacing-300);
     width: 100%;
@@ -1040,7 +1334,6 @@ body {
     /* 确保不占位 */
     margin: 0;
     display: flex !important; /* 确保显示，但通过 transform 隐藏 */
-    visibility: visible; /* 确保元素存在，只是通过 transform 移出视口 */
   }
 
   .token-nav:not(.open) {

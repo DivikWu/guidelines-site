@@ -9,7 +9,7 @@ export interface NavItem {
 export interface SectionConfig {
   id: string;
   label: string;
-  iconPath: string;
+  iconClass: string; // iconfont 类名
   items: NavItem[];
   defaultItem?: string; // 默认选中的第一个item
 }
@@ -19,7 +19,7 @@ export const navigationConfig: SectionConfig[] = [
   {
     id: 'foundations',
     label: 'Overview',
-    iconPath: '/icons/foundations-icon.svg',
+    iconClass: 'ds-icon-dashboard-circle',
     items: [
       { id: 'overview', label: '概述 Overview', icon: '📋' },
       { id: 'changelog', label: '更新日志 Changelog', icon: '📝' },
@@ -30,7 +30,7 @@ export const navigationConfig: SectionConfig[] = [
   {
     id: 'components',
     label: 'Brand',
-    iconPath: '/icons/brand-icon.svg',
+    iconClass: 'ds-icon-brandfetch',
     items: [
       { id: 'logo', label: '标志 Logo', icon: '🖼️' },
       { id: 'brand-colors', label: '品牌色 Brand Colors', icon: '🎨' },
@@ -41,7 +41,7 @@ export const navigationConfig: SectionConfig[] = [
   {
     id: 'tokens',
     label: 'Foundation',
-    iconPath: '/icons/tokens-icon.svg',
+    iconClass: 'ds-icon-paint-board',
     items: [
       { id: 'color', label: '色彩 Color', icon: '🎨' },
       { id: 'typography', label: '文本 Typography', icon: '✍️' },
@@ -56,7 +56,7 @@ export const navigationConfig: SectionConfig[] = [
   {
     id: 'patterns',
     label: 'Components',
-    iconPath: '/icons/patterns-icon.svg',
+    iconClass: 'ds-icon-web-design-01',
     items: [
       { id: 'button', label: '按钮 Button', icon: '🔘' },
       { id: 'tabs', label: '选项卡 Tabs', icon: '📑' },
@@ -72,7 +72,7 @@ export const navigationConfig: SectionConfig[] = [
   {
     id: 'resources',
     label: 'Pages',
-    iconPath: '/icons/resources-icon.svg',
+    iconClass: 'ds-icon-book-02',
     items: [
       { id: 'resources-overview', label: '概述 Overview', icon: '📋' }
     ],
