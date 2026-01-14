@@ -33,7 +33,9 @@ export default function Tabs({ tabs, activeTab, onTabChange }: TabsProps) {
         {tabs.map((tab, index) => (
           <button
             key={tab.id}
-            ref={el => tabRefs.current[index] = el}
+            ref={(el) => {
+              tabRefs.current[index] = el
+            }}
             className={`tabs__item ${activeTab === tab.id ? 'tabs__item--active' : ''}`}
             role="tab"
             aria-selected={activeTab === tab.id}
