@@ -3,9 +3,9 @@ const nextConfig = {
   experimental: {
     appDir: true
   },
-  // GitHub Pages 部署：GitHub Actions 会自动注入 basePath
-  // 如果手动设置，需要与 GitHub Actions 的配置一致
-  // basePath 会在构建时由 GitHub Actions 自动注入，这里不手动设置
+  // GitHub Pages 部署：设置 basePath 为仓库名称
+  // 这样所有资源路径（包括 CSS 中的字体路径）都会自动加上 basePath 前缀
+  basePath: process.env.NODE_ENV === 'production' ? '/guidelines-site' : '',
   // 确保静态资源正确输出
   output: 'export',
   images: {
