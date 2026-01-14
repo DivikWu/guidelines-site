@@ -1,0 +1,81 @@
+/**
+ * YAMI Design System Theme CSS Variables
+ * 版本: 1.0.0
+ * 描述: 设计系统主题变量，基于 tokens.json 生成
+ */
+
+:root {
+  /* Background 背景 */
+  --background-primary: var(--yami-color-background-light);
+  --background-secondary: var(--yami-color-surface-light);
+  
+  /* Foreground 前景/文字 */
+  --foreground-primary: var(--yami-color-text-primary-light);
+  --foreground-secondary: var(--yami-color-text-secondary-light);
+  --foreground-tertiary: var(--yami-color-text-tertiary-light);
+  
+  /* Primary 主色/品牌色 */
+  --primary: var(--yami-color-brand-primary);
+  --primary-ui: var(--yami-color-ui-primary);
+  
+  /* Border 边框 */
+  --border-normal: var(--yami-color-border-light);
+  --border-subtle: var(--yami-color-palette-neutral-200);
+  
+  /* Divider 分割线 */
+  --divider-normal: var(--yami-color-border-light);
+  
+  /* Fill 填充 */
+  --fill-secondary: var(--yami-color-palette-neutral-100);
+  --fill-tertiary: var(--yami-color-palette-neutral-50);
+  
+  /* Space 间距 */
+  --space-0: var(--yami-spacing-0);
+  --space-050: var(--yami-spacing-050);
+  --space-100: var(--yami-spacing-100);
+  --space-150: var(--yami-spacing-150);
+  --space-200: var(--yami-spacing-200);
+  --space-250: var(--yami-spacing-250);
+  --space-300: var(--yami-spacing-300);
+  --space-400: var(--yami-spacing-400);
+  --space-500: var(--yami-spacing-500);
+  --space-600: var(--yami-spacing-600);
+  
+  /* Radius 圆角 */
+  --radius-full: var(--yami-border-radius-full);
+  --radius-button: var(--yami-border-radius-small);
+  --radius-card: var(--yami-border-radius-medium);
+  --radius-large: var(--yami-border-radius-large);
+  
+  /* Font Family 字体族 */
+  --font-family-brand: var(--yami-typography-font-family-brand);
+  --font-family-cjk: var(--yami-typography-font-family-chinese-simplified);
+  
+  /* Heading S */
+  --heading-s-font-family: var(--yami-typography-font-family-brand);
+  --heading-s-weight: var(--yami-typography-font-weight-medium);
+  --heading-s-size: var(--yami-typography-heading-small-font-size-desktop);
+  --heading-s-line-height: var(--yami-typography-heading-small-line-height-desktop);
+  
+  /* Body M */
+  --body-m-font-family: var(--yami-typography-font-family-brand);
+  --body-m-font-weight: var(--yami-typography-font-weight-regular);
+  --body-m-size: var(--yami-typography-body-medium-font-size-desktop);
+  --body-m-line-height: var(--yami-typography-body-medium-line-height-desktop);
+  
+  /* Text 文本 */
+  --text-primary: var(--yami-color-text-primary-light);
+  --text-secondary: var(--yami-color-text-secondary-light);
+}
+
+[data-theme='dark'] {
+  --background-primary: var(--yami-color-background-dark);
+  --background-secondary: var(--yami-color-surface-dark);
+  --foreground-primary: var(--yami-color-text-primary-dark);
+  --foreground-secondary: var(--yami-color-text-secondary-dark);
+  --foreground-tertiary: var(--yami-color-text-tertiary-dark);
+  --border-normal: var(--yami-color-border-dark);
+  --divider-normal: var(--yami-color-border-dark);
+  --text-primary: var(--yami-color-text-primary-dark);
+  --text-secondary: var(--yami-color-text-secondary-dark);
+}

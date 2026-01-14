@@ -1,0 +1,1066 @@
+:root {
+  /* color semantics -> tokens */
+  --color-text-primary: var(--yami-color-text-primary-light);
+  --color-text-secondary: var(--yami-color-text-secondary-light);
+  --color-surface: var(--yami-color-surface-light);
+  --color-bg: var(--yami-color-background-light);
+  --color-border: var(--yami-color-border-light);
+  --color-brand: var(--yami-color-brand-primary);
+  --color-ui-primary: var(--yami-color-ui-primary);
+
+  /* spacing semantics -> tokens */
+  --spacing-050: var(--yami-spacing-050);
+  --spacing-100: var(--yami-spacing-100);
+  --spacing-150: var(--yami-spacing-150);
+  --spacing-200: var(--yami-spacing-200);
+  --spacing-300: var(--yami-spacing-300);
+  --spacing-400: var(--yami-spacing-400);
+  --spacing-500: var(--yami-spacing-500);
+  --spacing-600: var(--yami-spacing-600);
+
+  /* radius */
+  --radius-sm: var(--yami-border-radius-small);
+  --radius-md: var(--yami-border-radius-medium);
+  --radius-lg: var(--yami-border-radius-large);
+  --radius-full: var(--yami-border-radius-full);
+
+  /* shadow */
+  --shadow-1: var(--yami-shadow-e1);
+  --shadow-2: var(--yami-shadow-e2);
+
+  /* typography */
+  --font-brand: var(--yami-typography-font-family-platform-web-latin, var(--yami-typography-font-family-brand));
+  --font-cjk: var(--yami-typography-font-family-platform-web-chinese);
+  --font-body: var(--font-brand), var(--font-cjk);
+
+  --fs-h1: var(--yami-typography-display-medium-font-size-desktop);
+  --lh-h1: var(--yami-typography-display-medium-line-height-desktop);
+  --fs-h2: var(--yami-typography-heading-large-font-size-desktop);
+  --lh-h2: var(--yami-typography-heading-large-line-height-desktop);
+  --fs-h3: var(--yami-typography-heading-medium-font-size-desktop);
+  --lh-h3: var(--yami-typography-heading-medium-line-height-desktop);
+  --fs-body: var(--yami-typography-body-large-font-size-desktop);
+  --lh-body: var(--yami-typography-body-large-line-height-desktop);
+
+  --fw-regular: var(--yami-typography-font-weight-regular);
+  --fw-medium: var(--yami-typography-font-weight-medium);
+
+  /* layout */
+  --header-height: calc(var(--yami-button-height-medium) + var(--spacing-200));
+  --sidebar-width: calc(var(--spacing-400) * 8); /* 32*8=256px, 8pt grid aligned */
+}
+
+[data-theme='dark'] {
+  --color-text-primary: var(--yami-color-text-primary-dark);
+  --color-text-secondary: var(--yami-color-text-secondary-dark);
+  --color-surface: var(--yami-color-surface-dark);
+  --color-bg: var(--yami-color-background-dark);
+  --color-border: var(--yami-color-border-dark);
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: var(--font-family-brand, var(--font-body)), var(--font-family-cjk), sans-serif;
+  background: var(--background-primary, var(--color-bg));
+  color: var(--foreground-primary, var(--color-text-primary));
+  font-weight: var(--yami-typography-font-weight-regular);
+  text-align: left;
+}
+
+.app-shell { display: flex; flex-direction: column; min-height: 100vh; }
+.app-body { 
+  display: flex; 
+  flex: 1; 
+  background: var(--background-primary, var(--color-bg));
+  padding-left: 56px; /* 固定左侧间距，为固定定位的图标导航留出空间 */
+}
+
+/* 小屏遮罩层 */
+.drawer-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: var(--yami-z-index-modal-backdrop, 1040);
+  opacity: 0;
+  transition: opacity var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out);
+  pointer-events: none; /* 默认不阻挡点击 */
+}
+
+.drawer-overlay.active {
+  display: block;
+  opacity: 1;
+  pointer-events: auto; /* 激活时才阻挡点击 */
+}
+
+/* Desktop (≥1024px) - 遮罩层始终隐藏 */
+@media (min-width: 1024px) {
+  .drawer-overlay {
+    display: none !important;
+  }
+}
+
+/* Icon Navigation (左侧图标导航 - 固定定位悬浮侧栏) */
+.icon-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-100, var(--spacing-100));
+  padding: var(--space-100, var(--spacing-100));
+  border-right: 1px solid var(--divider-normal, var(--border-normal, var(--color-border)));
+  background: var(--background-primary, var(--color-surface));
+  position: fixed;
+  left: 0;
+  top: var(--header-height);
+  height: calc(100vh - var(--header-height));
+  justify-content: flex-start;
+  align-items: center;
+  overflow: visible;
+  width: 56px;
+  z-index: 20;
+  box-shadow: none;
+  transition: width var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out),
+              box-shadow var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out),
+              align-items var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out);
+}
+
+/* 展开状态：扩展宽度以容纳标签，覆盖在内容上方 */
+.icon-nav:hover {
+  width: 240px;
+  box-shadow: var(--shadow-2);
+  z-index: 100; /* 提高 z-index 确保覆盖在其他内容之上 */
+  align-items: flex-start;
+}
+
+.icon-nav__item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  text-align: left;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-full, var(--radius-full));
+  cursor: pointer;
+  color: var(--foreground-primary, var(--color-text-primary));
+  transition: background-color 0.2s, width 0.2s, padding 0.2s, gap 0.2s, justify-content 0.2s;
+  position: relative;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* 收起状态：选中项有圆形背景 */
+.icon-nav__item.active {
+  background: var(--fill-secondary, var(--yami-color-palette-neutral-100));
+}
+
+/* 展开状态（hover）：图标和文本左对齐 */
+.icon-nav:hover .icon-nav__item {
+  width: 100%;
+  min-width: auto;
+  padding: 8px 12px;
+  justify-content: flex-start;
+  gap: 12px;
+  border-radius: var(--radius-full, var(--radius-full));
+}
+
+/* 展开状态：选中项有圆角矩形背景 */
+.icon-nav:hover .icon-nav__item.active {
+  background: var(--fill-secondary, var(--yami-color-palette-neutral-100));
+  border-radius: var(--radius-full, var(--radius-full));
+}
+
+.icon-nav__item:hover {
+  background: var(--fill-secondary, var(--yami-color-palette-neutral-100));
+}
+
+/* 展开状态：hover 时也保持左对齐 */
+.icon-nav:hover .icon-nav__item:hover {
+  justify-content: flex-start;
+}
+
+.icon-nav__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.icon-nav__icon img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  display: block;
+}
+
+.icon-nav__label {
+  font-family: var(--body-m-font-family, var(--font-family-brand));
+  font-weight: var(--body-m-font-weight, var(--fw-regular));
+  font-size: var(--body-m-size, 14px);
+  line-height: var(--body-m-line-height, 20px);
+  color: var(--foreground-primary, var(--color-text-primary));
+  opacity: 0;
+  visibility: hidden;
+  white-space: nowrap;
+  transition: opacity var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out),
+              visibility var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out);
+  overflow: hidden;
+  position: static;
+  display: inline-block;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  border: none;
+  border-radius: 0;
+  z-index: auto;
+}
+
+/* 展开状态：显示标签，与图标在同一行左对齐 */
+.icon-nav:hover .icon-nav__label {
+  opacity: 1;
+  visibility: visible;
+  position: static;
+}
+
+/* Token Navigation (中间文本导航) */
+.token-nav {
+  width: 240px;
+  min-width: 240px;
+  border-right: 1px solid var(--divider-normal, var(--border-normal, var(--color-border)));
+  background: var(--background-primary, var(--color-surface));
+  position: sticky;
+  top: var(--header-height);
+  height: calc(100vh - var(--header-height));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 10;
+}
+
+/* 小屏下强制隐藏 TokenNav，避免占位 - 在移动端媒体查询中处理 */
+
+.token-nav__header {
+  border-bottom: 1px solid var(--divider-normal, var(--border-normal, var(--color-border)));
+  padding: var(--space-100, var(--spacing-100)) var(--space-150, var(--spacing-150));
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.token-nav__title {
+  font-family: var(--heading-s-font-family, var(--font-family-brand));
+  font-weight: var(--heading-s-weight, var(--fw-medium));
+  font-size: var(--heading-s-size, 16px);
+  line-height: var(--heading-s-line-height, 20px);
+  color: var(--foreground-primary, var(--color-text-primary));
+  margin: 0;
+  text-align: left;
+}
+
+.token-nav__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-050, var(--spacing-050));
+  padding: var(--space-100, var(--spacing-100));
+  overflow-y: auto;
+  flex: 1;
+}
+
+.token-nav__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-100, var(--spacing-100));
+  height: 36px;
+  padding: var(--space-100, var(--spacing-100)) var(--space-150, var(--spacing-150));
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-full, var(--radius-full));
+  cursor: pointer;
+  color: var(--foreground-primary, var(--color-text-primary));
+  font-family: var(--body-m-font-family, var(--font-family-brand));
+  font-weight: var(--body-m-font-weight, var(--fw-regular));
+  font-size: var(--body-m-size, 14px);
+  line-height: var(--body-m-line-height, 20px);
+  text-align: left;
+  transition: background-color 0.2s;
+}
+
+.token-nav__item:hover {
+  background: var(--fill-secondary, var(--yami-color-palette-neutral-100));
+}
+
+.token-nav__item.active {
+  background: var(--fill-secondary, var(--yami-color-palette-neutral-100));
+  color: var(--foreground-primary, var(--color-text-primary));
+}
+
+.token-nav__item:not(.active) {
+  color: var(--text-secondary, var(--foreground-secondary, var(--color-text-secondary)));
+}
+
+.token-nav__icon {
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.token-nav__label {
+  flex: 1;
+}
+
+.token-nav__empty {
+  padding: var(--spacing-300);
+  text-align: center;
+}
+
+.token-nav__empty-text {
+  color: var(--text-secondary, var(--foreground-secondary, var(--color-text-secondary)));
+  font-size: var(--body-m-size, 14px);
+  margin: 0;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: var(--yami-z-index-fixed, 1030);
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  padding: 12px 12px;
+  background: var(--background-primary, var(--color-surface));
+  border-bottom: 1px solid var(--divider-normal, var(--border-normal, var(--color-border)));
+  box-shadow: none;
+  gap: var(--space-300, var(--spacing-300));
+  transition: box-shadow var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out);
+}
+
+.header--scrolled {
+  box-shadow: var(--shadow-1);
+}
+.header__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-150);
+  font-weight: var(--fw-medium);
+  color: var(--color-brand);
+  width: 100%;
+  max-width: 200px;
+}
+.header__brand svg {
+  height: 40px;
+  width: auto;
+}
+.header__menu {
+  display: none;
+  border: none;
+  background: none;
+  color: var(--color-text-primary);
+  font-size: var(--fs-h3);
+  cursor: pointer;
+  z-index: var(--yami-z-index-modal, 1050);
+  position: relative;
+  pointer-events: auto;
+}
+.header__search {
+  width: 100%;
+  flex: 1;
+  text-align: center;
+  position: relative;
+}
+
+.header__search input {
+  width: 100%;
+  max-width: 560px;
+  min-width: 100px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: var(--radius-full, var(--radius-full));
+  border: 1px solid transparent;
+  background: var(--fill-secondary, var(--yami-color-palette-neutral-100));
+  color: var(--foreground-primary, var(--color-text-primary));
+  font-family: var(--body-m-font-family, var(--font-family-brand));
+  font-size: var(--body-m-size, 14px);
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.header__search input:focus {
+  outline: none;
+  background: var(--background-primary, var(--color-surface));
+  border-color: var(--divider-normal, var(--border-normal, var(--color-border)));
+}
+
+.header__search input::placeholder {
+  color: var(--text-secondary, var(--foreground-secondary, var(--color-text-secondary)));
+}
+
+/* 搜索结果样式 */
+.search-results {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 560px;
+  max-height: 400px;
+  overflow-y: auto;
+  background: var(--background-primary, var(--color-surface));
+  border: 1px solid var(--divider-normal, var(--border-normal, var(--color-border)));
+  border-radius: var(--radius-md, var(--radius-medium));
+  box-shadow: var(--shadow-2);
+  z-index: 1000;
+}
+
+.search-results--empty {
+  padding: var(--spacing-300);
+}
+
+.search-results__empty {
+  text-align: center;
+  color: var(--text-secondary, var(--foreground-secondary, var(--color-text-secondary)));
+  font-size: var(--body-m-size, 14px);
+  padding: var(--spacing-200);
+}
+
+.search-results__header {
+  padding: var(--spacing-150) var(--spacing-200);
+  border-bottom: 1px solid var(--divider-normal, var(--border-normal, var(--color-border)));
+  font-size: var(--body-m-size, 14px);
+  font-weight: var(--fw-medium);
+  color: var(--text-secondary, var(--foreground-secondary, var(--color-text-secondary)));
+}
+
+.search-results__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.search-results__item {
+  border-bottom: 1px solid var(--divider-normal, var(--border-normal, var(--color-border)));
+}
+
+.search-results__item:last-child {
+  border-bottom: none;
+}
+
+.search-results__button {
+  width: 100%;
+  padding: var(--spacing-150) var(--spacing-200);
+  text-align: left;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-050);
+}
+
+.search-results__button:hover,
+.search-results__button--selected {
+  background: var(--fill-secondary, var(--yami-color-palette-neutral-100));
+}
+
+.search-results__title {
+  font-size: var(--body-m-size, 14px);
+  font-weight: var(--fw-medium);
+  color: var(--foreground-primary, var(--color-text-primary));
+  line-height: 1.4;
+}
+
+.search-results__snippet {
+  font-size: 12px;
+  color: var(--text-secondary, var(--foreground-secondary, var(--color-text-secondary)));
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.search-results__highlight {
+  background: var(--yami-color-palette-yellow-100);
+  color: var(--foreground-primary, var(--color-text-primary));
+  font-weight: var(--fw-medium);
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+.header__actions { 
+  display: flex; 
+  justify-content: flex-end; 
+  gap: var(--space-050, var(--spacing-050));
+  width: 100%;
+  max-width: 200px;
+}
+
+.header__actions button {
+  width: 40px;
+  height: 40px;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-full, var(--radius-full));
+  color: var(--foreground-primary, var(--color-text-primary));
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.header__actions button:hover {
+  background: var(--fill-secondary, var(--yami-color-palette-neutral-100));
+}
+
+.header__action-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  display: block;
+  color: var(--foreground-primary, var(--color-text-primary));
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  min-width: var(--sidebar-width);
+  border-right: 1px solid var(--color-border);
+  background: var(--color-surface);
+  padding: var(--spacing-300) 0;
+  position: sticky;
+  top: var(--header-height);
+  height: calc(100vh - var(--header-height));
+  overflow: auto;
+}
+.sidebar__section { padding: 0 var(--spacing-300); margin-bottom: var(--spacing-300); }
+.sidebar__title {
+  font-size: var(--yami-typography-caption-medium-font-size-desktop);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-150);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.sidebar ul { list-style: none; padding: 0; margin: 0; }
+.nav-link {
+  display: block;
+  padding: var(--spacing-150) var(--spacing-200);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+.nav-link:hover {
+  background: var(--yami-color-palette-neutral-50);
+  color: var(--color-ui-primary);
+}
+.nav-link.active {
+  background: var(--yami-color-palette-red-50);
+  color: var(--color-ui-primary);
+  border-left-color: var(--color-ui-primary);
+  font-weight: var(--fw-medium);
+}
+
+.content {
+  flex: 1;
+  max-width: 1920px;
+  padding: var(--spacing-400) var(--spacing-500);
+  margin: 0 auto;
+  text-align: left;
+}
+.doc { 
+  scroll-margin-top: calc(var(--header-height) + var(--spacing-200)); 
+  text-align: left;
+  max-width: 960px;
+  margin: 0 auto;
+}
+.doc--hidden { display: none; }
+
+.typo-h1 { 
+  font-size: var(--fs-h1); 
+  line-height: var(--lh-h1); 
+  font-weight: var(--fw-medium); 
+  margin: var(--spacing-400) 0 var(--spacing-300);
+  text-align: left;
+}
+.typo-h2 { 
+  font-size: var(--fs-h2); 
+  line-height: var(--lh-h2); 
+  font-weight: var(--fw-medium); 
+  margin: var(--spacing-300) 0 var(--spacing-200); 
+  border-bottom: 1px solid var(--color-border); 
+  padding-bottom: var(--spacing-100);
+  text-align: left;
+}
+.typo-h3 { 
+  font-size: var(--fs-h3); 
+  line-height: var(--lh-h3); 
+  font-weight: var(--fw-medium); 
+  margin: var(--spacing-300) 0 var(--spacing-150);
+  text-align: left;
+}
+.typo-p { 
+  font-size: var(--fs-body); 
+  line-height: var(--lh-body); 
+  margin: 0 0 var(--spacing-200); 
+  color: var(--color-text-primary);
+  text-align: left;
+}
+.typo-ul, .typo-ol { 
+  margin: 0 0 var(--spacing-200) var(--spacing-400);
+  text-align: left;
+}
+.typo-li { 
+  font-size: var(--fs-body); 
+  line-height: var(--lh-body); 
+  margin: 0 0 var(--spacing-100);
+  text-align: left;
+}
+.token-inline {
+  background: var(--yami-color-palette-neutral-100);
+  padding: var(--spacing-050) var(--spacing-100);
+  border-radius: var(--radius-sm);
+  font-family: 'Menlo', 'Monaco', monospace;
+  color: var(--color-ui-primary);
+}
+.token-block { display: block; padding: var(--spacing-200); background: var(--yami-color-palette-neutral-50); border-radius: var(--radius-md); }
+
+/* Color Swatch 色卡 */
+.color-swatch {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--divider-normal, var(--border-normal, var(--color-border)));
+  border-radius: var(--radius-card, var(--radius-md));
+  overflow: hidden;
+  margin-bottom: var(--spacing-200);
+}
+
+.color-swatch__preview {
+  padding: var(--spacing-300);
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: var(--body-m-font-family, var(--font-family-brand));
+}
+
+.color-swatch__name {
+  font-weight: var(--fw-medium);
+  font-size: var(--body-m-size, 14px);
+  line-height: var(--body-m-line-height, 20px);
+}
+
+.color-swatch__value {
+  font-size: 12px;
+  font-family: 'Menlo', 'Monaco', monospace;
+  opacity: 0.8;
+}
+
+.color-swatch__description {
+  padding: var(--spacing-150);
+  font-size: var(--body-m-size, 14px);
+  line-height: var(--body-m-line-height, 20px);
+  color: var(--foreground-secondary, var(--color-text-secondary));
+  background: var(--background-primary, var(--color-bg));
+}
+
+/* Typography Scale 字体阶梯 */
+.typography-scale {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-300);
+  margin: var(--spacing-400) 0;
+}
+
+.typography-scale__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-150);
+  padding-bottom: var(--spacing-300);
+  border-bottom: 1px solid var(--divider-normal, var(--border-normal, var(--color-border)));
+}
+
+.typography-scale__item:last-child {
+  border-bottom: none;
+}
+
+.typography-scale__preview {
+  font-family: var(--font-family-brand);
+  color: var(--foreground-primary, var(--color-text-primary));
+  margin-bottom: var(--spacing-100);
+}
+
+.typography-scale__details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-050);
+}
+
+.typography-scale__token {
+  font-family: 'Menlo', 'Monaco', monospace;
+  font-size: 12px;
+  color: var(--primary-ui, var(--yami-color-ui-primary));
+  background: var(--fill-secondary, var(--yami-color-palette-neutral-100));
+  padding: var(--spacing-050) var(--spacing-100);
+  border-radius: var(--radius-button, var(--radius-sm));
+  display: inline-block;
+  width: fit-content;
+}
+
+.typography-scale__specs {
+  font-size: 12px;
+  color: var(--foreground-secondary, var(--color-text-secondary));
+  font-family: 'Menlo', 'Monaco', monospace;
+}
+
+/* Spacing Scale 间距阶梯 */
+.spacing-scale {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--spacing-300);
+  margin: var(--spacing-400) 0;
+}
+
+.spacing-scale__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-150);
+}
+
+.spacing-scale__preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+  background: var(--fill-secondary, var(--yami-color-palette-neutral-100));
+  border-radius: var(--radius-card, var(--radius-md));
+  border: 1px solid var(--divider-normal, var(--border-normal, var(--color-border)));
+}
+
+.spacing-scale__bar {
+  background: var(--primary, var(--yami-color-brand-primary));
+  border-radius: var(--radius-button, var(--radius-sm));
+}
+
+.spacing-scale__details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-050);
+  text-align: left;
+  align-items: flex-start;
+}
+
+.spacing-scale__name {
+  font-weight: var(--fw-medium);
+  font-size: var(--body-m-size, 14px);
+  color: var(--foreground-primary, var(--color-text-primary));
+}
+
+.spacing-scale__token {
+  font-family: 'Menlo', 'Monaco', monospace;
+  font-size: 12px;
+  color: var(--primary-ui, var(--yami-color-ui-primary));
+}
+
+.spacing-scale__value {
+  font-size: 12px;
+  color: var(--foreground-secondary, var(--color-text-secondary));
+  font-family: 'Menlo', 'Monaco', monospace;
+}
+
+/* Radius Scale 圆角阶梯 */
+.radius-scale {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--spacing-300);
+  margin: var(--spacing-400) 0;
+}
+
+.radius-scale__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-150);
+  align-items: center;
+}
+
+.radius-scale__preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: var(--spacing-200);
+  background: var(--fill-secondary, var(--yami-color-palette-neutral-100));
+  border-radius: var(--radius-card, var(--radius-md));
+  border: 1px solid var(--divider-normal, var(--border-normal, var(--color-border)));
+}
+
+.radius-scale__shape {
+  display: block;
+}
+
+.radius-scale__details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-050);
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+}
+
+.radius-scale__name {
+  font-weight: var(--fw-medium);
+  font-size: var(--body-m-size, 14px);
+  color: var(--foreground-primary, var(--color-text-primary));
+}
+
+.radius-scale__token {
+  font-family: 'Menlo', 'Monaco', monospace;
+  font-size: 12px;
+  color: var(--primary-ui, var(--yami-color-ui-primary));
+}
+
+.radius-scale__value {
+  font-size: 12px;
+  color: var(--foreground-secondary, var(--color-text-secondary));
+  font-family: 'Menlo', 'Monaco', monospace;
+}
+
+/* Tabs Component */
+.tabs {
+  position: relative;
+  margin-bottom: var(--spacing-400);
+  border-bottom: 1px solid var(--divider-normal, var(--border-normal, var(--color-border)));
+}
+
+.tabs__list {
+  display: flex;
+  gap: 0;
+  position: relative;
+}
+
+.tabs__item {
+  padding: var(--spacing-150) var(--spacing-200);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary, var(--foreground-secondary, var(--color-text-secondary)));
+  font-family: var(--body-m-font-family, var(--font-family-brand));
+  font-size: var(--body-m-size, 14px);
+  font-weight: var(--fw-regular);
+  line-height: var(--body-m-line-height, 20px);
+  cursor: pointer;
+  position: relative;
+  transition: color 0.2s;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.tabs__item:hover {
+  color: var(--foreground-primary, var(--color-text-primary));
+}
+
+.tabs__item--active {
+  color: var(--color-ui-primary, var(--yami-color-ui-primary));
+  font-weight: var(--fw-medium);
+  border-bottom-color: var(--color-ui-primary, var(--yami-color-ui-primary));
+}
+
+.tabs__indicator {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  width: calc(100% / var(--tabs-count, 3));
+  background: var(--color-ui-primary, var(--yami-color-ui-primary));
+  transition: transform 0.2s var(--yami-animation-easing-ease-out, ease-out);
+  pointer-events: none;
+}
+
+/* Tablet / Medium (768px – 1023px) */
+@media (max-width: 1023px) and (min-width: 768px) {
+  .header { 
+    padding: 12px 12px;
+  }
+  .header__menu { display: inline-flex; }
+  .app-body {
+    padding-left: 0; /* 移除左侧间距，避免大留白 */
+  }
+  /* 遮罩层在 Tablet 模式下也可用 */
+  .drawer-overlay {
+    display: block;
+  }
+  .icon-nav {
+    position: fixed;
+    left: 0;
+    top: var(--header-height);
+    width: 240px;
+    height: calc(100vh - var(--header-height));
+    transform: translateX(-100%);
+    transition: transform var(--yami-animation-duration-normal) var(--yami-animation-easing-ease-out);
+    box-shadow: var(--shadow-2);
+    z-index: var(--yami-z-index-popover);
+    align-items: flex-start;
+    overflow-y: auto;
+  }
+  .icon-nav.open { transform: translateX(0); }
+  .icon-nav .icon-nav__item {
+    width: 100%;
+    min-width: auto;
+    padding: 8px 12px;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+  .icon-nav .icon-nav__label {
+    opacity: 1;
+    visibility: visible;
+    position: static;
+  }
+  .token-nav {
+    position: fixed;
+    left: 240px;
+    top: var(--header-height);
+    width: 240px;
+    height: calc(100vh - var(--header-height));
+    transform: translateX(-100%);
+    transition: transform var(--yami-animation-duration-normal) var(--yami-animation-easing-ease-out);
+    box-shadow: var(--shadow-2);
+    z-index: var(--yami-z-index-popover);
+    overflow-y: auto;
+  }
+  .token-nav.open { transform: translateX(0); }
+  .content { 
+    padding: var(--spacing-300) var(--spacing-300);
+    width: 100%;
+    margin-left: 0;
+  }
+  .spacing-scale,
+  .radius-scale {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mobile (< 768px) - Drawer Overlay 模式 */
+@media (max-width: 767px) {
+  .header { 
+    padding: 12px 12px;
+    z-index: var(--yami-z-index-modal, 1050); /* Header 在 drawer 之上，确保按钮可点击 */
+  }
+  .header__menu { 
+    display: inline-flex;
+    z-index: calc(var(--yami-z-index-modal, 1050) + 1); /* 按钮在 header 之上 */
+    position: relative;
+  }
+  
+  /* 移除左侧间距，内容区占满宽度 */
+  .app-body {
+    padding-left: 0;
+  }
+
+  /* 遮罩层在小屏下可用 */
+  .drawer-overlay {
+    display: block;
+  }
+
+  /* IconNav 改为 drawer overlay - 默认隐藏且不占位 */
+  .icon-nav {
+    position: fixed !important; /* 强制 fixed，覆盖 desktop 样式 */
+    left: 0;
+    top: var(--header-height);
+    width: 240px;
+    height: calc(100vh - var(--header-height));
+    transform: translateX(-100%); /* 默认隐藏 */
+    transition: transform var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out);
+    box-shadow: var(--shadow-2);
+    z-index: calc(var(--yami-z-index-modal-backdrop, 1040) + 1); /* 在 overlay 之上，header 之下 */
+    background: var(--background-primary, var(--color-surface));
+    border-right: 1px solid var(--divider-normal, var(--border-normal, var(--color-border)));
+    align-items: flex-start;
+    overflow-y: auto;
+    /* 确保不占位 */
+    margin: 0;
+    padding: var(--space-100, var(--spacing-100));
+    display: flex !important; /* 确保显示 */
+  }
+
+  .icon-nav:not(.open) {
+    /* 未打开时保持隐藏，但不使用 display: none，以便动画 */
+    transform: translateX(-100%);
+  }
+
+  .icon-nav.open {
+    transform: translateX(0); /* 打开时显示 */
+  }
+
+  /* 小屏时 IconNav 始终显示标签 */
+  .icon-nav .icon-nav__item {
+    width: 100%;
+    min-width: auto;
+    padding: 8px 12px;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+
+  .icon-nav .icon-nav__label {
+    opacity: 1;
+    visibility: visible;
+    position: static;
+  }
+
+  /* 禁用 hover 效果 */
+  .icon-nav:hover {
+    width: 240px;
+    transform: translateX(-100%); /* hover 时仍保持隐藏状态 */
+  }
+
+  /* TokenNav 改为 drawer overlay - 默认隐藏且不占位 */
+  .token-nav {
+    position: fixed !important; /* 强制 fixed，覆盖 desktop 的 sticky */
+    left: 240px; /* 位于 IconNav 右侧 */
+    top: var(--header-height);
+    width: 240px;
+    min-width: 0 !important; /* 移除 min-width，避免占位 */
+    height: calc(100vh - var(--header-height));
+    transform: translateX(-100%); /* 默认隐藏 */
+    transition: transform var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out);
+    box-shadow: var(--shadow-2);
+    z-index: calc(var(--yami-z-index-modal-backdrop, 1040) + 1); /* 在 overlay 之上，header 之下 */
+    background: var(--background-primary, var(--color-surface));
+    border-right: 1px solid var(--divider-normal, var(--border-normal, var(--color-border)));
+    overflow-y: auto;
+    /* 确保不占位 */
+    margin: 0;
+    display: flex !important; /* 确保显示，但通过 transform 隐藏 */
+    visibility: visible; /* 确保元素存在，只是通过 transform 移出视口 */
+  }
+
+  .token-nav:not(.open) {
+    /* 未打开时保持隐藏，不占位 */
+    transform: translateX(-100%);
+  }
+
+  .token-nav.open {
+    transform: translateX(0); /* 打开时显示 */
+  }
+
+  /* 内容区占满宽度，移除所有左侧间距 */
+  .content {
+    width: 100% !important;
+    margin-left: 0 !important;
+    padding: var(--spacing-300) var(--spacing-200);
+  }
+
+  .spacing-scale,
+  .radius-scale {
+    grid-template-columns: 1fr;
+  }
+}
