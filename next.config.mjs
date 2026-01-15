@@ -7,9 +7,16 @@ const isGithubPages = process.env.GITHUB_PAGES === 'true';
 // Change this to your GitHub repo name (the part after github.com/<user>/)
 const repoName = 'guidelines-site';
 
+const basePath = isGithubPages ? `/${repoName}` : '';
+
+// 设置环境变量，供组件使用
+if (isGithubPages) {
+  process.env.NEXT_PUBLIC_BASE_PATH = basePath;
+}
+
 const nextConfig = {
-  basePath: isGithubPages ? `/${repoName}` : '',
-  assetPrefix: isGithubPages ? `/${repoName}` : '',
+  basePath: basePath,
+  assetPrefix: basePath,
 
   // Static export for GitHub Pages
   output: 'export',

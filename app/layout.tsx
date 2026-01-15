@@ -15,19 +15,23 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // 在构建时确定 basePath（从环境变量读取，由 next.config.mjs 设置）
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+  const fontBasePath = `${basePath}/fonts/icofont`;
+  
   return (
     <html lang="zh-CN">
       <head>
         {/* 预加载字体文件，提升加载性能 */}
         <link
           rel="preload"
-          href="/fonts/icofont/icofont.woff2"
+          href={`${fontBasePath}/icofont.woff2`}
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
         />
         {/* 导入字体 CSS */}
-        <link rel="stylesheet" href="/fonts/icofont/icofont.css" />
+        <link rel="stylesheet" href={`${fontBasePath}/icofont.css`} />
       </head>
       <body>
         <FontDebugger />
