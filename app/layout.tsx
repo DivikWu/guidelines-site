@@ -1,6 +1,7 @@
+// CSS 导入顺序：先导入基础变量，再导入依赖这些变量的样式
+import '../styles/tokens.css';
+import '../styles/theme.css';
 import './globals.css';
-import '../tokens.css';
-import '../theme.css';
 import { TokenProvider } from '../components/TokenProvider';
 import FontDebugger from '../components/FontDebugger';
 
@@ -18,14 +19,15 @@ export default function RootLayout({
     <html lang="zh-CN">
       <head>
         {/* 预加载字体文件，提升加载性能 */}
-        {/* 预加载字体文件 - Next.js 会自动处理 basePath */}
         <link
           rel="preload"
-          href="/guidelines-site/fonts/icofont/icofont.woff2"
+          href="/fonts/icofont/icofont.woff2"
           as="font"
           type="font/woff2"
           crossOrigin="anonymous"
         />
+        {/* 导入字体 CSS */}
+        <link rel="stylesheet" href="/fonts/icofont/icofont.css" />
       </head>
       <body>
         <FontDebugger />

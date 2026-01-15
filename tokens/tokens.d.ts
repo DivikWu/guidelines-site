@@ -43,9 +43,51 @@ type TokensRoot = {
   dark: TokenValue;
 };
 };
+  icon: {
+  primary: {
+  light: TokenValue;
+  dark: TokenValue;
+};
+  secondary: {
+  light: TokenValue;
+  dark: TokenValue;
+};
+  muted: {
+  light: TokenValue;
+  dark: TokenValue;
+};
+};
+  border: {
+  subtle: {
+  light: TokenValue;
+  dark: TokenValue;
+};
+  strong: {
+  light: TokenValue;
+  dark: TokenValue;
+};
+  light: TokenValue;
+  dark: TokenValue;
+};
+  divider: {
+  section: {
+  light: TokenValue;
+  dark: TokenValue;
+};
+};
+  code: {
+  bg: {
+  light: TokenValue;
+  dark: TokenValue;
+};
+  text: {
+  light: TokenValue;
+  dark: TokenValue;
+};
   border: {
   light: TokenValue;
   dark: TokenValue;
+};
 };
   badge: {
   primary: TokenValue;
@@ -55,8 +97,28 @@ type TokensRoot = {
   error: TokenValue;
 };
   overlay: {
+  black: TokenValue;
+  white: TokenValue;
   light: TokenValue;
   dark: TokenValue;
+};
+  state: {
+  hover: {
+  light: TokenValue;
+  dark: TokenValue;
+};
+  selected: {
+  light: TokenValue;
+  dark: TokenValue;
+};
+  pressed: {
+  light: TokenValue;
+  dark: TokenValue;
+};
+  focus: {
+  light: TokenValue;
+  dark: TokenValue;
+};
 };
   campaign: {
   primary: TokenValue;
@@ -544,6 +606,13 @@ type TokensRoot = {
   modal: TokenValue;
   popover: TokenValue;
   tooltip: TokenValue;
+};
+  opacity: {
+  '04': TokenValue;
+  '08': TokenValue;
+  '12': TokenValue;
+  '16': TokenValue;
+  '24': TokenValue;
 };
   animation: {
   duration: {

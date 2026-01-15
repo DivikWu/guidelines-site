@@ -20,14 +20,32 @@
   
   /* Border 边框 */
   --border-normal: var(--yami-color-border-light);
-  --border-subtle: var(--yami-color-palette-neutral-200);
+  --border-subtle: var(--yami-color-border-subtle-light);
+  --border-strong: var(--yami-color-border-strong-light);
   
   /* Divider 分割线 */
   --divider-normal: var(--yami-color-border-light);
+  --divider-section: var(--yami-color-divider-section-light);
   
   /* Fill 填充 */
   --fill-secondary: var(--yami-color-palette-neutral-100);
   --fill-tertiary: var(--yami-color-palette-neutral-50);
+  
+  /* State 交互态（透明叠加策略） */
+  --state-hover: var(--yami-color-state-hover-light);
+  --state-selected: var(--yami-color-state-selected-light);
+  --state-pressed: var(--yami-color-state-pressed-light);
+  --state-focus: var(--yami-color-state-focus-light);
+  
+  /* Icon 图标 */
+  --icon-primary: var(--yami-color-icon-primary-light);
+  --icon-secondary: var(--yami-color-icon-secondary-light);
+  --icon-muted: var(--yami-color-icon-muted-light);
+  
+  /* Code 代码 */
+  --code-bg: var(--yami-color-code-bg-light);
+  --code-text: var(--yami-color-code-text-light);
+  --code-border: var(--yami-color-code-border-light);
   
   /* Space 间距 */
   --space-0: var(--yami-spacing-0);
@@ -75,7 +93,26 @@
   --foreground-secondary: var(--yami-color-text-secondary-dark);
   --foreground-tertiary: var(--yami-color-text-tertiary-dark);
   --border-normal: var(--yami-color-border-dark);
+  --border-subtle: var(--yami-color-border-subtle-dark);
+  --border-strong: var(--yami-color-border-strong-dark);
   --divider-normal: var(--yami-color-border-dark);
+  --divider-section: var(--yami-color-divider-section-dark);
   --text-primary: var(--yami-color-text-primary-dark);
   --text-secondary: var(--yami-color-text-secondary-dark);
+  
+  /* State 交互态（深色模式使用透明白叠加） */
+  --state-hover: var(--yami-color-state-hover-dark);
+  --state-selected: var(--yami-color-state-selected-dark);
+  --state-pressed: var(--yami-color-state-pressed-dark);
+  --state-focus: var(--yami-color-state-focus-dark);
+  
+  /* Icon 图标 */
+  --icon-primary: var(--yami-color-icon-primary-dark);
+  --icon-secondary: var(--yami-color-icon-secondary-dark);
+  --icon-muted: var(--yami-color-icon-muted-dark);
+  
+  /* Code 代码 */
+  --code-bg: var(--yami-color-code-bg-dark);
+  --code-text: var(--yami-color-code-text-dark);
+  --code-border: var(--yami-color-code-border-dark);
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTokenTheme } from './TokenProvider';
-import Logo from './Logo';
+import BrandLogo from './BrandLogo';
 import Icon from './Icon';
 import SearchResults, { SearchResult } from './SearchResults';
 import { DocPage } from '../data/docs';
@@ -220,7 +220,7 @@ export default function Header({ onToggleSidebar, docs = [], onSearchSelect }: H
         <button className="header__menu" onClick={onToggleSidebar} aria-label="Toggle sidebar">
           ☰
         </button>
-        <Logo />
+        <BrandLogo />
       </div>
       <div className="header__search" ref={searchRef}>
         <input 

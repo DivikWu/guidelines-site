@@ -19,7 +19,7 @@ export const navigationConfig: SectionConfig[] = [
   {
     id: 'foundations',
     label: 'Overview',
-    iconClass: 'ds-icon-dashboard-circle',
+    iconClass: 'ds-icon-asterisk',
     items: [
       { id: 'overview', label: '概述 Overview', icon: '📋' },
       { id: 'changelog', label: '更新日志 Changelog', icon: '📝' },

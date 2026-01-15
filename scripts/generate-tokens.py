@@ -19,10 +19,10 @@ from pathlib import Path
 from typing import Any, Iterable, Tuple
 
 
-ROOT = Path(__file__).resolve().parent
-TOKENS_JSON = ROOT / "tokens.json"
-TOKENS_CSS = ROOT / "tokens.css"
-TOKENS_DTS = ROOT / "tokens.d.ts"
+ROOT = Path(__file__).resolve().parent.parent
+TOKENS_JSON = ROOT / "tokens" / "tokens.json"
+TOKENS_CSS = ROOT / "styles" / "tokens.css"
+TOKENS_DTS = ROOT / "tokens" / "tokens.d.ts"
 
 
 def is_token_leaf(obj: Any) -> bool:
