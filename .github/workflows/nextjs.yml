@@ -76,6 +76,9 @@ jobs:
   
       - name: Build with Next.js
         # 使用 npm run build，确保执行字体 / asset 修复脚本
+        # 设置 GITHUB_PAGES 环境变量以启用 basePath
+        env:
+          GITHUB_PAGES: 'true'
         run: ${{ steps.detect-package-manager.outputs.manager }} run build
     
       - name: Upload artifact
