@@ -206,5 +206,5 @@ document.documentElement.setAttribute('data-theme', 'dark');
 
 ## 参考
 
-- [YAMI UI/UX 设计规范](./YAMI-UI-UX-设计规范.md)
+- [YAMI UI/UX 设计规范](../docs/specs/YAMI-UI-UX-设计规范.md)
 - [Figma 设计文件](https://www.figma.com/design/6oOAy72DBff4P6NzJYc2hi/)

@@ -5,7 +5,8 @@ import { useTokenTheme } from './TokenProvider';
 import BrandLogo from './BrandLogo';
 import Icon from './Icon';
 import SearchResults, { SearchResult } from './SearchResults';
-import SearchModal, { SearchItem } from './SearchModal';
+import { SearchItem } from './SearchModal';
+import { useSearch } from './SearchProvider';
 import { DocPage } from '../data/docs';
 
 
@@ -14,14 +15,40 @@ interface HeaderProps {
   onToggleSidebar: () => void;
   docs?: DocPage[];
   onSearchSelect?: (pageId: string) => void;
+  isOverview?: boolean;
 }
 
-export default function Header({ onToggleSidebar, docs = [], onSearchSelect }: HeaderProps) {
+export default function Header({ 
+  onToggleSidebar, 
+  docs = [], 
+  onSearchSelect,
+  isOverview = false 
+}: HeaderProps) {
   // #region agent log
   const isServer = typeof window === 'undefined';
   fetch('http://127.0.0.1:7243/ingest/bec5ef14-f4e7-4569-92de-812c24e45b28',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Header.tsx:19',message:'Header render start',data:{docsLength:docs.length,hasOnToggleSidebar:!!onToggleSidebar,hasOnSearchSelect:!!onSearchSelect,isServer},timestamp:Date.now(),sessionId:'debug-session',runId:'hydrate-debug',hypothesisId:'H1'})}).catch(()=>{});
   // #endregion
   const { theme, toggle } = useTokenTheme();
+  
+  // 检查 search-hidden 状态以控制搜索按钮显示
+  const [isSearchHidden, setIsSearchHidden] = useState(false);
+  
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      const hidden = document.documentElement.dataset.searchHidden === 'true';
+      setIsSearchHidden(hidden);
+    });
+    
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-search-hidden']
+    });
+    
+    // 初始状态
+    setIsSearchHidden(document.documentElement.dataset.searchHidden === 'true');
+    
+    return () => observer.disconnect();
+  }, []);
   // #region agent log
   fetch('http://127.0.0.1:7243/ingest/bec5ef14-f4e7-4569-92de-812c24e45b28',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Header.tsx:23',message:'useTokenTheme result',data:{theme,isServer},timestamp:Date.now(),sessionId:'debug-session',runId:'hydrate-debug',hypothesisId:'H2'})}).catch(()=>{});
   // #endregion
@@ -37,7 +64,7 @@ export default function Header({ onToggleSidebar, docs = [], onSearchSelect }: H
   const [mounted, setMounted] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [isSmallScreen, setIsSmallScreen] = useState(false);
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const { openSearch } = useSearch();
   // #region agent log
   fetch('http://127.0.0.1:7243/ingest/bec5ef14-f4e7-4569-92de-812c24e45b28',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Header.tsx:35',message:'State initialization',data:{searchQuery,showResults,selectedIndex,isScrolled,mounted,isServer},timestamp:Date.now(),sessionId:'debug-session',runId:'hydrate-debug',hypothesisId:'H4'})}).catch(()=>{});
   // #endregion
@@ -259,24 +286,6 @@ export default function Header({ onToggleSidebar, docs = [], onSearchSelect }: H
     }
   }, [showResults, isSearchExpanded]);
 
-  // 快捷键监听：⌘K (Mac) / Ctrl+K (Windows)
-  useEffect(() => {
-    if (!mounted) return;
-    
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform);
-      const isCmdK = (isMac && e.metaKey && e.key === 'k') || (!isMac && e.ctrlKey && e.key === 'k');
-      
-      if (isCmdK) {
-        e.preventDefault();
-        setIsSearchModalOpen(true);
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [mounted]);
-
   // 将 docs 转换为 SearchItem
   const searchItems: SearchItem[] = docs.map(page => {
     const titleMatch = page.markdown.match(/^#\s+(.+)$/m);
@@ -297,20 +306,15 @@ export default function Header({ onToggleSidebar, docs = [], onSearchSelect }: H
     };
   });
 
-  // 处理搜索选择
-  const handleSearchModalSelect = (item: SearchItem) => {
-    // 关闭 Modal
-    setIsSearchModalOpen(false);
-    // 调用原有的 onSearchSelect（传递 pageId）
-    if (onSearchSelect) {
-      onSearchSelect(item.id);
-    }
-  };
-
   // #region agent log
   const finalClassName = `header ${mounted && isScrolled ? 'header--scrolled' : ''}`;
   fetch('http://127.0.0.1:7243/ingest/bec5ef14-f4e7-4569-92de-812c24e45b28',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Header.tsx:201',message:'Header return statement',data:{mounted,isScrolled,showResults,className:finalClassName,isServer,headerRefExists:!!headerRef.current},timestamp:Date.now(),sessionId:'debug-session',runId:'hydrate-debug',hypothesisId:'H1'})}).catch(()=>{});
   // #endregion
+  // 最终显示规则实现：
+  // 1. 非 Overview：永远显示
+  // 2. Overview：仅当页面内 Search 模块完全隐藏 (isSearchHidden) 时显示
+  const showSearchIcon = !isSearchExpanded && (!isOverview || isSearchHidden);
+
   return (
     <header 
       className={finalClassName}
@@ -333,7 +337,7 @@ export default function Header({ onToggleSidebar, docs = [], onSearchSelect }: H
               onChange={handleSearchChange}
               onKeyDown={handleKeyDown}
               onFocus={() => searchQuery && setShowResults(true)}
-              onClick={() => setIsSearchModalOpen(true)}
+              onClick={() => openSearch()}
               readOnly
             />
             {showResults && (
@@ -349,17 +353,17 @@ export default function Header({ onToggleSidebar, docs = [], onSearchSelect }: H
           <input 
             type="search" 
             placeholder="搜索设计规范..." 
-            onClick={() => setIsSearchModalOpen(true)}
+            onClick={() => openSearch()}
             readOnly
           />
         )}
       </div>
       <div className="header__actions">
-        {!isSearchExpanded && (
+        {showSearchIcon && (
           <button 
             ref={searchTriggerRef}
             className="header__search-icon-button"
-            onClick={() => setIsSearchModalOpen(true)}
+            onClick={() => openSearch()}
             aria-label="搜索"
             title="搜索"
           >
@@ -371,7 +375,7 @@ export default function Header({ onToggleSidebar, docs = [], onSearchSelect }: H
             />
           </button>
         )}
-        <button onClick={toggle} aria-label="Toggle theme" title="主题">
+        <button onClick={toggle} aria-label="切换主题模式" title="主题">
           <Icon 
             name="ds-icon-sun-01" 
             title="Theme"
@@ -380,15 +384,6 @@ export default function Header({ onToggleSidebar, docs = [], onSearchSelect }: H
           />
         </button>
       </div>
-      
-      {/* SearchModal */}
-      <SearchModal
-        open={isSearchModalOpen}
-        onOpenChange={setIsSearchModalOpen}
-        items={searchItems}
-        onSelect={handleSearchModalSelect}
-        triggerRef={searchTriggerRef}
-      />
     </header>
   );
 }

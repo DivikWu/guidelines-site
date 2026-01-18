@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build && node scripts/fix-font-paths.js",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "lint:structure": "node scripts/check-structure.mjs",
+    "docs:check": "node scripts/check-doc-links.mjs"
   },
   "dependencies": {
     "next": "14.2.5",

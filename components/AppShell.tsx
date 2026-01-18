@@ -1,11 +1,14 @@
 'use client';
 
 import Header from './Header';
+import SearchBar from './SearchBar';
 import IconNav from './IconNav';
 import TokenNav from './TokenNav';
 import NavDrawer from './NavDrawer';
 import DocContent from './DocContent';
-import { useState, useEffect } from 'react';
+import SearchModal, { SearchItem } from './SearchModal';
+import { useSearch } from './SearchProvider';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { DocPage } from '../data/docs';
 import { getSectionConfig, findSectionByItemId } from '../config/navigation';
@@ -17,6 +20,34 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
   const [isMobile, setIsMobile] = useState(false);
   const [prevPathname, setPrevPathname] = useState<string>('');
   const pathname = usePathname();
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // 1. 稳定 Header 搜索按钮状态：通过监测 sentinel 决定是否显示 Header 搜索
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        // 当 sentinel 离开视口（顶部到达 header 位置）时，认为搜索栏已隐藏
+        const isHidden = !entry.isIntersecting;
+        document.documentElement.dataset.searchHidden = isHidden ? 'true' : 'false';
+      },
+      {
+        // 关键：rootMargin 顶部偏移 header 高度（56px），确保在临界点才切换
+        rootMargin: '-56px 0px 0px 0px',
+        threshold: 0
+      }
+    );
+
+    if (sentinelRef.current) {
+      observer.observe(sentinelRef.current);
+    }
+
+    return () => {
+      observer.disconnect();
+      document.documentElement.dataset.searchHidden = 'false';
+    };
+  }, [activeToken]); // activeToken 变化可能导致 SearchBar 挂载/卸载，需要重新监听
 
   // 当 category 变化时，自动选择第一个 token
   useEffect(() => {
@@ -113,8 +144,10 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
   }, [pathname, isMobile, mobileOpen, prevPathname]);
 
 
+  const { isOpen: isSearchModalOpen, closeSearch, openSearch } = useSearch();
+
   const handleSearchSelect = (pageId: string) => {
-    // 根据 pageId 找到对应的 section
+    // ... 原有逻辑 ...
     const sectionId = findSectionByItemId(pageId);
     if (sectionId) {
       setCategory(sectionId);
@@ -123,10 +156,56 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
     // 设置激活的 token 并滚动
     setActiveToken(pageId);
     setMobileOpen(false);
+    closeSearch(); // 确保搜索框关闭
     setTimeout(() => {
       document.getElementById(pageId)?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
   };
+
+  // 将 docs 转换为 SearchItem 格式并提取元数据
+  const searchItems: SearchItem[] = useMemo(() => docs.map(doc => {
+    // 提取第一行标题 (# Title)
+    const titleMatch = doc.markdown.match(/^#\s+(.+)$/m);
+    const title = titleMatch ? titleMatch[1].trim() : doc.id;
+    
+    // 提取描述（排除标题后的第一段文本）
+    const descriptionMatch = doc.markdown.replace(/^#\s+.+$/m, '').trim().match(/^([^#\n].+)$/m);
+    const description = descriptionMatch ? descriptionMatch[1].trim().slice(0, 60) + '...' : undefined;
+
+    return {
+      id: doc.id,
+      type: (doc.id.includes('button') || doc.id.includes('tabs') || doc.id.includes('badge') || 
+             doc.id.includes('heading') || doc.id.includes('filter') || doc.id.includes('navbar') ||
+             doc.id.includes('product-card') || doc.id.includes('forms')) ? 'component' : 
+            (doc.id.includes('changelog') || doc.id.includes('update-process')) ? 'resource' : 'page',
+      title,
+      description,
+      href: `#${doc.id}`
+    };
+  }), [docs]);
+
+  // 记录最近访问 (Recent)
+  useEffect(() => {
+    if (!activeToken || typeof window === 'undefined') return;
+
+    const currentItem = searchItems.find(item => item.id === activeToken);
+    if (!currentItem) return;
+
+    // 获取现有记录
+    const saved = localStorage.getItem('search-recent');
+    let recent: SearchItem[] = [];
+    if (saved) {
+      try {
+        recent = JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse recent items', e);
+      }
+    }
+
+    // 去重并限制数量 (5-8条，这里取8条)
+    const newRecent = [currentItem, ...recent.filter(i => i.id !== currentItem.id)].slice(0, 8);
+    localStorage.setItem('search-recent', JSON.stringify(newRecent));
+  }, [activeToken, searchItems]);
 
   return (
     <div className="app-shell" suppressHydrationWarning>
@@ -134,7 +213,27 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
         onToggleSidebar={() => setMobileOpen(v => !v)} 
         docs={docs}
         onSearchSelect={handleSearchSelect}
+        isOverview={activeToken === 'overview'}
       />
+      
+      {/* SearchModal - 全局唯一实例 */}
+      <SearchModal
+        open={isSearchModalOpen}
+        onOpenChange={(open) => open ? openSearch() : closeSearch()}
+        items={searchItems}
+        onSelect={(item) => handleSearchSelect(item.id)}
+      />
+      
+      {/* SearchBar - 仅在 Overview 页面显示且位于三列布局上方 */}
+      {activeToken === 'overview' && (
+        <SearchBar 
+          docs={docs}
+          onSearchSelect={handleSearchSelect}
+        />
+      )}
+
+      {/* 结构化锚点 (Sentinel)：用于稳定检测侧栏固定临界点 */}
+      <div ref={sentinelRef} className="app-nav-sentinel" />
       
       {/* 小屏单列 Drawer - 始终渲染，通过 CSS 控制显示/隐藏 */}
       <NavDrawer
@@ -156,29 +255,29 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
       />
 
       <div className="app-body">
-        {/* 桌面端双栏导航 */}
+        {/* 桌面端稳定侧栏容器：无论导航是否固定，此容器始终占位，防止布局跳动 */}
         {!isMobile && (
-          <>
-            <IconNav 
-              className=""
-              activeCategory={category}
-              onCategoryChange={(id) => {
-                setCategory(id);
-              }}
-            />
-            <TokenNav
-              className=""
-              category={category}
-              activeToken={activeToken}
-              onTokenChange={(id) => {
-                setActiveToken(id);
-                document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-              }}
-            />
-          </>
+          <aside className="app-nav-side">
+            <div className="app-nav-side__inner">
+              <IconNav 
+                activeCategory={category}
+                onCategoryChange={(id) => {
+                  setCategory(id);
+                }}
+              />
+              <TokenNav
+                category={category}
+                activeToken={activeToken}
+                onTokenChange={(id) => {
+                  setActiveToken(id);
+                  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              />
+            </div>
+          </aside>
         )}
         
-        {/* 内容区（桌面/小屏共用） */}
+        {/* 内容区 */}
         <main className="content" id="main-content">
           {docs.map(page => (
             <DocContent

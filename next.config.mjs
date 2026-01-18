@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 
 // Only enable basePath/assetPrefix for GitHub Pages builds.
-// Local dev should NOT have a basePath.
+// Local dev should NOT have a basePath or static export output.
 const isGithubPages = process.env.GITHUB_PAGES === 'true';
 
 // Change this to your GitHub repo name (the part after github.com/<user>/)
@@ -18,8 +18,8 @@ const nextConfig = {
   basePath: basePath,
   assetPrefix: basePath,
 
-  // Static export for GitHub Pages
-  output: 'export',
+  // Static export only for GitHub Pages builds
+  ...(isGithubPages ? { output: 'export' } : {}),
 
   // Next/Image optimization is not available in static export.
   images: {

@@ -280,3 +280,4 @@ YAMI 的色彩体系由以下四个维度构成：
 - **Figma 文件**: [YAMI UI/UX Guidelines](https://www.figma.com/design/6oOAy72DBff4P6NzJYc2hi/)
 - **真相源**: `tokens.json`
 - **参考**: Material Design, Apple HIG, WCAG 2.1
+

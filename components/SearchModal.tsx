@@ -43,21 +43,6 @@ const DEFAULT_MOCK_ITEMS: SearchItem[] = [
   { id: 'update-process', type: 'resource', title: '更新流程 Update Process', description: '设计系统更新流程规范', href: '#update-process' },
 ];
 
-// 按类型分组
-const groupItemsByType = (items: SearchItem[]) => {
-  const grouped: Record<string, SearchItem[]> = {
-    page: [],
-    component: [],
-    resource: [],
-  };
-  items.forEach(item => {
-    if (grouped[item.type]) {
-      grouped[item.type].push(item);
-    }
-  });
-  return grouped;
-};
-
 export default function SearchModal({
   open,
   onOpenChange,
@@ -67,70 +52,126 @@ export default function SearchModal({
 }: SearchModalProps) {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [recentItems, setRecentItems] = useState<SearchItem[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
   const [mounted, setMounted] = useState(false);
   const previousBodyOverflowRef = useRef<string>('');
+  const previousBodyPaddingRightRef = useRef<string>('');
+
+  // 加载最近访问
+  useEffect(() => {
+    if (open) {
+      const saved = localStorage.getItem('search-recent');
+      if (saved) {
+        try {
+          setRecentItems(JSON.parse(saved));
+        } catch (e) {
+          console.error('Failed to parse recent items', e);
+        }
+      }
+    }
+  }, [open]);
+
+  // 1. 锁滚动稳定性修复：防止滚动条消失导致的页面跳动
+  const lockScroll = useCallback(() => {
+    const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+    previousBodyOverflowRef.current = document.body.style.overflow;
+    previousBodyPaddingRightRef.current = document.body.style.paddingRight;
+    
+    document.body.style.overflow = 'hidden';
+    if (scrollBarWidth > 0) {
+      document.body.style.paddingRight = `${scrollBarWidth}px`;
+    }
+  }, []);
+
+  const unlockScroll = useCallback(() => {
+    document.body.style.overflow = previousBodyOverflowRef.current;
+    document.body.style.paddingRight = previousBodyPaddingRightRef.current;
+  }, []);
 
   // 仅在客户端挂载
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // 打开时：锁滚动、聚焦输入框、设置全局标记
+  // 打开时逻辑
   useEffect(() => {
     if (!mounted) return;
     
     if (open) {
-      // 保存当前 body overflow
-      previousBodyOverflowRef.current = document.body.style.overflow;
-      // 锁滚动
-      document.body.style.overflow = 'hidden';
-      // 设置全局标记：SearchModal 打开状态
+      lockScroll();
       document.documentElement.dataset.searchOpen = 'true';
-      // 聚焦输入框（延迟确保 Portal 已渲染）
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 0);
-      // 重置搜索状态
+      
+      // 自动聚焦且不触发滚动跳动
+      const timer = setTimeout(() => {
+        inputRef.current?.focus({ preventScroll: true });
+      }, 50);
+      
       setQuery('');
       setSelectedIndex(-1);
+      
+      return () => {
+        clearTimeout(timer);
+        // 清理逻辑：确保卸载或关闭时恢复状态
+        unlockScroll();
+        delete document.documentElement.dataset.searchOpen;
+      };
     } else {
-      // 恢复滚动
-      document.body.style.overflow = previousBodyOverflowRef.current;
-      // 移除全局标记
+      // 正常关闭逻辑
+      unlockScroll();
       delete document.documentElement.dataset.searchOpen;
-      // Focus 回到触发按钮
+      
+      // 焦点回退
       if (triggerRef?.current) {
         triggerRef.current.focus();
       }
     }
+  }, [open, mounted, triggerRef, lockScroll, unlockScroll]);
 
-    return () => {
-      // 清理时恢复滚动和移除标记
-      if (!open) {
-        document.body.style.overflow = previousBodyOverflowRef.current;
-        delete document.documentElement.dataset.searchOpen;
-      }
-    };
-  }, [open, mounted, triggerRef]);
-
-  // 过滤搜索结果
-  const filteredItems = useCallback(() => {
+  // 过滤搜索结果并模拟加载状态
+  const [displayedItems, setDisplayedItems] = useState<SearchItem[]>([]);
+  
+  // 核心逻辑：响应 items 或 query 的变化
+  useEffect(() => {
     if (!query.trim()) {
-      // 无输入：返回推荐项（前 8 个）
-      return items.slice(0, 8);
-    }
-    const lowerQuery = query.toLowerCase().trim();
-    return items.filter(item => {
-      const titleMatch = item.title.toLowerCase().includes(lowerQuery);
-      const descMatch = item.description?.toLowerCase().includes(lowerQuery);
-      return titleMatch || descMatch;
-    });
-  }, [query, items]);
+      // 1. 最近更新 (Latest Updates) - 静态兜底 4 条
+      const latestIds = ['button', 'tabs', 'filter', 'badge'];
+      const latestItems = items.filter(item => latestIds.includes(item.id))
+        .sort((a, b) => latestIds.indexOf(a.id) - latestIds.indexOf(b.id))
+        .slice(0, 4);
+      
+      // 2. 最近访问 (Recent) - 来自 localStorage (recentItems state)，限制显示 4 条
+      const displayRecentItems = recentItems.slice(0, 4);
 
-  const displayedItems = filteredItems();
+      // 合并为 flat 列表供键盘导航使用，按 UI 顺序排列
+      const combined = [
+        ...latestItems,
+        ...displayRecentItems
+      ];
+
+      setDisplayedItems(combined);
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      const lowerQuery = query.toLowerCase().trim();
+      const results = items.filter(item => {
+        const titleMatch = item.title?.toLowerCase().includes(lowerQuery);
+        const descMatch = item.description?.toLowerCase().includes(lowerQuery);
+        const idMatch = item.id?.toLowerCase().includes(lowerQuery);
+        return titleMatch || descMatch || idMatch;
+      });
+      setDisplayedItems(results);
+      setIsLoading(false);
+    }, 150); // 稍微缩短延迟，提升响应感
+
+    return () => clearTimeout(timer);
+  }, [query, items, recentItems]);
 
   // 处理选择
   const handleSelect = (item: SearchItem) => {
@@ -165,14 +206,14 @@ export default function SearchModal({
           handleSelect(displayedItems[0]);
         }
         break;
-      // Tab: 允许在弹窗内循环，但不阻止默认行为
     }
   };
 
   // 滚动到选中项
   useEffect(() => {
-    if (selectedIndex >= 0 && listRef.current) {
-      const selectedElement = listRef.current.children[selectedIndex] as HTMLElement;
+    if (selectedIndex >= 0 && displayedItems[selectedIndex]) {
+      const selectedId = `search-item-${displayedItems[selectedIndex].id}-${selectedIndex}`;
+      const selectedElement = document.getElementById(selectedId);
       if (selectedElement) {
         selectedElement.scrollIntoView({
           behavior: 'smooth',
@@ -180,22 +221,53 @@ export default function SearchModal({
         });
       }
     }
-  }, [selectedIndex]);
+  }, [selectedIndex, displayedItems]);
 
   // 点击遮罩关闭
   const handleBackdropClick = (e: React.MouseEvent) => {
-    // 如果点击的是遮罩层本身，关闭 Modal
     if (e.target === e.currentTarget) {
       onOpenChange(false);
     }
   };
-  
-  // 点击容器（但不在内容上）关闭
-  const handleContainerClick = (e: React.MouseEvent) => {
-    // 如果点击的是容器本身（不是内容），关闭 Modal
-    if (e.target === e.currentTarget) {
-      onOpenChange(false);
-    }
+
+  // 渲染单个搜索项
+  const renderItem = (item: SearchItem, index: number) => {
+    const isSelected = index === selectedIndex;
+    const normalizedType = (item.type || '').toString().toLowerCase();
+
+    return (
+      <li key={`${item.id}-${index}`} className="search-modal__item" role="option" aria-selected={isSelected}>
+        <button
+          id={`search-item-${item.id}-${index}`}
+          className={`search-modal__button ${isSelected ? 'search-modal__button--selected' : ''}`}
+          onClick={() => handleSelect(item)}
+          onMouseEnter={() => setSelectedIndex(index)}
+        >
+          <div className="search-modal__item-icon">
+            <Icon 
+              name={item.type === 'component' ? 'ds-icon-box' : item.type === 'resource' ? 'ds-icon-file' : 'ds-icon-file-text'} 
+              size={20} 
+            />
+          </div>
+          <div className="search-modal__item-content">
+            <div className="search-modal__item-title">
+              {highlightText(item.title || item.id, query)}
+              {normalizedType && normalizedType !== 'page' && (
+                <span className="search-modal__item-tag">{normalizedType.toUpperCase()}</span>
+              )}
+            </div>
+            {item.description && (
+              <div className="search-modal__item-description">
+                {highlightText(item.description, query)}
+              </div>
+            )}
+          </div>
+          <div className="search-modal__item-enter" aria-hidden="true">
+            <Icon name="ds-icon-arrow-right" size={16} />
+          </div>
+        </button>
+      </li>
+    );
   };
 
   // 高亮匹配文本
@@ -215,23 +287,30 @@ export default function SearchModal({
   if (!mounted || !open) return null;
 
   const content = (
-    <>
+    <div 
+      className="search-modal__portal" 
+      role="dialog" 
+      aria-modal="true" 
+      aria-labelledby="search-modal-title"
+    >
       {/* 遮罩层 */}
       <div 
         className="search-modal__backdrop"
         onClick={handleBackdropClick}
       />
       
-      {/* 搜索卡片 */}
+      {/* 搜索容器 */}
       <div 
-        ref={modalRef}
         className="search-modal__container"
-        onClick={handleContainerClick}
       >
         <div 
+          ref={modalRef}
           className="search-modal__content"
           onClick={(e) => e.stopPropagation()}
         >
+          {/* 隐藏的标题用于可访问性 */}
+          <h2 id="search-modal-title" className="sr-only">搜索设计规范</h2>
+
           {/* 输入区 */}
           <div className="search-modal__input-wrapper">
             <Icon 
@@ -243,75 +322,133 @@ export default function SearchModal({
               ref={inputRef}
               type="text"
               className="search-modal__input"
-              placeholder="搜索设计规范..."
+              placeholder="搜索规范、组件或资源…"
               value={query}
               onChange={(e) => {
                 setQuery(e.target.value);
                 setSelectedIndex(-1);
               }}
-              onKeyDown={handleKeyDown}
-            />
-            {/* 快捷键提示 */}
-            <div className="search-modal__shortcut-hint">
-              {typeof window !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform) ? '⌘K' : 'Ctrl+K'}
+            onKeyDown={handleKeyDown}
+            aria-autocomplete="list"
+            aria-controls="search-results-list"
+            aria-activedescendant={selectedIndex >= 0 ? `search-item-${displayedItems[selectedIndex]?.id}-${selectedIndex}` : undefined}
+          />
+            
+            <div className="search-modal__input-return" aria-hidden="true">
+              RETURN
             </div>
+
+            {/* 清空按钮 */}
+            {query && (
+              <button 
+                className="search-modal__clear-button"
+                onClick={() => {
+                  setQuery('');
+                  inputRef.current?.focus();
+                }}
+                aria-label="清空搜索内容"
+              >
+                <Icon name="ds-icon-close" size={16} />
+              </button>
+            )}
           </div>
 
           {/* 结果区 */}
-          <div className="search-modal__results">
-            {displayedItems.length === 0 ? (
+          <div className="search-modal__results" id="search-results-list" role="listbox">
+            {isLoading ? (
+              // 加载状态：骨架屏占位
+              <div className="search-modal__loading">
+                {[1, 2, 3].map(i => (
+                  <div key={i} className="search-modal__skeleton-item">
+                    <div className="search-modal__skeleton-icon" />
+                    <div className="search-modal__skeleton-content">
+                      <div className="search-modal__skeleton-title" />
+                      <div className="search-modal__skeleton-desc" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : displayedItems.length === 0 ? (
+              // 空状态
               <div className="search-modal__empty">
                 <div className="search-modal__empty-icon">
-                  <Icon name="ds-icon-search-01" size={24} />
+                  <Icon name="ds-icon-search-01" size={32} />
                 </div>
-                <div className="search-modal__empty-text">未找到匹配结果</div>
+                <div className="search-modal__empty-text">
+                  <p className="search-modal__empty-main">未找到关于 “{query}” 的结果</p>
+                  <p className="search-modal__empty-sub">请尝试更通用的关键词，或检查拼写是否正确。</p>
+                </div>
+              </div>
+            ) : !query.trim() ? (
+              // 默认视图：分组展示
+              <div ref={listRef}>
+                {(() => {
+                  const latestIds = ['button', 'tabs', 'filter', 'badge'];
+                  const latestItems = items.filter(item => latestIds.includes(item.id)).slice(0, 4);
+                  const latestLen = latestItems.length;
+                  const displayRecentItems = recentItems.slice(0, 4);
+                  const recentLen = displayRecentItems.length;
+
+                  return (
+                    <>
+                      {/* 1. 最近更新 */}
+                      {latestLen > 0 && (
+                        <div className="search-modal__section">
+                          <div className="search-modal__section-title">最近更新</div>
+                          <ul className="search-modal__list" role="presentation">
+                            {displayedItems.slice(0, latestLen).map((item, index) => renderItem(item, index))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* 2. 最近访问 */}
+                      {recentLen > 0 && (
+                        <div className="search-modal__section">
+                          <div className="search-modal__section-title">最近访问</div>
+                          <ul className="search-modal__list" role="presentation">
+                            {displayedItems.slice(latestLen, latestLen + recentLen).map((item, index) => renderItem(item, index + latestLen))}
+                          </ul>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             ) : (
               <>
-                {/* 标题 */}
-                {!query.trim() ? (
-                  <div className="search-modal__section-title">推荐</div>
-                ) : (
-                  <div className="search-modal__section-title">
-                    找到 {displayedItems.length} 个结果
-                  </div>
-                )}
+                {/* 搜索结果标题 */}
+                <div className="search-modal__section-title">
+                  {`共找到 ${displayedItems.length} 个结果`}
+                </div>
                 
-                {/* 列表 */}
-                <ul ref={listRef} className="search-modal__list">
-                  {displayedItems.map((item, index) => {
-                    const isSelected = index === selectedIndex;
-                    return (
-                      <li key={item.id} className="search-modal__item">
-                        <button
-                          className={`search-modal__button ${isSelected ? 'search-modal__button--selected' : ''}`}
-                          onClick={() => handleSelect(item)}
-                          onMouseEnter={() => setSelectedIndex(index)}
-                        >
-                          {item.icon && (
-                            <div className="search-modal__item-icon">{item.icon}</div>
-                          )}
-                          <div className="search-modal__item-content">
-                            <div className="search-modal__item-title">
-                              {highlightText(item.title, query)}
-                            </div>
-                            {item.description && (
-                              <div className="search-modal__item-description">
-                                {highlightText(item.description, query)}
-                              </div>
-                            )}
-                          </div>
-                        </button>
-                      </li>
-                    );
-                  })}
+                {/* 搜索结果列表 */}
+                <ul ref={listRef} className="search-modal__list" role="presentation">
+                  {displayedItems.map((item, index) => renderItem(item, index))}
                 </ul>
               </>
             )}
           </div>
+
+          {/* 底部提示 */}
+          <div className="search-modal__footer">
+            <div className="search-modal__help">
+              <div className="search-modal__help-item">
+                <kbd>↑</kbd><kbd>↓</kbd>
+                <span>选择</span>
+              </div>
+              <div className="search-modal__help-item">
+                <kbd>ENTER</kbd>
+                <span>打开</span>
+              </div>
+              <div className="search-modal__help-item">
+                <kbd>ESC</kbd>
+                <span>关闭</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 
   // 使用 Portal 挂载到 document.body
