@@ -65,11 +65,11 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
     return () => window.removeEventListener('keydown', handleEscape);
   }, [mobileOpen]);
 
-  // 检测是否为移动端（使用与 CSS 一致的断点 1024px）
+  // 检测是否为移动端（使用与 CSS 一致的断点 768px）
   // 使用 matchMedia 确保稳定判断，避免 resize 时频繁触发
   useEffect(() => {
     // 使用 matchMedia 进行稳定判断
-    const mediaQuery = window.matchMedia('(max-width: 1023px)');
+    const mediaQuery = window.matchMedia('(max-width: 767px)');
     
     const checkMobile = () => {
       const mobile = mediaQuery.matches;
