@@ -56,7 +56,8 @@ export default function SearchModal({
   const [recentItems, setRecentItems] = useState<SearchItem[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
-  const listRef = useRef<HTMLUListElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const resultsListRef = useRef<HTMLUListElement>(null);
   const [mounted, setMounted] = useState(false);
   const previousBodyOverflowRef = useRef<string>('');
   const previousBodyPaddingRightRef = useRef<string>('');
@@ -422,7 +423,7 @@ export default function SearchModal({
                 </div>
                 
                 {/* 搜索结果列表 */}
-                <ul ref={listRef} className="search-modal__list" role="presentation">
+                <ul ref={resultsListRef} className="search-modal__list" role="presentation">
                   {displayedItems.map((item, index) => renderItem(item, index))}
                 </ul>
               </>
