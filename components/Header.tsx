@@ -13,6 +13,7 @@ import { DocPage } from '../data/docs';
 
 interface HeaderProps {
   onToggleSidebar: () => void;
+  isOpen?: boolean;
   docs?: DocPage[];
   onSearchSelect?: (pageId: string) => void;
   isOverview?: boolean;
@@ -20,6 +21,7 @@ interface HeaderProps {
 
 export default function Header({ 
   onToggleSidebar, 
+  isOpen = false,
   docs = [], 
   onSearchSelect,
   isOverview = false 
@@ -321,11 +323,9 @@ export default function Header({
       ref={headerRef}
     >
       <div className="header__brand">
-        <button className="header__menu" onClick={onToggleSidebar} aria-label="Toggle sidebar">
-          ☰
-        </button>
         <BrandLogo />
       </div>
+      <div style={{ flex: 1 }} />
       <div className={`header__search ${!isSearchExpanded ? 'header__search--collapsed' : 'header__search--expanded'}`} ref={searchRef}>
         {isSearchExpanded ? (
           <>
@@ -369,7 +369,6 @@ export default function Header({
           >
             <Icon 
               name="ds-icon-search-01" 
-              title="搜索"
               size={20}
               className="header__action-icon leading-none"
             />
@@ -378,10 +377,13 @@ export default function Header({
         <button onClick={toggle} aria-label="切换主题模式" title="主题">
           <Icon 
             name="ds-icon-sun-01" 
-            title="Theme"
             size={20}
             className="header__action-icon leading-none"
           />
+        </button>
+        {/* 小屏下的菜单入口移动到最右侧 */}
+        <button className="header__menu" onClick={onToggleSidebar} aria-label={isOpen ? "Close menu" : "Open menu"}>
+          {isOpen ? '✕' : '☰'}
         </button>
       </div>
     </header>

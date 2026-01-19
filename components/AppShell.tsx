@@ -96,10 +96,10 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
     return () => window.removeEventListener('keydown', handleEscape);
   }, [mobileOpen]);
 
-  // 检测是否为移动端（使用与 CSS 一致的断点 768px）
+  // 检测是否为移动端（使用断点 768px）
   // 使用 matchMedia 确保稳定判断，避免 resize 时频繁触发
   useEffect(() => {
-    // 使用 matchMedia 进行稳定判断
+    // 使用 matchMedia 进行稳定判断，匹配标准移动端断点
     const mediaQuery = window.matchMedia('(max-width: 767px)');
     
     const checkMobile = () => {
@@ -114,13 +114,12 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
         // 从小屏变为大屏，关闭 drawer
         setMobileOpen(false);
       }
-      // 注意：从大屏变为小屏时，不自动关闭 drawer，让用户保持当前状态
     };
 
     // 初始检查
     checkMobile();
     
-    // 使用 matchMedia 的 change 事件，比 resize 更稳定
+    // 使用 matchMedia 的 change 事件
     mediaQuery.addEventListener('change', checkMobile);
     return () => mediaQuery.removeEventListener('change', checkMobile);
   }, [isMobile, mobileOpen]);
@@ -211,6 +210,7 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
     <div className="app-shell" suppressHydrationWarning>
       <Header 
         onToggleSidebar={() => setMobileOpen(v => !v)} 
+        isOpen={mobileOpen}
         docs={docs}
         onSearchSelect={handleSearchSelect}
         isOverview={activeToken === 'overview'}

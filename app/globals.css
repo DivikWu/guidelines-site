@@ -205,37 +205,8 @@ body {
 /* 移除此前不稳定的 padding 切换逻辑 */
 /* html[data-search-hidden="true"] .app-body 相关的 padding-left 已删除 */
 
-/* 小屏遮罩层 */
-.drawer-overlay {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--yami-color-overlay-light, rgba(0, 0, 0, 0.45));
-  z-index: var(--yami-z-index-modal-backdrop, 1040);
-  opacity: 0;
-  transition: opacity var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out);
-  pointer-events: none; /* 默认不阻挡点击 */
-}
-
-[data-theme='dark'] .drawer-overlay {
-  background: var(--yami-color-overlay-dark, rgba(0, 0, 0, 0.65));
-}
-
-.drawer-overlay.active {
-  display: block;
-  opacity: 1;
-  pointer-events: auto; /* 激活时才阻挡点击 */
-}
-
-/* Desktop (≥768px) - 遮罩层始终隐藏 */
+/* Desktop (≥768px) - 搜索框逻辑 */
 @media (min-width: 768px) {
-  .drawer-overlay {
-    display: none !important;
-  }
-
   /* 大屏时展开的搜索框样式 */
   .header__search--expanded {
     position: absolute;
@@ -270,22 +241,9 @@ body {
   width: 56px;
   z-index: 20;
   box-shadow: none;
-  transition: width var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out),
-              box-shadow var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out),
-              align-items var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out);
 }
 
-/* 移除此前不稳定的 JS 控制逻辑，统一使用 CSS Sticky 结合 Inner Container 占位 */
-/* html[data-search-hidden="true"] .icon-nav 已删除 */
-
-/* 展开状态：扩展宽度以容纳标签，覆盖在内容上方 */
-.icon-nav:hover {
-  width: 240px;
-  box-shadow: var(--shadow-2);
-  z-index: 100; /* 提高 z-index 确保覆盖在其他内容之上 */
-  align-items: flex-start;
-}
-
+/* 移除展开状态，保持窄宽度 */
 .icon-nav__item {
   display: flex;
   align-items: center;
@@ -301,7 +259,7 @@ body {
   border-radius: var(--radius-full, var(--radius-full));
   cursor: pointer;
   color: #000000;
-  transition: background-color 0.2s, width 0.2s, padding 0.2s, gap 0.2s, justify-content 0.2s, color 0.2s;
+  transition: background-color 0.2s, color 0.2s;
   position: relative;
   white-space: nowrap;
   flex-shrink: 0;
@@ -350,21 +308,6 @@ body {
   outline-color: var(--state-focus, rgba(255, 255, 255, 0.24));
 }
 
-/* 展开状态（hover）：图标和文本左对齐 */
-.icon-nav:hover .icon-nav__item {
-  width: 100%;
-  min-width: auto;
-  padding: 8px 8px;
-  justify-content: flex-start;
-  gap: 8px;
-  border-radius: var(--radius-full, var(--radius-full));
-}
-
-/* 展开状态：hover 时也保持左对齐 */
-.icon-nav:hover .icon-nav__item:hover {
-  justify-content: flex-start;
-}
-
 .icon-nav__icon {
   display: flex;
   align-items: center;
@@ -395,35 +338,6 @@ body {
   display: block;
 }
 
-.icon-nav__label {
-  font-family: var(--body-m-font-family, var(--font-family-brand));
-  font-weight: var(--body-m-font-weight, var(--fw-regular));
-  font-size: var(--body-m-size, 14px);
-  line-height: var(--body-m-line-height, 20px);
-  color: var(--foreground-primary, var(--color-text-primary));
-  opacity: 0;
-  visibility: hidden;
-  white-space: nowrap;
-  transition: opacity var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out),
-              visibility var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out);
-  overflow: hidden;
-  position: static;
-  display: inline-block;
-  padding: 0;
-  background: transparent;
-  box-shadow: none;
-  border: none;
-  border-radius: 0;
-  z-index: auto;
-}
-
-/* 展开状态：显示标签，与图标在同一行左对齐 */
-.icon-nav:hover .icon-nav__label {
-  opacity: 1;
-  visibility: visible;
-  position: static;
-}
-
 /* Token Navigation (中间文本导航) */
 .token-nav {
   width: 240px;
@@ -442,351 +356,30 @@ body {
 /* 移除此前不稳定的 JS 控制逻辑 */
 /* html[data-search-hidden="true"] .token-nav 已删除 */
 
-/* 小屏（<768px）下默认隐藏 IconNav 和 TokenNav，避免占位 */
-@media (max-width: 767px) {
+/* 小屏（<1024px）下隐藏侧栏逻辑 */
+@media (max-width: 1023px) {
   .app-body {
-    padding-left: 0 !important; /* 移除左侧间距，内容区占满宽度 */
+    padding-left: 0 !important;
   }
   
-  .icon-nav {
-    display: none !important; /* 小屏下完全隐藏，使用 NavDrawer 替代 */
-  }
-  
-  .token-nav {
-    display: none !important; /* 小屏下完全隐藏，使用 NavDrawer 替代 */
+  .icon-nav, .token-nav, .app-nav-side {
+    display: none !important;
   }
   
   .content {
     width: 100% !important;
     margin-left: 0 !important;
   }
+
+  /* 当 Drawer 打开时，隐藏主内容区以防干扰 */
+  body:has(.nav-drawer-panel.open) .app-body {
+    display: none;
+  }
 }
 
-/* NavDrawer - 小屏单列导航抽屉 */
+/* NavDrawer 遮罩层逻辑已移至组件内部或由 fullscreen 处理 */
 .nav-drawer-overlay {
   display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--yami-color-overlay-light, rgba(0, 0, 0, 0.45));
-  z-index: calc(var(--yami-z-index-modal-backdrop, 1040) + 5); /* 在 header 之下，but 足够高 */
-  opacity: 0;
-  transition: opacity var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out);
-  pointer-events: none;
-}
-
-[data-theme='dark'] .nav-drawer-overlay {
-  background: var(--yami-color-overlay-dark, rgba(0, 0, 0, 0.65));
-}
-
-.nav-drawer-overlay.active {
-  display: block;
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.nav-drawer-panel {
-  position: fixed;
-  left: 0;
-  top: var(--header-height);
-  width: min(440px, 90vw); /* 减少宽度：左列200px + 右列240px */
-  max-width: 440px;
-  height: calc(100vh - var(--header-height));
-  background: var(--background-primary, var(--color-surface));
-  box-shadow: var(--shadow-2);
-  z-index: calc(var(--yami-z-index-modal, 1050) + 10); /* 确保在 header 之上 */
-  display: flex;
-  flex-direction: column;
-  transform: translateX(-100%);
-  transition: transform var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out);
-  overflow: hidden;
-  pointer-events: auto; /* 确保 panel 内可点击 */
-}
-
-.nav-drawer-panel.open {
-  transform: translateX(0);
-}
-
-/* 左右两列容器 */
-.nav-drawer__container {
-  display: flex;
-  flex-direction: row;
-  height: 100%;
-  overflow: hidden;
-}
-
-/* 左列：一级导航 */
-.nav-drawer__primary {
-  flex: 0 0 clamp(140px, 35vw, 200px); /* 固定宽度，响应式 */
-  min-width: 140px;
-  max-width: 200px;
-  display: flex;
-  flex-direction: column;
-  border-right: 1px solid var(--divider-section, var(--divider-normal, var(--border-subtle, var(--color-border))));
-  background: var(--background-primary, var(--color-surface));
-  overflow: hidden;
-}
-
-/* Section 切换区域（左列内） */
-.nav-drawer__sections {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-050, 4px);
-  padding: var(--spacing-100, 8px);
-  overflow-y: auto;
-  overflow-x: hidden;
-  flex: 1;
-}
-
-.nav-drawer__section-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-100, 8px);
-  padding: var(--spacing-100, 8px) var(--spacing-150, 12px);
-  border: none;
-  background: transparent;
-  border-radius: var(--radius-full, var(--radius-full));
-  cursor: pointer;
-  color: var(--foreground-secondary, var(--color-text-secondary));
-  font-family: var(--body-m-font-family, var(--font-family-brand));
-  font-size: var(--body-m-size, 14px);
-  font-weight: var(--body-m-font-weight, var(--fw-regular));
-  line-height: var(--body-m-line-height, 20px);
-  text-align: left;
-  transition: background-color 0.2s, color 0.2s;
-  width: 100%; /* 左列内占满宽度 */
-  justify-content: flex-start;
-  position: relative;
-}
-
-/* Default 态 */
-.nav-drawer__section-item:not(.active) {
-  background: transparent;
-  color: var(--foreground-secondary, var(--color-text-secondary));
-}
-
-/* Hover 态 */
-.nav-drawer__section-item:hover:not(.active) {
-  background: var(--state-hover);
-  color: var(--foreground-secondary, var(--color-text-secondary));
-}
-
-/* Selected 态 */
-.nav-drawer__section-item.active {
-  background: var(--state-selected);
-  color: var(--foreground-primary, var(--color-text-primary));
-  font-weight: var(--fw-medium);
-}
-
-/* Pressed 态 */
-.nav-drawer__section-item:active {
-  background: var(--state-pressed);
-}
-
-/* Focus 态 */
-.nav-drawer__section-item:focus-visible {
-  outline: 2px solid var(--state-focus);
-  outline-offset: 2px;
-}
-
-[data-theme='dark'] .nav-drawer__section-item:focus-visible {
-  outline-color: var(--state-focus, rgba(255, 255, 255, 0.24));
-}
-
-/* 右列：二级导航 */
-.nav-drawer__secondary {
-  flex: 1 1 auto; /* 自适应占满剩余宽度 */
-  min-width: 0; /* 防止 flex 子项溢出 */
-  max-width: 240px; /* 限制二级导航最大宽度 */
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background: var(--background-primary, var(--color-surface));
-}
-
-.nav-drawer__header {
-  border-bottom: 1px solid var(--divider-section, var(--divider-normal, var(--border-subtle, var(--color-border))));
-  padding: var(--spacing-100, 8px) var(--spacing-150, 12px);
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.nav-drawer__title {
-  font-family: var(--heading-s-font-family, var(--font-family-brand));
-  font-weight: var(--heading-s-weight, var(--fw-medium));
-  font-size: var(--heading-s-size, 16px);
-  line-height: var(--heading-s-line-height, 20px);
-  color: var(--foreground-primary, var(--color-text-primary));
-  margin: 0;
-  text-align: left;
-}
-
-.nav-drawer__list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-050, 4px);
-  padding: var(--spacing-100, 8px);
-  overflow-y: auto;
-  flex: 1;
-}
-
-.nav-drawer__item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-100, 8px);
-  height: 36px;
-  padding: var(--spacing-100, 8px) var(--spacing-150, 12px);
-  border: none;
-  background: transparent;
-  border-radius: var(--radius-full, var(--radius-full));
-  cursor: pointer;
-  color: var(--foreground-secondary, var(--color-text-secondary));
-  font-family: var(--body-m-font-family, var(--font-family-brand));
-  font-weight: var(--body-m-font-weight, var(--fw-regular));
-  font-size: var(--body-m-size, 14px);
-  line-height: var(--body-m-line-height, 20px);
-  text-align: left;
-  transition: background-color 0.2s, color 0.2s;
-  position: relative;
-}
-
-/* Default 态：二级导航默认降低权重 */
-.nav-drawer__item:not(.active) {
-  background: transparent;
-  color: var(--foreground-secondary, var(--color-text-secondary));
-}
-
-/* Hover 态 */
-.nav-drawer__item:hover:not(.active) {
-  background: var(--state-hover);
-  color: var(--foreground-secondary, var(--color-text-secondary));
-}
-
-/* Selected 态：提升权重 */
-.nav-drawer__item.active {
-  background: var(--state-selected);
-  color: var(--foreground-primary, var(--color-text-primary));
-  font-weight: var(--fw-medium);
-}
-
-/* Pressed 态 */
-.nav-drawer__item:active {
-  background: var(--state-pressed);
-}
-
-/* Focus 态 */
-.nav-drawer__item:focus-visible {
-  outline: 2px solid var(--state-focus);
-  outline-offset: 2px;
-}
-
-[data-theme='dark'] .nav-drawer__item:focus-visible {
-  outline-color: var(--state-focus, rgba(255, 255, 255, 0.24));
-}
-
-.nav-drawer__item-icon {
-  font-size: 16px;
-  line-height: 1;
-  flex-shrink: 0;
-  color: inherit; /* 继承父元素的 icon color */
-}
-
-.nav-drawer__item.active .nav-drawer__item-icon {
-  color: var(--icon-primary, var(--foreground-primary, var(--color-text-primary)));
-}
-
-.nav-drawer__item:not(.active) .nav-drawer__item-icon {
-  color: var(--icon-secondary, var(--foreground-secondary, var(--color-text-secondary)));
-}
-
-.nav-drawer__item-label {
-  flex: 1;
-}
-
-.nav-drawer__empty {
-  padding: var(--spacing-300, 24px);
-  text-align: center;
-}
-
-.nav-drawer__empty-text {
-  color: var(--text-secondary, var(--foreground-secondary, var(--color-text-secondary)));
-  font-size: var(--body-m-size, 14px);
-  margin: 0;
-}
-
-/* 小屏下显示 NavDrawer */
-@media (max-width: 767px) {
-  .nav-drawer-overlay.active {
-    display: block;
-  }
-  
-  .nav-drawer-panel.open {
-    transform: translateX(0);
-    display: flex; /* 确保打开时显示 */
-  }
-  
-  /* 小屏幕下固定左列宽度为 200px */
-  .nav-drawer__primary {
-    flex: 0 0 200px;
-    min-width: 200px;
-    max-width: 200px;
-    width: 200px;
-  }
-}
-
-/* 窄屏降级：< 360px 时改为上下布局 */
-@media (max-width: 359px) {
-  .nav-drawer-panel {
-    width: min(320px, 95vw);
-    max-width: 320px;
-  }
-  
-  .nav-drawer__container {
-    flex-direction: column; /* 改为上下布局 */
-  }
-  
-  .nav-drawer__primary {
-    flex: 0 0 auto; /* 取消固定宽度 */
-    min-width: 0;
-    max-width: none;
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid var(--divider-section, var(--divider-normal, var(--border-subtle, var(--color-border))));
-    max-height: 40vh; /* 限制左列最大高度 */
-  }
-  
-  .nav-drawer__sections {
-    flex-direction: row; /* 一级导航改为横向滚动 */
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding: var(--spacing-050, 4px) var(--spacing-100, 8px);
-    gap: var(--spacing-050, 4px);
-  }
-  
-  .nav-drawer__section-item {
-    flex-shrink: 0; /* 防止按钮压缩 */
-    white-space: nowrap;
-  }
-  
-  .nav-drawer__secondary {
-    flex: 1 1 auto;
-    min-height: 0;
-  }
-}
-
-/* 桌面端隐藏 NavDrawer */
-@media (min-width: 768px) {
-  .nav-drawer-overlay {
-    display: none !important;
-  }
-  
-  .nav-drawer-panel {
-    display: none !important;
-  }
 }
 
 .token-nav__header {
@@ -912,15 +505,15 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  z-index: calc(var(--yami-z-index-modal, 1050) + 20); /* 确保 header 始终在最上层，hamburger 可点击 */
+  z-index: 1070; /* Ensure header is on top */
   height: var(--header-height);
   display: flex;
   align-items: center;
-  padding: 8px;
+  padding: 0 16px;
   background: var(--background-primary, var(--color-surface));
   border-bottom: 1px solid var(--divider-section, var(--divider-normal, var(--border-subtle, var(--color-border))));
   box-shadow: none;
-  gap: var(--space-300, var(--spacing-300));
+  gap: var(--spacing-200, 16px);
   transition: box-shadow var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out);
 }
 
@@ -933,7 +526,7 @@ body {
   gap: var(--spacing-100);
   font-weight: var(--fw-medium);
   color: var(--color-brand);
-  width: 100%;
+  width: auto;
   max-width: 200px;
 }
 .header__brand svg {
@@ -1096,7 +689,7 @@ body {
 }
 
 /* 大屏幕下搜索结果居中 */
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .header__search--expanded .search-results {
     left: 50%;
     transform: translateX(-50%);
@@ -1196,8 +789,9 @@ body {
 .header__actions { 
   display: flex; 
   justify-content: flex-end; 
-  gap: var(--space-050, var(--spacing-050));
-  width: 100%;
+  gap: var(--spacing-100, 8px);
+  width: auto; /* Changed from 100% to auto to prevent pushing logo */
+  flex-shrink: 0;
 }
 
 .header__actions button {
@@ -1669,16 +1263,32 @@ body {
   pointer-events: none;
 }
 
-/* Mobile (< 768px) - Drawer Overlay 模式 */
+/* Mobile (< 768px) - 全屏导航 Drawer 模式 */
 @media (max-width: 767px) {
   .header { 
     padding: 8px;
-    z-index: var(--yami-z-index-modal, 1050); /* Header 在 drawer 之上，确保按钮可点击 */
+    z-index: 1070; /* 必须高于 Drawer (1060) */
   }
+  
   .header__menu { 
     display: inline-flex;
-    z-index: calc(var(--yami-z-index-modal, 1050) + 1); /* 按钮在 header 之上 */
     position: relative;
+    z-index: 1071;
+    width: 40px;
+    height: 40px;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    border-radius: var(--radius-full);
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--foreground-primary);
+  }
+
+  .header__menu:active {
+    background: var(--state-pressed);
   }
 
   /* 小屏时展开的搜索框样式调整 */
@@ -1686,7 +1296,7 @@ body {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    width: calc(100% - 200px); /* 减去品牌区和操作区的宽度 */
+    width: calc(100% - 160px); 
     max-width: 400px;
   }
 
@@ -1698,95 +1308,20 @@ body {
   
   /* 移除左侧间距，内容区占满宽度 */
   .app-body {
-    padding-left: 0;
+    padding-left: 0 !important;
   }
 
-  /* 遮罩层在小屏下可用 */
-  .drawer-overlay {
-    display: block;
+  /* 隐藏所有桌面侧栏 */
+  .icon-nav, .token-nav, .app-nav-side {
+    display: none !important;
   }
 
-  /* IconNav 改为 drawer overlay - 默认隐藏且不占位 */
-  .icon-nav {
-    position: fixed !important; /* 强制 fixed，覆盖 desktop 样式 */
-    left: 0;
-    top: var(--header-height);
-    width: 240px;
-    height: calc(100vh - var(--header-height));
-    transform: translateX(-100%); /* 默认隐藏 */
-    transition: transform var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out);
-    box-shadow: var(--shadow-2);
-    z-index: calc(var(--yami-z-index-modal-backdrop, 1040) + 1); /* 在 overlay 之上，header 之下 */
-    background: var(--background-primary, var(--color-surface));
-    border-right: 1px solid var(--divider-section, var(--divider-normal, var(--border-subtle, var(--color-border))));
-    align-items: flex-start;
-    overflow-y: auto;
-    /* 确保不占位 */
-    margin: 0;
-    padding: var(--space-100, var(--spacing-100));
-    display: flex !important; /* 确保显示 */
+  /* 当 Drawer 打开时，锁定内容区不可见且不可交互 */
+  body:has(.nav-drawer-panel.open) .app-body {
+    visibility: hidden;
+    pointer-events: none;
   }
 
-  .icon-nav:not(.open) {
-    /* 未打开时保持隐藏，但不使用 display: none，以便动画 */
-    transform: translateX(-100%);
-  }
-
-  .icon-nav.open {
-    transform: translateX(0); /* 打开时显示 */
-  }
-
-  /* 小屏时 IconNav 始终显示标签 */
-  .icon-nav .icon-nav__item {
-    width: 100%;
-    min-width: auto;
-    padding: 8px 8px;
-    justify-content: flex-start;
-    gap: 8px;
-  }
-
-  .icon-nav .icon-nav__label {
-    opacity: 1;
-    visibility: visible;
-    position: static;
-  }
-
-  /* 禁用 hover 效果 */
-  .icon-nav:hover {
-    width: 240px;
-    transform: translateX(-100%); /* hover 时仍保持隐藏状态 */
-  }
-
-  /* TokenNav 改为 drawer overlay - 默认隐藏且不占位 */
-  .token-nav {
-    position: fixed !important; /* 强制 fixed，覆盖 desktop 的 sticky */
-    left: 240px; /* 位于 IconNav 右侧 */
-    top: var(--header-height);
-    width: 240px;
-    min-width: 0 !important; /* 移除 min-width，避免占位 */
-    height: calc(100vh - var(--header-height));
-    transform: translateX(-100%); /* 默认隐藏 */
-    transition: transform var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out);
-    box-shadow: var(--shadow-2);
-    z-index: calc(var(--yami-z-index-modal-backdrop, 1040) + 1); /* 在 overlay 之上，header 之下 */
-    background: var(--background-primary, var(--color-surface));
-    border-right: 1px solid var(--divider-section, var(--divider-normal, var(--border-subtle, var(--color-border))));
-    overflow-y: auto;
-    /* 确保不占位 */
-    margin: 0;
-    display: flex !important; /* 确保显示，但通过 transform 隐藏 */
-  }
-
-  .token-nav:not(.open) {
-    /* 未打开时保持隐藏，不占位 */
-    transform: translateX(-100%);
-  }
-
-  .token-nav.open {
-    transform: translateX(0); /* 打开时显示 */
-  }
-
-  /* 内容区占满宽度，移除所有左侧间距 */
   .content {
     width: 100% !important;
     margin-left: 0 !important;
