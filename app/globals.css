@@ -576,7 +576,7 @@ body {
 }
 
 .header__actions .header__search-icon-button:active {
-  background: var(--state-pressed) !important;
+  background: transparent !important;
 }
 
 .header__actions .header__search-icon-button:focus-visible {
@@ -806,7 +806,7 @@ body {
 
 /* Pressed 态 */
 .header__actions button:active {
-  background: var(--state-pressed) !important;
+  background: transparent !important;
 }
 
 /* Focus 态（键盘可达） */
@@ -1273,7 +1273,7 @@ body {
   }
 
   .header__menu:active {
-    background: var(--state-pressed);
+    background: transparent;
   }
 
   /* 小屏时展开的搜索框样式调整 */
@@ -1886,7 +1886,10 @@ html[data-search-open="true"] .header .header__search input:focus {
 /* 全宽模块：外层 100% width，内层 container 与页面内容对齐 */
 .search-bar {
   width: 100%;
+  min-height: 200px;
   background-color: var(--background-primary, var(--color-surface));
+  display: flex;
+  align-items: center;
   border: 1px solid var(--divider-section, var(--divider-normal, var(--border-subtle, var(--color-border))));
   border-bottom-color: var(--divider-section, var(--divider-normal, var(--border-subtle, var(--color-border))));
   border-image: none;
@@ -1903,7 +1906,7 @@ html[data-search-open="true"] .header .header__search input:focus {
   width: 100%;
   max-width: 1920px;
   padding: 0 var(--spacing-200);
-  margin: var(--spacing-300) auto;
+  margin: 0 auto;
   text-align: center;
 }
 
@@ -2119,6 +2122,9 @@ html[data-search-open="true"] .header .header__search input:focus {
   
   .search-bar__title {
     font-size: 32px;
+    line-height: 40px;
+    font-weight: 600;
+    height: 40px;
   }
   
   .search-bar__input {
