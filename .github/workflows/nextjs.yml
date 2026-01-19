@@ -43,6 +43,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
   
+      - name: Validate next.config.mjs
+        run: node --check next.config.mjs
+
       - name: Build with Next.js
         # 使用 npm run build，确保执行字体 / asset 修复脚本
         # 设置 GITHUB_PAGES 环境变量以启用 basePath
