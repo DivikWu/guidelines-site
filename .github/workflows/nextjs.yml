@@ -41,8 +41,10 @@ jobs:
         with:
           static_site_generator: next
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
   
+      - name: Show next.config.mjs (first 40 lines)
+        run: sed -n '1,40p' next.config.mjs
       - name: Validate next.config.mjs
         run: node --check next.config.mjs
 
