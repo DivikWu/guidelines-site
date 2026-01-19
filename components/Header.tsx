@@ -17,6 +17,7 @@ interface HeaderProps {
   docs?: DocPage[];
   onSearchSelect?: (pageId: string) => void;
   isOverview?: boolean;
+  showMenuButton?: boolean;
 }
 
 export default function Header({ 
@@ -24,7 +25,8 @@ export default function Header({
   isOpen = false,
   docs = [], 
   onSearchSelect,
-  isOverview = false 
+  isOverview = false,
+  showMenuButton = false
 }: HeaderProps) {
   // #region agent log
   const isServer = typeof window === 'undefined';
@@ -65,7 +67,6 @@ export default function Header({
   const [isScrolled, setIsScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-  const [isSmallScreen, setIsSmallScreen] = useState(false);
   const { openSearch } = useSearch();
   // #region agent log
   fetch('http://127.0.0.1:7243/ingest/bec5ef14-f4e7-4569-92de-812c24e45b28',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Header.tsx:35',message:'State initialization',data:{searchQuery,showResults,selectedIndex,isScrolled,mounted,isServer},timestamp:Date.now(),sessionId:'debug-session',runId:'hydrate-debug',hypothesisId:'H4'})}).catch(()=>{});
@@ -85,7 +86,6 @@ export default function Header({
 
     const mediaQuery = window.matchMedia('(max-width: 767px)');
     const handleMediaChange = (e: MediaQueryListEvent | MediaQueryList) => {
-      setIsSmallScreen(e.matches);
       // 切换屏幕尺寸时，收起搜索框以保持一致性
       setIsSearchExpanded(false);
       setShowResults(false);
@@ -359,6 +359,13 @@ export default function Header({
         )}
       </div>
       <div className="header__actions">
+        <button onClick={toggle} aria-label="切换主题模式" title="主题">
+          <Icon 
+            name="ds-icon-sun-01" 
+            size={20}
+            className="header__action-icon leading-none"
+          />
+        </button>
         {showSearchIcon && (
           <button 
             ref={searchTriggerRef}
@@ -374,17 +381,16 @@ export default function Header({
             />
           </button>
         )}
-        <button onClick={toggle} aria-label="切换主题模式" title="主题">
-          <Icon 
-            name="ds-icon-sun-01" 
-            size={20}
-            className="header__action-icon leading-none"
-          />
-        </button>
-        {/* 小屏下的菜单入口移动到最右侧 */}
-        <button className="header__menu" onClick={onToggleSidebar} aria-label={isOpen ? "Close menu" : "Open menu"}>
-          {isOpen ? '✕' : '☰'}
-        </button>
+        {/* 仅在移动端且当前页面没有 Tab 切换栏时显示菜单入口 */}
+        {showMenuButton && (
+          <button className="header__menu" onClick={onToggleSidebar} aria-label={isOpen ? "Close menu" : "Open menu"}>
+            {isOpen ? (
+              <Icon name="ds-icon-cancel-01" size={20} className="header__action-icon leading-none" />
+            ) : (
+              <Icon name="ds-icon-menu-01" size={20} className="header__action-icon leading-none" />
+            )}
+          </button>
+        )}
       </div>
     </header>
   );

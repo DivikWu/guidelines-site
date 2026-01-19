@@ -246,7 +246,7 @@ export default function SearchModal({
         >
           <div className="search-modal__item-icon">
             <Icon 
-              name={item.type === 'component' ? 'ds-icon-box' : item.type === 'resource' ? 'ds-icon-file' : 'ds-icon-file-text'} 
+              name={item.type === 'component' ? 'ds-icon-dashboard-circle' : item.type === 'resource' ? 'ds-icon-check-list' : 'ds-icon-book-02'} 
               size={20} 
             />
           </div>
@@ -264,7 +264,7 @@ export default function SearchModal({
             )}
           </div>
           <div className="search-modal__item-enter" aria-hidden="true">
-            <Icon name="ds-icon-arrow-right" size={16} />
+            <Icon name="ds-icon-arrow-right-01" size={16} />
           </div>
         </button>
       </li>
@@ -349,7 +349,7 @@ export default function SearchModal({
                 }}
                 aria-label="清空搜索内容"
               >
-                <Icon name="ds-icon-close" size={16} />
+                <Icon name="ds-icon-cancel-01" size={16} />
               </button>
             )}
           </div>
@@ -382,7 +382,7 @@ export default function SearchModal({
               </div>
             ) : !query.trim() ? (
               // 默认视图：分组展示
-              <div ref={listRef}>
+              <div ref={listRef} style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '8px' }}>
                 {(() => {
                   const latestIds = ['button', 'tabs', 'filter', 'badge'];
                   const latestItems = items.filter(item => latestIds.includes(item.id)).slice(0, 4);

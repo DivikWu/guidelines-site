@@ -18,6 +18,58 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.ds-icon-menu-01:before {
+  content: "\e612";
+}
+
+.ds-icon-ai-chemistry-02:before {
+  content: "\e613";
+}
+
+.ds-icon-ai-innovation-02:before {
+  content: "\e614";
+}
+
+.ds-icon-delete-02:before {
+  content: "\e615";
+}
+
+.ds-icon-panel-left:before {
+  content: "\e616";
+}
+
+.ds-icon-ai-magic:before {
+  content: "\e617";
+}
+
+.ds-icon-entrance-stairs:before {
+  content: "\e618";
+}
+
+.ds-icon-test-tube-01:before {
+  content: "\e619";
+}
+
+.ds-icon-cancel-01:before {
+  content: "\e61a";
+}
+
+.ds-icon-arrow-left-01:before {
+  content: "\e61b";
+}
+
+.ds-icon-arrow-right-01:before {
+  content: "\e61c";
+}
+
+.ds-icon-arrow-up-01:before {
+  content: "\e61d";
+}
+
+.ds-icon-arrow-down-01:before {
+  content: "\e61e";
+}
+
 .ds-icon-clapping-01:before {
   content: "\e601";
 }

@@ -356,27 +356,6 @@ body {
 /* 移除此前不稳定的 JS 控制逻辑 */
 /* html[data-search-hidden="true"] .token-nav 已删除 */
 
-/* 小屏（<1024px）下隐藏侧栏逻辑 */
-@media (max-width: 1023px) {
-  .app-body {
-    padding-left: 0 !important;
-  }
-  
-  .icon-nav, .token-nav, .app-nav-side {
-    display: none !important;
-  }
-  
-  .content {
-    width: 100% !important;
-    margin-left: 0 !important;
-  }
-
-  /* 当 Drawer 打开时，隐藏主内容区以防干扰 */
-  body:has(.nav-drawer-panel.open) .app-body {
-    display: none;
-  }
-}
-
 /* NavDrawer 遮罩层逻辑已移至组件内部或由 fullscreen 处理 */
 .nav-drawer-overlay {
   display: none;
@@ -509,7 +488,7 @@ body {
   height: var(--header-height);
   display: flex;
   align-items: center;
-  padding: 0 16px;
+  padding: 0 8px;
   background: var(--background-primary, var(--color-surface));
   border-bottom: 1px solid var(--divider-section, var(--divider-normal, var(--border-subtle, var(--color-border))));
   box-shadow: none;
@@ -789,7 +768,7 @@ body {
 .header__actions { 
   display: flex; 
   justify-content: flex-end; 
-  gap: var(--spacing-100, 8px);
+  gap: var(--spacing-050, 4px);
   width: auto; /* Changed from 100% to auto to prevent pushing logo */
   flex-shrink: 0;
 }
@@ -1466,7 +1445,11 @@ body {
   line-height: 1.5;
   outline: none;
   padding: 0;
-  caret-color: var(--color-ui-primary, #E00000); /* 光标颜色清晰 */
+  caret-color: #000000;
+}
+
+[data-theme='dark'] .search-modal__input {
+  caret-color: #ffffff;
 }
 
 .search-modal__input::placeholder {
@@ -1738,12 +1721,12 @@ body {
 
 /* 空状态 */
 .search-modal__empty {
-  padding: 64px var(--spacing-400);
+  padding: 32px var(--spacing-400);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: var(--spacing-300);
+  gap: var(--spacing-200);
 }
 
 .search-modal__empty-icon {
@@ -1751,16 +1734,24 @@ body {
   opacity: 0.5;
 }
 
+.search-modal__empty-text {
+  height: fit-content;
+  width: fit-content;
+}
+
 .search-modal__empty-main {
   font-size: 16px;
   font-weight: 600;
   color: var(--foreground-primary, var(--color-text-primary));
-  margin-bottom: 4px;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .search-modal__empty-sub {
   font-size: 12px;
   color: var(--foreground-secondary, var(--color-text-secondary));
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 /* 加载状态骨架屏 */
@@ -1982,7 +1973,7 @@ html[data-search-open="true"] .header .header__search input:focus {
   color: var(--foreground-primary, var(--color-text-primary));
   font-family: inherit;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 20px;
   box-shadow: var(--shadow-2); /* 默认带投影增强深度 */
   transition: background-color 200ms ease-out, border-color 200ms ease-out, color 200ms ease-out;
   will-change: background-color, border-color, color;
@@ -2011,11 +2002,11 @@ html[data-search-open="true"] .header .header__search input:focus {
 
 .search-bar__input:focus {
   outline: none;
-  box-shadow: 0 0 0 4px var(--state-focus), var(--shadow-2);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.04), var(--shadow-2);
 }
 
 [data-theme='dark'] .search-bar__input:focus {
-  box-shadow: 0 0 0 4px var(--state-focus, rgba(255, 255, 255, 0.24)), var(--shadow-2);
+  box-shadow: 0px 0px 0px 2px rgba(255, 255, 255, 0.08), 0px 2px 2px 0px rgba(255, 255, 255, 0.08);
 }
 
 /* 快捷键提示精致化 */

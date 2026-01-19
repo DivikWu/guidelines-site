@@ -214,6 +214,7 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
         docs={docs}
         onSearchSelect={handleSearchSelect}
         isOverview={activeToken === 'overview'}
+        showMenuButton={isMobile}
       />
       
       {/* SearchModal - 全局唯一实例 */}

@@ -91,7 +91,7 @@
     }}
     aria-label="清空搜索内容"
   >
-    <Icon name="ds-icon-close" size={16} />
+    <Icon name="ds-icon-cancel-01" size={16} />
   </button>
 )}
 ```
@@ -182,7 +182,7 @@
           }}
           aria-label="清空搜索内容"
         >
-          <Icon name="ds-icon-close" size={16} />
+          <Icon name="ds-icon-cancel-01" size={16} />
         </button>
       )}
     </div>
