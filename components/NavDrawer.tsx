@@ -130,10 +130,10 @@ export default function NavDrawer({
           flex-direction: column;
           width: 100%;
           height: fit-content;
-          gap: 0px;
+          gap: 8px;
           padding: 0px;
           background: var(--background-primary, var(--color-bg));
-          box-shadow: 0px 1px 2px -1px rgba(0,0,0,0.04);
+          box-shadow: none;
         }
 
         .nav-drawer__section {
@@ -223,12 +223,12 @@ export default function NavDrawer({
 
         .nav-drawer__group-inner {
           border-left: 2px solid var(--divider-normal, var(--border-subtle));
-          padding-left: var(--spacing-050, 4px);
-          padding-top: 0px;
-          padding-bottom: 0px;
+          padding-left: 6px;
+          padding-top: 8px;
+          padding-bottom: 8px;
           display: flex;
           flex-direction: column;
-          gap: var(--spacing-050, 4px);
+          gap: 8px;
         }
 
         /* 二级项（Figma TAB/S 36px） */

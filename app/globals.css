@@ -508,6 +508,12 @@ body {
   width: auto;
   max-width: 200px;
 }
+.brand-logo__img {
+  width: 40px;
+  height: 40px;
+  display: inline-block;
+  object-fit: contain;
+}
 .header__brand svg {
   height: 40px;
   width: auto;
@@ -1284,6 +1290,11 @@ body {
     max-width: 100%;
     box-shadow: var(--shadow-2);
   }
+
+  .brand-logo__img {
+    width: 32px;
+    height: 32px;
+  }
   
   /* 移除左侧间距，内容区占满宽度 */
   .app-body {
@@ -1891,7 +1902,7 @@ html[data-search-open="true"] .header .header__search input:focus {
 .search-bar__container {
   width: 100%;
   max-width: 1920px;
-  padding: 0 var(--spacing-600);
+  padding: 0 var(--spacing-200);
   margin: var(--spacing-300) auto;
   text-align: center;
 }
@@ -1917,10 +1928,12 @@ html[data-search-open="true"] .header .header__search input:focus {
   color: var(--foreground-primary, var(--color-text-primary));
   text-align: center;
   font-family: var(--font-brand, var(--font-body));
-  font-size: 40px;
+  font-size: 32px;
   font-style: normal;
-  font-weight: 700;
-  line-height: 48px; /* 120% */
+  font-weight: 600;
+  line-height: 40px; /* 125% */
+  width: fit-content;
+  height: fit-content;
   margin: 0;
 }
 
@@ -2091,7 +2104,7 @@ html[data-search-open="true"] .header .header__search input:focus {
 /* 响应式优化 */
 @media (max-width: 1024px) {
   .search-bar__title {
-    font-size: 40px;
+    font-size: 32px;
   }
 }
 
@@ -2142,6 +2155,6 @@ html[data-search-open="true"] .header .header__search input:focus {
   }
   
   .search-bar__title {
-    font-size: var(--fs-h2);
+    font-size: 32px;
   }
 }

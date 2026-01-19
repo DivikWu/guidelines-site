@@ -7,16 +7,21 @@ export default function BrandLogo() {
   const logoPath = `${basePath}/images/logo-icon.png`;
   
   return (
-    <div className="brand-logo" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-      <img 
+    <div
+      className="brand-logo"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '4px',
+        paddingLeft: '8px',
+        paddingRight: '8px',
+      }}
+    >
+      <img
+        className="brand-logo__img"
         src={logoPath}
         alt="YAMI Logo"
-        style={{ 
-          width: '40px', 
-          height: '40px',
-          display: 'inline-block',
-          objectFit: 'contain'
-        }}
       />
       <i 
         className="iconfont ds-icon-a-ziyuan1 inline-flex align-middle leading-none" 
