@@ -204,7 +204,7 @@ export default function NavDrawer({
 
         /* 二级分组（缩进 + 左侧竖线），带轻量展开动效 */
         .nav-drawer__group {
-          padding-left: 6px;
+          padding-left: 20px;
           overflow: hidden;
           max-height: 0;
           opacity: 0;
