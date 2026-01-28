@@ -93,11 +93,8 @@ export default function NavDrawer({
                     const newExpanded = expandedSectionId === section.id ? null : section.id;
                     setExpandedSectionId(newExpanded);
                     onCategoryChange(section.id);
-                    // 如果点击的是 section，且该 section 有默认路由，则跳转
-                    const route = getSectionRoute(section.id);
-                    if (route && newExpanded !== null) {
-                      router.push(route);
-                    }
+                    // 移除自动跳转逻辑，只展开/收起二级内容
+                    // 跳转只在点击二级菜单项时发生
                   }}
                 >
                   <Icon

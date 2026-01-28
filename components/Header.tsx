@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
+import { usePathname } from 'next/navigation';
 import { useTokenTheme } from './TokenProvider';
 import BrandLogo from './BrandLogo';
 import Icon from './Icon';
@@ -20,9 +21,10 @@ interface HeaderProps {
   showMenuButton?: boolean;
   showExtraActions?: boolean;
   showSearchSlot?: boolean;
+  onToggleDesktopSidebar?: () => void;
 }
 
-export default function Header({ 
+function Header({ 
   onToggleSidebar, 
   isOpen = false,
   docs = [], 
@@ -30,7 +32,8 @@ export default function Header({
   isOverview = false,
   showMenuButton = false,
   showExtraActions = false,
-  showSearchSlot = false
+  showSearchSlot = false,
+  onToggleDesktopSidebar
 }: HeaderProps) {
   // #region agent log
   const isServer = typeof window === 'undefined';
@@ -64,6 +67,9 @@ export default function Header({
   const searchRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const searchTriggerRef = useRef<HTMLButtonElement>(null);
+  const sidebarButtonWrapperRef = useRef<HTMLDivElement | null>(null);
+  const brandRef = useRef<HTMLDivElement | null>(null);
+  const [shouldRouteAnimate, setShouldRouteAnimate] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [showResults, setShowResults] = useState(false);
@@ -71,6 +77,7 @@ export default function Header({
   const [isScrolled, setIsScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const pathname = usePathname();
   const { openSearch } = useSearch();
   // #region agent log
   fetch('http://127.0.0.1:7243/ingest/bec5ef14-f4e7-4569-92de-812c24e45b28',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Header.tsx:35',message:'State initialization',data:{searchQuery,showResults,selectedIndex,isScrolled,mounted,isServer},timestamp:Date.now(),sessionId:'debug-session',runId:'hydrate-debug',hypothesisId:'H4'})}).catch(()=>{});
@@ -83,6 +90,36 @@ export default function Header({
     // #endregion
     setMounted(true);
   }, []);
+
+  // 检测路由切换：仅在首页↔规范页切换时触发动画
+  // 使用 useLayoutEffect 确保动画类在首帧绘制前生效，避免跳动
+  useLayoutEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const isHome = pathname === '/';
+    const prevPath = window.sessionStorage.getItem('yds-last-path');
+
+    if (prevPath !== null) {
+      const prevIsHome = prevPath === '/';
+      if (prevIsHome !== isHome) {
+        setShouldRouteAnimate(true);
+      }
+    }
+
+    window.sessionStorage.setItem('yds-last-path', pathname);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!shouldRouteAnimate) return;
+    const timer = setTimeout(() => {
+      setShouldRouteAnimate(false);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [shouldRouteAnimate]);
+
+  // 计算按钮和品牌 logo 的类名，直接在 JSX 中使用，避免 SSR/水合时的布局跳动
+  const sidebarButtonWrapperClassName = `header__sidebar-button-wrapper${onToggleDesktopSidebar ? ' header__sidebar-button-wrapper--visible' : ''}${shouldRouteAnimate ? ' header__sidebar-button-wrapper--route-animate' : ''}`;
+  const brandClassName = `header__brand${onToggleDesktopSidebar ? ' header__brand--offset' : ''}`;
 
   // 检测屏幕宽度（断点：768px，与项目其他断点一致）
   useEffect(() => {
@@ -328,7 +365,28 @@ export default function Header({
       className={finalClassName}
       ref={headerRef}
     >
-      <div className="header__brand">
+      <div 
+        ref={sidebarButtonWrapperRef}
+        className={sidebarButtonWrapperClassName}
+      >
+        {onToggleDesktopSidebar && (
+          <button 
+            aria-label="面板" 
+            title="面板"
+            onClick={onToggleDesktopSidebar}
+          >
+            <Icon 
+              name="ds-icon-panel-left1" 
+              size={20}
+              className="header__action-icon leading-none"
+            />
+          </button>
+        )}
+      </div>
+      <div 
+        ref={brandRef}
+        className={brandClassName}
+      >
         <BrandLogo />
       </div>
       <div style={{ flex: 1 }} />
@@ -403,3 +461,5 @@ export default function Header({
     </header>
   );
 }
+
+export default Header;

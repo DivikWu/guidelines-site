@@ -157,7 +157,12 @@ body {
   margin: 0;
   font-family: var(--font-family-brand, var(--font-body)), var(--font-family-cjk), sans-serif;
   font-size: var(--fs-body);
-  background: var(--yami-color-palette-neutral-50);
+  background-color: var(--yami-color-palette-neutral-50);
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.08) 1px, transparent 0);
+  background-repeat: repeat;
+  background-position: center;
+  background-size: 16px 16px;
+  background-attachment: fixed;
   color: var(--foreground-primary, var(--color-text-primary));
   font-weight: var(--yami-typography-font-weight-regular);
   text-align: left;
@@ -172,7 +177,7 @@ body {
 .app-body { 
   display: flex; 
   flex: 1; 
-  background: var(--yami-color-palette-neutral-50);
+  background: transparent;
   position: relative;
   min-height: calc(100vh - var(--header-height)); /* 最小高度，确保占满视口 */
   overflow: hidden; /* 防止整个 body 滚动 */
@@ -186,10 +191,11 @@ body {
 @media (min-width: 768px) {
   .app-nav-side {
     display: flex;
-    width: 312px; /* 72px (icon-nav) + 240px (token-nav) */
+    width: 296px; /* 56px (icon-nav) + 240px (token-nav) */
     flex-shrink: 0;
     position: relative;
     z-index: 100;
+    transition: width 0.3s ease-in-out;
   }
 
   /* 稳定性核心：内部层使用 sticky 粘性定位，外层在文档流中稳定占位 */
@@ -199,11 +205,31 @@ body {
     top: var(--header-height);
     height: calc(100vh - var(--header-height));
     display: flex;
-    width: 312px;
+    width: 296px;
     z-index: 100;
-    transition: none; /* 禁止在临界点产生任何位移过渡 */
+    transition: transform 0.3s ease-in-out;
     overflow-y: auto; /* 侧边栏内部可滚动 */
     overflow-x: hidden;
+  }
+
+  /* 收起状态 */
+  .app-nav-side.collapsed {
+    width: 0;
+  }
+
+  .app-nav-side.collapsed .app-nav-side__inner {
+    transform: translateX(-100%);
+  }
+
+  .app-nav-side.collapsed .icon-nav,
+  .app-nav-side.collapsed .token-nav {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* 收起时内容区域扩展 */
+  .app-body:has(.app-nav-side.collapsed) .content {
+    margin-left: 0;
   }
 }
 
@@ -244,7 +270,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--space-100, var(--spacing-100));
-  padding: var(--space-100, var(--spacing-100)) 16px;
+  padding: var(--space-100, var(--spacing-100)) 8px;
   border-right: 1px solid var(--divider-section, var(--divider-normal, var(--border-subtle, var(--color-border))));
   background: var(--yami-color-palette-neutral-50);
   position: absolute; /* 绝对定位，相对于 app-nav-side__inner */
@@ -349,7 +375,7 @@ body {
 .token-nav {
   width: 240px;
   min-width: 240px;
-  margin-left: 72px; /* 为左侧 IconNav 留出空间 */
+  margin-left: 56px; /* 为左侧 IconNav 留出空间，贴紧 */
   border-right: 1px solid var(--divider-section, var(--divider-normal, var(--border-subtle, var(--color-border))));
   background: var(--yami-color-palette-neutral-50);
   position: relative;
@@ -494,13 +520,88 @@ body {
   background: var(--yami-color-palette-neutral-50);
   border-bottom: 1px solid var(--divider-section, var(--divider-normal, var(--border-subtle, var(--color-border))));
   box-shadow: none;
-  gap: var(--spacing-200, 16px);
+  gap: 0px;
   transition: box-shadow var(--yami-animation-duration-normal, 0.2s) var(--yami-animation-easing-ease-out, ease-out);
 }
 
 .header--scrolled {
   box-shadow: none;
 }
+
+/* 侧边栏按钮占位容器 */
+.header__sidebar-button-wrapper {
+  min-width: 0;
+  width: 0;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* 移动端始终隐藏占位容器 */
+@media (max-width: 767px) {
+  .header__sidebar-button-wrapper {
+    display: none !important;
+  }
+  
+  .header__sidebar-button-wrapper--visible {
+    display: none !important;
+  }
+}
+
+/* 桌面端：当按钮可见时，占据空间 */
+@media (min-width: 768px) {
+  .header__sidebar-button-wrapper--visible {
+    min-width: 40px;
+    width: 40px;
+  }
+
+  /* 路由切换动画：仅在首页↔规范页切换时触发 */
+  .header__sidebar-button-wrapper--route-animate.header__sidebar-button-wrapper--visible {
+    animation: sidebarButtonIn 0.3s ease-out both;
+  }
+
+  .header__sidebar-button-wrapper--route-animate:not(.header__sidebar-button-wrapper--visible) {
+    animation: sidebarButtonOut 0.3s ease-out both;
+  }
+}
+
+@keyframes sidebarButtonIn {
+  from {
+    min-width: 0;
+    width: 0;
+  }
+  to {
+    min-width: 40px;
+    width: 40px;
+  }
+}
+
+@keyframes sidebarButtonOut {
+  from {
+    min-width: 40px;
+    width: 40px;
+  }
+  to {
+    min-width: 0;
+    width: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .header__sidebar-button-wrapper--route-animate {
+    animation: none !important;
+  }
+}
+
+/* 按钮样式 - 无动画，立即显示 */
+.header__sidebar-button-wrapper button {
+  transform: scale(1);
+}
+
+.header__sidebar-button-wrapper--visible button {
+  transform: scale(1);
+}
+
 .header__brand {
   display: flex;
   align-items: center;
@@ -509,6 +610,13 @@ body {
   color: var(--color-brand);
   width: auto;
   max-width: 200px;
+  transform: translateX(0);
+  /* Logo 的移动由 flexbox 布局自然实现，跟随按钮容器的宽度变化 */
+}
+
+/* 当按钮存在时，BrandLogo 不需要额外偏移（占位容器已占据空间） */
+.header__brand--offset {
+  transform: translateX(0);
 }
 .brand-logo {
   text-decoration: none;
@@ -800,6 +908,9 @@ body {
   flex-shrink: 0;
 }
 
+/* Header 内所有按钮的统一样式 */
+.header > button,
+.header__sidebar-button-wrapper button,
 .header__actions button {
   width: 40px;
   height: 40px;
@@ -816,26 +927,36 @@ body {
 }
 
 /* Default 态 */
+.header > button,
+.header__sidebar-button-wrapper button,
 .header__actions button {
   background: transparent;
 }
 
 /* Hover 态：使用透明叠加 */
+.header > button:hover:not(:active),
+.header__sidebar-button-wrapper button:hover:not(:active),
 .header__actions button:hover:not(:active) {
   background: var(--state-hover) !important;
 }
 
 /* Pressed 态 */
+.header > button:active,
+.header__sidebar-button-wrapper button:active,
 .header__actions button:active {
   background: transparent !important;
 }
 
 /* Focus 态（键盘可达） */
+.header > button:focus-visible,
+.header__sidebar-button-wrapper button:focus-visible,
 .header__actions button:focus-visible {
   outline: 2px solid var(--state-focus);
   outline-offset: 2px;
 }
 
+[data-theme='dark'] .header > button:focus-visible,
+[data-theme='dark'] .header__sidebar-button-wrapper button:focus-visible,
 [data-theme='dark'] .header__actions button:focus-visible {
   outline-color: var(--state-focus, rgba(255, 255, 255, 0.24));
 }
@@ -850,6 +971,8 @@ body {
 }
 
 /* Hover 时图标颜色保持不变 */
+.header > button:hover .header__action-icon,
+.header__sidebar-button-wrapper button:hover .header__action-icon,
 .header__actions button:hover .header__action-icon {
   color: var(--foreground-primary);
 }
@@ -858,6 +981,8 @@ body {
   color: var(--foreground-primary);
 }
 
+[data-theme='dark'] .header > button:hover .header__action-icon,
+[data-theme='dark'] .header__sidebar-button-wrapper button:hover .header__action-icon,
 [data-theme='dark'] .header__actions button:hover .header__action-icon {
   color: var(--foreground-primary);
 }
@@ -930,11 +1055,7 @@ body {
   text-align: left;
   overflow-y: auto; /* 主内容区域可滚动 */
   overflow-x: hidden;
-  background-color: var(--yami-color-palette-neutral-50);
-  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.08) 1px, transparent 0);
-  background-repeat: repeat;
-  background-position: center;
-  background-size: 16px 16px;
+  background-color: transparent;
 }
 .doc { 
   scroll-margin-top: calc(var(--header-height) + var(--spacing-200)); 
@@ -1918,21 +2039,29 @@ body {
    ======================================== */
 
 /* 抑制 Header 操作按钮的 hover 态 */
+html[data-search-open="true"] .header > button:hover:not(:active),
+html[data-search-open="true"] .header .header__sidebar-button-wrapper button:hover:not(:active),
 html[data-search-open="true"] .header .header__actions button:hover:not(:active) {
   background: transparent !important;
 }
 
 /* 抑制 Header 操作按钮的 active/pressed 态 */
+html[data-search-open="true"] .header > button:active,
+html[data-search-open="true"] .header .header__sidebar-button-wrapper button:active,
 html[data-search-open="true"] .header .header__actions button:active {
   background: transparent !important;
 }
 
 /* 抑制 Header 操作按钮的 focus-visible 态 */
+html[data-search-open="true"] .header > button:focus-visible,
+html[data-search-open="true"] .header .header__sidebar-button-wrapper button:focus-visible,
 html[data-search-open="true"] .header .header__actions button:focus-visible {
   outline: none !important;
 }
 
 /* 抑制 Header 操作按钮 hover 时图标颜色变化 */
+html[data-search-open="true"] .header > button:hover .header__action-icon,
+html[data-search-open="true"] .header .header__sidebar-button-wrapper button:hover .header__action-icon,
 html[data-search-open="true"] .header .header__actions button:hover .header__action-icon {
   color: var(--icon-secondary, var(--foreground-secondary, var(--color-text-secondary))) !important;
 }
@@ -2239,7 +2368,7 @@ html[data-search-open="true"] .header .header__search input:focus {
 .home-page {
   width: 100%;
   min-height: 100dvh;
-  background-color: var(--yami-color-palette-neutral-50);
+  background-color: transparent;
 }
 
 .page-with-header {
@@ -2252,20 +2381,20 @@ html[data-search-open="true"] .header .header__search input:focus {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: var(--yami-color-palette-neutral-50);
+  background: transparent;
   padding-top: 24px;
   padding-bottom: 24px;
 }
 
 [data-theme='dark'] .home-page__content {
-  background: var(--background-page);
+  background: transparent;
 }
 
 /* Home Hero Section */
 .home-hero {
   width: 100%;
   min-height: calc(var(--yami-spacing-500) * 5);
-  background-color: var(--yami-color-palette-neutral-100);
+  background-color: transparent;
   display: flex;
   align-items: center;
   padding: var(--yami-spacing-400) 0 var(--yami-spacing-500);
@@ -2278,16 +2407,20 @@ html[data-search-open="true"] .header .header__search input:focus {
 }
 
 [data-theme='dark'] body {
-  background: var(--background-page);
+  background-color: var(--background-page);
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 0);
+  background-repeat: repeat;
+  background-position: center;
+  background-size: 16px 16px;
+  background-attachment: fixed;
 }
 
 [data-theme='dark'] .app-body {
-  background: var(--background-page);
+  background: transparent;
 }
 
 [data-theme='dark'] .content {
-  background-color: var(--background-page);
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 0);
+  background-color: transparent;
 }
 
 [data-theme='dark'] .doc {
@@ -2307,11 +2440,11 @@ html[data-search-open="true"] .header .header__search input:focus {
 }
 
 [data-theme='dark'] .home-page__content {
-  background: var(--background-page);
+  background: transparent;
 }
 
 [data-theme='dark'] .home-hero {
-  background-color: var(--background-hero);
+  background-color: transparent;
 }
 
 [data-theme='dark'] .home-footer {
@@ -2334,15 +2467,8 @@ html[data-search-open="true"] .header .header__search input:focus {
 .home-hero__background {
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.08) 1px, transparent 0);
-  background-repeat: repeat;
-  background-position: center;
-  background-size: 16px 16px;
   pointer-events: none;
-}
-
-[data-theme='dark'] .home-hero__background {
-  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 0);
+  /* 点阵背景已移至 body，此处不再需要 */
 }
 
 .home-hero__container {
@@ -2710,6 +2836,9 @@ html[data-search-open="true"] .header .header__search input:focus {
   align-items: center;
   justify-content: space-between;
   gap: var(--yami-spacing-200);
+  /* 移除列表模式下的 transition 和 box-shadow 效果 */
+  transition: none;
+  box-shadow: none;
 }
 
 .recent-updates-list .recent-updates-card:hover {

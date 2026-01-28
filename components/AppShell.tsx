@@ -7,7 +7,7 @@ import NavDrawer from './NavDrawer';
 import DocContent from './DocContent';
 import SearchModal, { SearchItem } from './SearchModal';
 import { useSearch } from './SearchProvider';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { DocPage } from '../data/docs';
 import { getSectionConfig, findSectionByItemId } from '../config/navigation';
@@ -48,6 +48,7 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [prevPathname, setPrevPathname] = useState<string>('');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const docIds = useMemo(() => new Set(docs.map((doc) => doc.id)), [docs]);
 
@@ -196,6 +197,35 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
 
   const { isOpen: isSearchModalOpen, closeSearch, openSearch } = useSearch();
 
+  // 切换移动端侧边栏
+  // 使用 useCallback 稳定函数引用，防止 Header 不必要的重新渲染
+  const handleToggleMobileSidebar = useCallback(() => {
+    setMobileOpen(v => !v);
+  }, []);
+
+  // 切换桌面端侧边栏收起/展开
+  // 使用 useCallback 稳定函数引用，避免 Header 组件不必要的重新渲染和动画触发
+  const toggleSidebar = useCallback(() => {
+    setSidebarCollapsed(prev => !prev);
+  }, []);
+
+  // 稳定 onToggleDesktopSidebar 的引用，只在 isMobile 变化时更新
+  // 确保切换 IconNav 时按钮显示状态不会改变
+  const onToggleDesktopSidebar = useMemo(() => {
+    return !isMobile ? toggleSidebar : undefined;
+  }, [isMobile, toggleSidebar]);
+
+  // 稳定 onCategoryChange 函数引用，防止 IconNav 切换时触发 Header 重新渲染
+  const handleCategoryChange = useCallback((id: string) => {
+    setCategory(id);
+  }, []);
+
+  // 稳定 onTokenChange 函数引用，保持与 onCategoryChange 的一致性
+  const handleTokenChange = useCallback((id: string) => {
+    setActiveToken(id);
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
+
   // 根据 doc id 确定路由
   const getDocRoute = (docId: string): string => {
     if (docId === 'overview' || docId === 'changelog' || docId === 'update-process') {
@@ -219,7 +249,8 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
     return pathname;
   };
 
-  const handleSearchSelect = (pageId: string) => {
+  // 使用 useCallback 稳定 handleSearchSelect 引用，防止 Header 不必要的重新渲染
+  const handleSearchSelect = useCallback((pageId: string) => {
     const sectionId = findSectionByItemId(pageId);
     if (sectionId) {
       setCategory(sectionId);
@@ -244,7 +275,7 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
     setTimeout(() => {
       document.getElementById(pageId)?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
-  };
+  }, [pathname, router, closeSearch]);
 
   // 将 docs 转换为 SearchItem 格式并提取元数据
   const searchItems: SearchItem[] = useMemo(() => {
@@ -322,12 +353,13 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
   return (
     <div className="app-shell" suppressHydrationWarning>
       <Header 
-        onToggleSidebar={() => setMobileOpen(v => !v)} 
+        onToggleSidebar={handleToggleMobileSidebar} 
         isOpen={mobileOpen}
         docs={docs}
         onSearchSelect={handleSearchSelect}
         isOverview={false}
         showMenuButton={isMobile}
+        onToggleDesktopSidebar={onToggleDesktopSidebar}
       />
       
       {/* SearchModal - 全局唯一实例 */}
@@ -363,21 +395,16 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
       <div className="app-body">
         {/* 桌面端稳定侧栏容器：无论导航是否固定，此容器始终占位，防止布局跳动 */}
         {!isMobile && (
-          <aside className="app-nav-side">
+          <aside className={`app-nav-side ${sidebarCollapsed ? 'collapsed' : ''}`}>
             <div className="app-nav-side__inner">
               <IconNav 
                 activeCategory={category}
-                onCategoryChange={(id) => {
-                  setCategory(id);
-                }}
+                onCategoryChange={handleCategoryChange}
               />
               <TokenNav
                 category={category}
                 activeToken={activeToken}
-                onTokenChange={(id) => {
-                  setActiveToken(id);
-                  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-                }}
+                onTokenChange={handleTokenChange}
               />
             </div>
           </aside>
