@@ -21,7 +21,8 @@ export default function HomeHero() {
 
     if (!('IntersectionObserver' in window)) {
       const rect = element.getBoundingClientRect();
-      const isHidden = rect.bottom <= 0 || rect.top >= window.innerHeight;
+      const viewportHeight = (window as Window).innerHeight;
+      const isHidden = rect.bottom <= 0 || rect.top >= viewportHeight;
       setSearchHidden(isHidden);
       return;
     }
