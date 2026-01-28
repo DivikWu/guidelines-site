@@ -1,7 +1,6 @@
 'use client';
 
 import Header from './Header';
-import SearchBar from './SearchBar';
 import IconNav from './IconNav';
 import TokenNav from './TokenNav';
 import NavDrawer from './NavDrawer';
@@ -9,18 +8,48 @@ import DocContent from './DocContent';
 import SearchModal, { SearchItem } from './SearchModal';
 import { useSearch } from './SearchProvider';
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { DocPage } from '../data/docs';
 import { getSectionConfig, findSectionByItemId } from '../config/navigation';
 
 export default function AppShell({ docs }: { docs: DocPage[] }) {
-  const [category, setCategory] = useState<string>('foundations');
-  const [activeToken, setActiveToken] = useState<string>('overview');
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const getRouteState = (path: string) => {
+    const segments = path.split('/').filter(Boolean);
+    if (segments.length === 0) return { category: 'home', token: 'home' };
+    if (segments[0] === 'getting-started') {
+      return { category: 'getting-started', token: segments[1] || 'introduction' };
+    }
+    if (segments[0] === 'foundations') {
+      if (segments[1] === 'brand') return { category: 'brand', token: 'logo' };
+      if (segments[1]) return { category: 'foundations', token: segments[1] };
+      return { category: 'foundations', token: 'color' };
+    }
+    if (segments[0] === 'components') {
+      return { category: 'components', token: segments[1] || 'button' };
+    }
+    if (segments[0] === 'content') {
+      return { category: 'content', token: segments[1] || 'content-overview' };
+    }
+    if (segments[0] === 'resources') {
+      return { category: 'resources', token: segments[1] || 'resources-overview' };
+    }
+    if (segments[0] === 'overview') {
+      return { category: 'getting-started', token: 'introduction' };
+    }
+    return { category: 'getting-started', token: 'introduction' };
+  };
+
+  const initialRouteState = getRouteState(pathname);
+  const [category, setCategory] = useState<string>(initialRouteState.category);
+  const [activeToken, setActiveToken] = useState<string>(initialRouteState.token);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [prevPathname, setPrevPathname] = useState<string>('');
-  const pathname = usePathname();
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const docIds = useMemo(() => new Set(docs.map((doc) => doc.id)), [docs]);
 
   // 1. 稳定 Header 搜索按钮状态：通过监测 sentinel 决定是否显示 Header 搜索
   useEffect(() => {
@@ -56,10 +85,32 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
       const itemIds = sectionConfig.items.map(item => item.id);
       // 如果当前 activeToken 不在新分类的 items 中，切换到默认或第一个 item
       if (itemIds.length > 0 && !itemIds.includes(activeToken)) {
+        if (docIds.has(activeToken)) {
+          return;
+        }
         setActiveToken(sectionConfig.defaultItem || itemIds[0]);
       }
     }
-  }, [category, activeToken]);
+  }, [category, activeToken, docIds]);
+
+  useEffect(() => {
+    const hash = typeof window !== 'undefined' ? window.location.hash.replace('#', '') : '';
+    const nextState = getRouteState(pathname);
+    setCategory(nextState.category);
+    setActiveToken(hash || nextState.token);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash) {
+        setActiveToken(hash);
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => {
@@ -145,43 +196,105 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
 
   const { isOpen: isSearchModalOpen, closeSearch, openSearch } = useSearch();
 
+  // 根据 doc id 确定路由
+  const getDocRoute = (docId: string): string => {
+    if (docId === 'overview' || docId === 'changelog' || docId === 'update-process') {
+      return '/overview';
+    } else if (docId.startsWith('brand-') || docId === 'logo' || docId === 'typeface') {
+      return '/foundations/brand';
+    } else if (['color', 'typography', 'spacing', 'layout', 'radius', 'elevation', 'iconography', 'motion'].includes(docId)) {
+      return `/foundations/${docId}`;
+    } else if (['button', 'tabs', 'badge', 'heading', 'filter', 'navbar', 'product-card', 'forms'].includes(docId)) {
+      return `/components/${docId}`;
+    } else if (docId === 'patterns-overview') {
+      return '/components';
+    } else if (docId === 'resources-overview') {
+      return '/resources';
+    } else if (docId === 'content') {
+      return '/content';
+    } else if (docId === 'introduction') {
+      return '/getting-started/introduction';
+    }
+    // 默认返回当前路径，使用 hash 导航
+    return pathname;
+  };
+
   const handleSearchSelect = (pageId: string) => {
-    // ... 原有逻辑 ...
     const sectionId = findSectionByItemId(pageId);
     if (sectionId) {
       setCategory(sectionId);
     }
 
-    // 设置激活的 token 并滚动
+    // 获取路由
+    const route = getDocRoute(pageId);
+    const currentRoute = route.split('#')[0];
+    
+    // 如果路由不同，进行跳转
+    if (currentRoute !== pathname) {
+      router.push(route.includes('#') ? route : `${route}#${pageId}`);
+      setMobileOpen(false);
+      closeSearch();
+      return;
+    }
+
+    // 如果在同一页面，设置激活的 token 并滚动
     setActiveToken(pageId);
     setMobileOpen(false);
-    closeSearch(); // 确保搜索框关闭
+    closeSearch();
     setTimeout(() => {
       document.getElementById(pageId)?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
   };
 
   // 将 docs 转换为 SearchItem 格式并提取元数据
-  const searchItems: SearchItem[] = useMemo(() => docs.map(doc => {
-    // 提取第一行标题 (# Title)
-    const titleMatch = doc.markdown.match(/^#\s+(.+)$/m);
-    const title = titleMatch ? titleMatch[1].trim() : doc.id;
-    
-    // 提取描述（排除标题后的第一段文本）
-    const descriptionMatch = doc.markdown.replace(/^#\s+.+$/m, '').trim().match(/^([^#\n].+)$/m);
-    const description = descriptionMatch ? descriptionMatch[1].trim().slice(0, 60) + '...' : undefined;
-
-    return {
-      id: doc.id,
-      type: (doc.id.includes('button') || doc.id.includes('tabs') || doc.id.includes('badge') || 
-             doc.id.includes('heading') || doc.id.includes('filter') || doc.id.includes('navbar') ||
-             doc.id.includes('product-card') || doc.id.includes('forms')) ? 'component' : 
-            (doc.id.includes('changelog') || doc.id.includes('update-process')) ? 'resource' : 'page',
-      title,
-      description,
-      href: `#${doc.id}`
+  const searchItems: SearchItem[] = useMemo(() => {
+    const getDocRouteForSearch = (docId: string): string => {
+      if (docId === 'overview' || docId === 'changelog' || docId === 'update-process') {
+        return '/overview';
+      } else if (docId.startsWith('brand-') || docId === 'logo' || docId === 'typeface') {
+        return '/foundations/brand';
+      } else if (['color', 'typography', 'spacing', 'layout', 'radius', 'elevation', 'iconography', 'motion'].includes(docId)) {
+        return `/foundations/${docId}`;
+      } else if (['button', 'tabs', 'badge', 'heading', 'filter', 'navbar', 'product-card', 'forms'].includes(docId)) {
+        return `/components/${docId}`;
+      } else if (docId === 'patterns-overview') {
+        return '/components';
+      } else if (docId === 'resources-overview') {
+        return '/resources';
+      } else if (docId === 'content') {
+        return '/content';
+      } else if (docId === 'introduction') {
+        return '/getting-started/introduction';
+      }
+      // 默认返回当前路径，使用 hash 导航
+      return pathname;
     };
-  }), [docs]);
+
+    return docs.map(doc => {
+      // 提取第一行标题 (# Title)
+      const titleMatch = doc.markdown.match(/^#\s+(.+)$/m);
+      const title = titleMatch ? titleMatch[1].trim() : doc.id;
+      
+      // 提取描述（排除标题后的第一段文本）
+      const descriptionMatch = doc.markdown.replace(/^#\s+.+$/m, '').trim().match(/^([^#\n].+)$/m);
+      const description = descriptionMatch ? descriptionMatch[1].trim().slice(0, 60) + '...' : undefined;
+
+      // 根据 doc id 确定路由
+      const route = getDocRouteForSearch(doc.id);
+      const href = route.includes('#') ? route : `${route}#${doc.id}`;
+
+      return {
+        id: doc.id,
+        type: (doc.id.includes('button') || doc.id.includes('tabs') || doc.id.includes('badge') || 
+               doc.id.includes('heading') || doc.id.includes('filter') || doc.id.includes('navbar') ||
+               doc.id.includes('product-card') || doc.id.includes('forms')) ? 'component' : 
+              (doc.id.includes('changelog') || doc.id.includes('update-process')) ? 'resource' : 'page',
+        title,
+        description,
+        href
+      };
+    });
+  }, [docs, pathname]);
 
   // 记录最近访问 (Recent)
   useEffect(() => {
@@ -213,7 +326,7 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
         isOpen={mobileOpen}
         docs={docs}
         onSearchSelect={handleSearchSelect}
-        isOverview={activeToken === 'overview'}
+        isOverview={false}
         showMenuButton={isMobile}
       />
       
@@ -225,14 +338,6 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
         onSelect={(item) => handleSearchSelect(item.id)}
       />
       
-      {/* SearchBar - 仅在 Overview 页面显示且位于三列布局上方 */}
-      {activeToken === 'overview' && (
-        <SearchBar 
-          docs={docs}
-          onSearchSelect={handleSearchSelect}
-        />
-      )}
-
       {/* 结构化锚点 (Sentinel)：用于稳定检测侧栏固定临界点 */}
       <div ref={sentinelRef} className="app-nav-sentinel" />
       

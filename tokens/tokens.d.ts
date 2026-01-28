@@ -24,6 +24,12 @@ type TokensRoot = {
   background: {
   light: TokenValue;
   dark: TokenValue;
+  page: {
+  dark: TokenValue;
+};
+  hero: {
+  dark: TokenValue;
+};
 };
   surface: {
   light: TokenValue;

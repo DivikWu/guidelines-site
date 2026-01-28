@@ -17,19 +17,26 @@ export interface SectionConfig {
 // 所有section的配置
 export const navigationConfig: SectionConfig[] = [
   {
-    id: 'foundations',
-    label: 'Overview',
-    iconClass: 'ds-icon-asterisk',
+    id: 'home',
+    label: 'Home',
+    iconClass: 'ds-icon-home',
     items: [
-      { id: 'overview', label: '概述 Overview', icon: '📋' },
-      { id: 'changelog', label: '更新日志 Changelog', icon: '📝' },
-      { id: 'update-process', label: '更新流程 Update Process', icon: '🔄' }
+      { id: 'home', label: '首页 Home', icon: '🏠' }
     ],
-    defaultItem: 'overview'
+    defaultItem: 'home'
   },
   {
-    id: 'components',
-    label: 'Brand',
+    id: 'getting-started',
+    label: '入门指南',
+    iconClass: 'ds-icon-asterisk',
+    items: [
+      { id: 'introduction', label: '介绍 Introduction', icon: '📋' }
+    ],
+    defaultItem: 'introduction'
+  },
+  {
+    id: 'brand',
+    label: '品牌',
     iconClass: 'ds-icon-brandfetch',
     items: [
       { id: 'logo', label: '标志 Logo', icon: '🖼️' },
@@ -39,8 +46,8 @@ export const navigationConfig: SectionConfig[] = [
     defaultItem: 'logo'
   },
   {
-    id: 'tokens',
-    label: 'Foundation',
+    id: 'foundations',
+    label: '基础规范',
     iconClass: 'ds-icon-paint-board',
     items: [
       { id: 'color', label: '色彩 Color', icon: '🎨' },
@@ -49,13 +56,14 @@ export const navigationConfig: SectionConfig[] = [
       { id: 'layout', label: '布局 Layout', icon: '📐' },
       { id: 'radius', label: '圆角 Radius', icon: '⚪' },
       { id: 'elevation', label: '阴影与层级 Elevation', icon: '📊' },
-      { id: 'iconography', label: '图标 Iconography', icon: '🎯' }
+      { id: 'iconography', label: '图标 Iconography', icon: '🎯' },
+      { id: 'motion', label: '动效 Motion', icon: '🎬' }
     ],
     defaultItem: 'color'
   },
   {
-    id: 'patterns',
-    label: 'Components',
+    id: 'components',
+    label: '组件',
     iconClass: 'ds-icon-web-design-01',
     items: [
       { id: 'button', label: '按钮 Button', icon: '🔘' },
@@ -70,9 +78,18 @@ export const navigationConfig: SectionConfig[] = [
     defaultItem: 'button'
   },
   {
-    id: 'resources',
-    label: 'Pages',
+    id: 'content',
+    label: '内容策略',
     iconClass: 'ds-icon-book-02',
+    items: [
+      { id: 'content-overview', label: '概述 Overview', icon: '📋' }
+    ],
+    defaultItem: 'content-overview'
+  },
+  {
+    id: 'resources',
+    label: '资源',
+    iconClass: 'ds-icon-test-tube-01',
     items: [
       { id: 'resources-overview', label: '概述 Overview', icon: '📋' }
     ],

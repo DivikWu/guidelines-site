@@ -18,6 +18,8 @@ interface HeaderProps {
   onSearchSelect?: (pageId: string) => void;
   isOverview?: boolean;
   showMenuButton?: boolean;
+  showExtraActions?: boolean;
+  showSearchSlot?: boolean;
 }
 
 export default function Header({ 
@@ -26,7 +28,9 @@ export default function Header({
   docs = [], 
   onSearchSelect,
   isOverview = false,
-  showMenuButton = false
+  showMenuButton = false,
+  showExtraActions = false,
+  showSearchSlot = false
 }: HeaderProps) {
   // #region agent log
   const isServer = typeof window === 'undefined';
@@ -310,12 +314,14 @@ export default function Header({
 
   // #region agent log
   const finalClassName = `header ${mounted && isScrolled ? 'header--scrolled' : ''}`;
+  const searchClassName = `header__search ${isSearchExpanded ? 'header__search--expanded' : showSearchSlot ? 'header__search--slot' : 'header__search--collapsed'}`;
   fetch('http://127.0.0.1:7243/ingest/bec5ef14-f4e7-4569-92de-812c24e45b28',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Header.tsx:201',message:'Header return statement',data:{mounted,isScrolled,showResults,className:finalClassName,isServer,headerRefExists:!!headerRef.current},timestamp:Date.now(),sessionId:'debug-session',runId:'hydrate-debug',hypothesisId:'H1'})}).catch(()=>{});
   // #endregion
   // 最终显示规则实现：
   // 1. 非 Overview：永远显示
   // 2. Overview：仅当页面内 Search 模块完全隐藏 (isSearchHidden) 时显示
-  const showSearchIcon = !isSearchExpanded && (!isOverview || isSearchHidden);
+  const shouldDeferSearchIcon = isOverview || showSearchSlot;
+  const showSearchIcon = !isSearchExpanded && (!shouldDeferSearchIcon || isSearchHidden);
 
   return (
     <header 
@@ -326,7 +332,7 @@ export default function Header({
         <BrandLogo />
       </div>
       <div style={{ flex: 1 }} />
-      <div className={`header__search ${!isSearchExpanded ? 'header__search--collapsed' : 'header__search--expanded'}`} ref={searchRef}>
+      <div className={searchClassName} ref={searchRef}>
         {isSearchExpanded ? (
           <>
             <input 
@@ -349,6 +355,8 @@ export default function Header({
               />
             )}
           </>
+        ) : showSearchSlot ? (
+          <div className="header__search-slot" aria-hidden="true" />
         ) : (
           <input 
             type="search" 

@@ -391,6 +391,22 @@ const iconography = `
 - **禁止硬编码颜色**: 严禁直接使用 Hex/RGB 定义图标颜色。
 `;
 
+const motion = `
+# 动效 Motion
+
+动效用于提供反馈，引导用户注意力，并提升交互体验的流畅度。
+
+## 概述
+
+动效规范包含动效原则、常用过渡模式与可访问性策略。
+
+## 状态
+
+**状态**: Not Started
+
+此部分内容正在完善中，敬请期待。
+`;
+
 const button = `
 # 按钮 Button
 
@@ -927,6 +943,7 @@ export const docs: DocPage[] = [
   { id: 'radius', markdown: radius },
   { id: 'elevation', markdown: elevation },
   { id: 'iconography', markdown: iconography },
+  { id: 'motion', markdown: motion },
   // Components
   { id: 'button', markdown: button },
   { id: 'tabs', markdown: tabs },

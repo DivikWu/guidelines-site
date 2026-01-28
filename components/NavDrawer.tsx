@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { navigationConfig } from '../config/navigation';
 import Icon from './Icon';
 
@@ -21,6 +22,8 @@ export default function NavDrawer({
   onCategoryChange,
   onTokenChange
 }: NavDrawerProps) {
+  const router = useRouter();
+
   // 如果未打开，不渲染 overlay 和 panel，避免影响布局
   if (!isOpen) {
     return null;
@@ -34,7 +37,42 @@ export default function NavDrawer({
     setExpandedSectionId(activeCategory || null);
   }, [activeCategory]);
 
-  const sections = useMemo(() => navigationConfig, []);
+  const sections = useMemo(() => navigationConfig.filter(section => section.id !== 'home'), []);
+
+  // 路由映射函数（与 TokenNav 保持一致）
+  const getItemRoute = (itemId: string, sectionId: string) => {
+    if (sectionId === 'home' && itemId === 'home') return '/';
+    if (sectionId === 'getting-started') {
+      return `/getting-started/${itemId}`;
+    }
+    if (sectionId === 'brand') {
+      return `/foundations/brand${itemId !== 'logo' ? `#${itemId}` : ''}`;
+    }
+    if (sectionId === 'foundations') {
+      return `/foundations/${itemId}`;
+    }
+    if (sectionId === 'components') {
+      return `/components/${itemId}`;
+    }
+    if (sectionId === 'content') {
+      return `/content${itemId !== 'content-overview' ? `#${itemId}` : ''}`;
+    }
+    if (sectionId === 'resources') {
+      return `/resources${itemId !== 'resources-overview' ? `#${itemId}` : ''}`;
+    }
+    return null;
+  };
+
+  const getSectionRoute = (sectionId: string) => {
+    if (sectionId === 'home') return '/';
+    if (sectionId === 'getting-started') return '/getting-started/introduction';
+    if (sectionId === 'brand') return '/foundations/brand';
+    if (sectionId === 'foundations') return '/foundations';
+    if (sectionId === 'components') return '/components';
+    if (sectionId === 'content') return '/content';
+    if (sectionId === 'resources') return '/resources';
+    return null;
+  };
 
   return (
     <>
@@ -52,8 +90,14 @@ export default function NavDrawer({
                   className={`nav-drawer__section-trigger ${isActive ? 'active' : ''} ${isExpanded ? 'expanded' : ''}`}
                   aria-expanded={isExpanded}
                   onClick={() => {
-                    setExpandedSectionId(prev => (prev === section.id ? null : section.id));
+                    const newExpanded = expandedSectionId === section.id ? null : section.id;
+                    setExpandedSectionId(newExpanded);
                     onCategoryChange(section.id);
+                    // 如果点击的是 section，且该 section 有默认路由，则跳转
+                    const route = getSectionRoute(section.id);
+                    if (route && newExpanded !== null) {
+                      router.push(route);
+                    }
                   }}
                 >
                   <Icon
@@ -79,6 +123,10 @@ export default function NavDrawer({
                         type="button"
                         className="nav-drawer__subitem"
                         onClick={() => {
+                          const route = getItemRoute(item.id, section.id);
+                          if (route) {
+                            router.push(route);
+                          }
                           onCategoryChange(section.id);
                           onTokenChange(item.id);
                           onClose();

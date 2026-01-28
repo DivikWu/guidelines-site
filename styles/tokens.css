@@ -44,7 +44,9 @@
 
   /* color */
   --yami-color-background-dark: #1A1A1A;
+  --yami-color-background-hero-dark: #151515;
   --yami-color-background-light: #FFFFFF;
+  --yami-color-background-page-dark: #0F0F0F;
   --yami-color-badge-error: #FF4D4F;
   --yami-color-badge-primary: #E00000;
   --yami-color-badge-secondary: #666666;
@@ -173,8 +175,8 @@
   --yami-color-state-pressed-light: rgba(0, 0, 0, 0.12);
   --yami-color-state-selected-dark: rgba(255, 255, 255, 0.04);
   --yami-color-state-selected-light: rgba(0, 0, 0, 0.04);
-  --yami-color-surface-dark: #2A2A2A;
-  --yami-color-surface-light: #F5F5F5;
+  --yami-color-surface-dark: #191919;
+  --yami-color-surface-light: #FFFFFF;
   --yami-color-text-primary-dark: #FFFFFF;
   --yami-color-text-primary-light: #1A1A1A;
   --yami-color-text-secondary-dark: #CCCCCC;
@@ -286,13 +288,13 @@
   --yami-typography-caption-small-line-height-desktop: 14px;
   --yami-typography-caption-small-line-height-mobile: 14px;
   --yami-typography-caption-small-line-height-tablet: 14px;
-  --yami-typography-display-large-font-size-desktop: 32px;
-  --yami-typography-display-large-font-size-mobile: 32px;
-  --yami-typography-display-large-font-size-tablet: 32px;
+  --yami-typography-display-large-font-size-desktop: 40px;
+  --yami-typography-display-large-font-size-mobile: 40px;
+  --yami-typography-display-large-font-size-tablet: 40px;
   --yami-typography-display-large-font-weight: 400;
-  --yami-typography-display-large-line-height-desktop: 40px;
-  --yami-typography-display-large-line-height-mobile: 40px;
-  --yami-typography-display-large-line-height-tablet: 40px;
+  --yami-typography-display-large-line-height-desktop: 48px;
+  --yami-typography-display-large-line-height-mobile: 48px;
+  --yami-typography-display-large-line-height-tablet: 48px;
   --yami-typography-display-medium-font-size-desktop: 28px;
   --yami-typography-display-medium-font-size-mobile: 28px;
   --yami-typography-display-medium-font-size-tablet: 28px;

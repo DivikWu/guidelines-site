@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 export default function BrandLogo() {
   // 获取 basePath（用于 GitHub Pages）
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
@@ -7,8 +9,10 @@ export default function BrandLogo() {
   const logoPath = `${basePath}/images/logo-icon.png`;
   
   return (
-    <div
+    <Link
+      href="/"
       className="brand-logo"
+      aria-label="返回主页"
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -28,6 +32,6 @@ export default function BrandLogo() {
         aria-hidden="true"
         style={{ fontSize: '20px', color: 'var(--color-text-primary)' }}
       />
-    </div>
+    </Link>
   );
 }

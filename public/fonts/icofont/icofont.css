@@ -18,6 +18,14 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.ds-icon-left-to-right-list-dash:before {
+  content: "\e61f";
+}
+
+.ds-icon-grid-view:before {
+  content: "\e620";
+}
+
 .ds-icon-menu-01:before {
   content: "\e612";
 }
