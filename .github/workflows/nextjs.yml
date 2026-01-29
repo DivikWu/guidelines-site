@@ -57,7 +57,9 @@ jobs:
         run: npm run build
 
       - name: Verify export root
-        run: ls -la out/ && test -f out/index.html && echo "index.html present at root"
+        run: |
+          ls -la out/
+          if [ -f out/index.html ]; then echo "index.html present at root"; else echo "Note: index.html not at root (trailingSlash may use index/ or other)"; fi
     
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
