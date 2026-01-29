@@ -3,18 +3,21 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "rm -rf .next-dev && next dev",
+    "dev": "rm -rf .next-dev && next dev -H 127.0.0.1",
     "build": "next build && node scripts/fix-font-paths.js",
     "start": "next start",
     "lint": "next lint",
     "lint:structure": "node scripts/check-structure.mjs",
-    "docs:check": "node scripts/check-doc-links.mjs"
+    "docs:check": "node scripts/check-doc-links.mjs",
+    "sync:content": "node scripts/sync-obsidian-content.mjs",
+    "sync:content:dev": "node scripts/sync-obsidian-content.mjs && echo '请重启 dev server (npm run dev) 以使新内容生效'"
   },
   "dependencies": {
     "next": "14.2.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-markdown": "^9.0.1"
+    "react-markdown": "^9.0.1",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",

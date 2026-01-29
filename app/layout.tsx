@@ -38,7 +38,7 @@ export default function RootLayout({
         {/* 导入字体 CSS */}
         <link rel="stylesheet" href={`${fontBasePath}/icofont.css`} />
       </head>
-      <body>
+      <body data-layout="root">
         <TokenProvider>{children}</TokenProvider>
       </body>
     </html>

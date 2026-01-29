@@ -3,7 +3,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { navigationConfig } from '../config/navigation';
+import { getSectionIcon } from '../config/content-icons';
 import Icon from './Icon';
+import type { ContentTree } from '@/lib/content/tree';
 
 interface NavDrawerProps {
   isOpen: boolean;
@@ -12,6 +14,7 @@ interface NavDrawerProps {
   onClose: () => void;
   onCategoryChange: (id: string) => void;
   onTokenChange: (id: string) => void;
+  contentTree?: ContentTree | null;
 }
 
 export default function NavDrawer({
@@ -20,7 +23,8 @@ export default function NavDrawer({
   activeToken,
   onClose,
   onCategoryChange,
-  onTokenChange
+  onTokenChange,
+  contentTree = null,
 }: NavDrawerProps) {
   const router = useRouter();
 
@@ -37,10 +41,18 @@ export default function NavDrawer({
     setExpandedSectionId(activeCategory || null);
   }, [activeCategory]);
 
-  const sections = useMemo(() => navigationConfig.filter(section => section.id !== 'home'), []);
+  const sections = useMemo(() => {
+    if (contentTree) {
+      return contentTree.sections;
+    }
+    return navigationConfig.filter(section => section.id !== 'home');
+  }, [contentTree]);
 
   // 路由映射函数（与 TokenNav 保持一致）
   const getItemRoute = (itemId: string, sectionId: string) => {
+    if (contentTree) {
+      return `/docs/${encodeURIComponent(sectionId)}/${encodeURIComponent(itemId)}`;
+    }
     if (sectionId === 'home' && itemId === 'home') return '/';
     if (sectionId === 'getting-started') {
       return `/getting-started/${itemId}`;
@@ -64,6 +76,14 @@ export default function NavDrawer({
   };
 
   const getSectionRoute = (sectionId: string) => {
+    if (contentTree) {
+      const section = contentTree.sections.find((s) => s.id === sectionId);
+      const firstFile = section?.items[0];
+      if (section && firstFile) {
+        return `/docs/${encodeURIComponent(sectionId)}/${encodeURIComponent(firstFile.id)}`;
+      }
+      return null;
+    }
     if (sectionId === 'home') return '/';
     if (sectionId === 'getting-started') return '/getting-started/introduction';
     if (sectionId === 'brand') return '/foundations/brand';
@@ -74,15 +94,25 @@ export default function NavDrawer({
     return null;
   };
 
+  const isContentTreeSection = (s: { id: string; label: string; items: { id: string; label: string }[] }) =>
+    contentTree && contentTree.sections.some((sec) => sec.id === s.id);
+
+  /** 展示名：仅显示 "_" 之后的文本，与 content tree label 规则一致 */
+  const displayLabel = (raw: string) => {
+    const i = raw.indexOf("_");
+    return i >= 0 ? raw.slice(i + 1) : raw;
+  };
+
   return (
     <>
       {/* Fullscreen Drawer Panel */}
       <aside className={`nav-drawer-panel ${isOpen ? 'open' : ''}`}>
         <div className="nav-drawer__fullscreen-content">
           <nav className="nav-drawer__menu" aria-label="Mobile navigation menu">
-            {sections.map(section => {
+            {sections.map((section: { id: string; label: string; items: { id: string; label: string }[]; iconClass?: string }) => {
               const isExpanded = expandedSectionId === section.id;
               const isActive = activeCategory === section.id;
+              const useContentTree = isContentTreeSection(section);
               return (
               <div key={section.id} className="nav-drawer__section">
                 <button
@@ -93,16 +123,22 @@ export default function NavDrawer({
                     const newExpanded = expandedSectionId === section.id ? null : section.id;
                     setExpandedSectionId(newExpanded);
                     onCategoryChange(section.id);
-                    // 移除自动跳转逻辑，只展开/收起二级内容
-                    // 跳转只在点击二级菜单项时发生
                   }}
                 >
-                  <Icon
-                    name={section.iconClass}
-                    size={20}
-                    className="nav-drawer__section-icon"
-                  />
-                  <span>{section.label}</span>
+                  {useContentTree ? (
+                    <Icon
+                      name={getSectionIcon(section.id)}
+                      size={20}
+                      className="nav-drawer__section-icon"
+                    />
+                  ) : (
+                    <Icon
+                      name={(section as { iconClass: string }).iconClass}
+                      size={20}
+                      className="nav-drawer__section-icon"
+                    />
+                  )}
+                  <span>{displayLabel(section.label)}</span>
                   <span className={`nav-drawer__chevron ${isExpanded ? 'expanded' : ''}`} aria-hidden="true">
                     <Icon name="ds-icon-arrow-right-01" size={16} />
                   </span>
@@ -111,7 +147,7 @@ export default function NavDrawer({
                 <div
                   className={`nav-drawer__group ${isExpanded ? 'expanded' : ''}`}
                   role="group"
-                  aria-label={section.label}
+                  aria-label={displayLabel(section.label)}
                 >
                   <div className="nav-drawer__group-inner">
                     {section.items.map(item => (
@@ -129,7 +165,7 @@ export default function NavDrawer({
                           onClose();
                         }}
                       >
-                        <span className="nav-drawer__subitem-label">{item.label}</span>
+                        <span className="nav-drawer__subitem-label">{displayLabel(item.label)}</span>
                       </button>
                     ))}
                   </div>

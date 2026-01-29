@@ -1,14 +1,5 @@
-import AppShell from '../../../components/AppShell';
-import { docs } from '../../../data/docs';
-import { SearchProvider } from '../../../components/SearchProvider';
+import RedirectToDocs from '@/components/RedirectToDocs';
 
 export default function RadiusPage() {
-  const radiusDoc = docs.find(doc => doc.id === 'radius');
-  const docsToShow = radiusDoc ? [radiusDoc] : docs;
-
-  return (
-    <SearchProvider>
-      <AppShell docs={docsToShow} />
-    </SearchProvider>
-  );
+  return <RedirectToDocs path="/docs/C_基础规范/圆角" />;
 }

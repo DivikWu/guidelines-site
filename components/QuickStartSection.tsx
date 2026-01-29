@@ -4,8 +4,10 @@ import Link from 'next/link';
 import { quickStartCards } from '../data/home';
 import SectionTitle from './SectionTitle';
 import Icon from './Icon';
+import type { QuickStartCard } from '@/lib/content/nav-index';
 
-export default function QuickStartSection() {
+export default function QuickStartSection({ cards }: { cards?: QuickStartCard[] | null }) {
+  const list = cards && cards.length > 0 ? cards : quickStartCards;
   return (
     <section className="quick-start-section">
       <div className="quick-start-section__container">
@@ -16,7 +18,7 @@ export default function QuickStartSection() {
           </p>
         </div>
         <div className="quick-start-grid">
-          {quickStartCards.map((card) => (
+          {list.map((card) => (
             <Link
               key={card.id}
               href={card.href}

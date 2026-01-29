@@ -11,13 +11,32 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { DocPage } from '../data/docs';
 import { getSectionConfig, findSectionByItemId } from '../config/navigation';
+import type { ContentTree } from '@/lib/content/tree';
+import type { DocFrontmatter } from '@/lib/content/loaders';
 
-export default function AppShell({ docs }: { docs: DocPage[] }) {
+export default function AppShell({
+  docs,
+  contentTree = null,
+  docsRouteSection = null,
+  docsRouteFile = null,
+  docMeta = null,
+}: {
+  docs: DocPage[];
+  contentTree?: ContentTree | null;
+  docsRouteSection?: string | null;
+  docsRouteFile?: string | null;
+  docMeta?: DocFrontmatter | null;
+}) {
   const pathname = usePathname();
   const router = useRouter();
 
   const getRouteState = (path: string) => {
     const segments = path.split('/').filter(Boolean);
+    if (contentTree && segments[0] === 'docs' && segments.length >= 3) {
+      const section = decodeURIComponent(segments[1]);
+      const file = decodeURIComponent(segments[2]);
+      return { category: section, token: file };
+    }
     if (segments.length === 0) return { category: 'home', token: 'home' };
     if (segments[0] === 'getting-started') {
       return { category: 'getting-started', token: segments[1] || 'introduction' };
@@ -42,7 +61,10 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
     return { category: 'getting-started', token: 'introduction' };
   };
 
-  const initialRouteState = getRouteState(pathname);
+  const initialRouteState =
+    contentTree && docsRouteSection && docsRouteFile
+      ? { category: docsRouteSection, token: docsRouteFile }
+      : getRouteState(pathname);
   const [category, setCategory] = useState<string>(initialRouteState.category);
   const [activeToken, setActiveToken] = useState<string>(initialRouteState.token);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -81,6 +103,13 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
 
   // 当 category 变化时，自动选择第一个 token
   useEffect(() => {
+    if (contentTree) {
+      const section = contentTree.sections.find((s) => s.id === category);
+      if (section && section.items.length > 0 && !section.items.some((i) => i.id === activeToken)) {
+        setActiveToken(section.items[0].id);
+      }
+      return;
+    }
     const sectionConfig = getSectionConfig(category);
     if (sectionConfig) {
       const itemIds = sectionConfig.items.map(item => item.id);
@@ -92,7 +121,7 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
         setActiveToken(sectionConfig.defaultItem || itemIds[0]);
       }
     }
-  }, [category, activeToken, docIds]);
+  }, [category, activeToken, docIds, contentTree]);
 
   useEffect(() => {
     const hash = typeof window !== 'undefined' ? window.location.hash.replace('#', '') : '';
@@ -228,6 +257,15 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
 
   // 根据 doc id 确定路由
   const getDocRoute = (docId: string): string => {
+    if (contentTree) {
+      for (const section of contentTree.sections) {
+        const item = section.items.find((i) => i.id === docId);
+        if (item) {
+          return `/docs/${encodeURIComponent(section.id)}/${encodeURIComponent(docId)}`;
+        }
+      }
+      return pathname;
+    }
     if (docId === 'overview' || docId === 'changelog' || docId === 'update-process') {
       return '/overview';
     } else if (docId.startsWith('brand-') || docId === 'logo' || docId === 'typeface') {
@@ -251,9 +289,18 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
 
   // 使用 useCallback 稳定 handleSearchSelect 引用，防止 Header 不必要的重新渲染
   const handleSearchSelect = useCallback((pageId: string) => {
-    const sectionId = findSectionByItemId(pageId);
-    if (sectionId) {
-      setCategory(sectionId);
+    if (contentTree) {
+      for (const section of contentTree.sections) {
+        if (section.items.some((i) => i.id === pageId)) {
+          setCategory(section.id);
+          break;
+        }
+      }
+    } else {
+      const sectionId = findSectionByItemId(pageId);
+      if (sectionId) {
+        setCategory(sectionId);
+      }
     }
 
     // 获取路由
@@ -275,10 +322,27 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
     setTimeout(() => {
       document.getElementById(pageId)?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
-  }, [pathname, router, closeSearch]);
+  }, [pathname, router, closeSearch, contentTree]);
 
   // 将 docs 转换为 SearchItem 格式并提取元数据
   const searchItems: SearchItem[] = useMemo(() => {
+    if (contentTree) {
+      const items: SearchItem[] = [];
+      for (const section of contentTree.sections) {
+        for (const item of section.items) {
+          const href = `/docs/${encodeURIComponent(section.id)}/${encodeURIComponent(item.id)}`;
+          items.push({
+            id: item.id,
+            type: 'page',
+            title: item.label,
+            description: undefined,
+            href,
+          });
+        }
+      }
+      return items;
+    }
+
     const getDocRouteForSearch = (docId: string): string => {
       if (docId === 'overview' || docId === 'changelog' || docId === 'update-process') {
         return '/overview';
@@ -325,7 +389,7 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
         href
       };
     });
-  }, [docs, pathname]);
+  }, [docs, pathname, contentTree]);
 
   // 记录最近访问 (Recent)
   useEffect(() => {
@@ -390,6 +454,7 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
             document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
           }, 100);
         }}
+        contentTree={contentTree}
       />
 
       <div className="app-body">
@@ -400,11 +465,13 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
               <IconNav 
                 activeCategory={category}
                 onCategoryChange={handleCategoryChange}
+                contentTree={contentTree}
               />
               <TokenNav
                 category={category}
                 activeToken={activeToken}
                 onTokenChange={handleTokenChange}
+                contentTree={contentTree}
               />
             </div>
           </aside>
@@ -417,6 +484,7 @@ export default function AppShell({ docs }: { docs: DocPage[] }) {
               key={page.id}
               page={page}
               hidden={page.id !== activeToken}
+              docMeta={docs.length === 1 && docMeta ? docMeta : undefined}
             />
           ))}
         </main>

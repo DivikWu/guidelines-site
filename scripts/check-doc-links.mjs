@@ -1,15 +1,29 @@
+/**
+ * 页面文档链接检查：仅扫描网站页面文档 content/ 下的 .md，
+ * 校验 [text](path) 中对本地页面/资源的引用是否存在。
+ * 使用：npm run docs:check
+ * 建议：每次更新设计规范内容后执行一次。
+ */
+
 import fs from "node:fs";
 import path from "node:path";
 
 const repoRoot = process.cwd();
-const targetRoots = ["docs", "tokens"].map((dir) => path.join(repoRoot, dir));
+const contentRoot = path.join(repoRoot, "content");
 const markdownFiles = [];
 const errors = [];
 
 const linkPattern = /!?\[[^\]]*?\]\(([^)]+)\)/g;
-const skipSchemes = ["http://", "https://", "mailto:", "tel:", "javascript:", "data:"];
+const skipSchemes = [
+  "http://",
+  "https://",
+  "mailto:",
+  "tel:",
+  "javascript:",
+  "data:",
+];
 
-const walkDir = (dir) => {
+function walkDir(dir) {
   if (!fs.existsSync(dir)) return;
   const entries = fs.readdirSync(dir, { withFileTypes: true });
   for (const entry of entries) {
@@ -22,9 +36,9 @@ const walkDir = (dir) => {
       markdownFiles.push(fullPath);
     }
   }
-};
+}
 
-const normalizeLink = (rawLink) => {
+function normalizeLink(rawLink) {
   const trimmed = rawLink.trim().replace(/^<|>$/g, "");
   if (!trimmed || trimmed.startsWith("#")) return null;
   if (trimmed.startsWith("//")) return null;
@@ -34,18 +48,19 @@ const normalizeLink = (rawLink) => {
   let decoded = withoutHash;
   try {
     decoded = decodeURI(withoutHash);
-  } catch (error) {
+  } catch {
     decoded = withoutHash;
   }
   return decoded;
-};
-
-for (const root of targetRoots) {
-  walkDir(root);
 }
+
+walkDir(contentRoot);
 
 for (const filePath of markdownFiles) {
   const content = fs.readFileSync(filePath, "utf8");
+  const displayPath = path.relative(repoRoot, filePath);
+
+  linkPattern.lastIndex = 0;
   let match;
   while ((match = linkPattern.exec(content)) !== null) {
     const normalized = normalizeLink(match[1]);
@@ -56,7 +71,6 @@ for (const filePath of markdownFiles) {
       : path.resolve(path.dirname(filePath), normalized);
 
     if (!fs.existsSync(resolvedPath)) {
-      const displayPath = path.relative(repoRoot, filePath);
       errors.push(`链接不存在：${displayPath} -> ${match[1]}`);
     }
   }

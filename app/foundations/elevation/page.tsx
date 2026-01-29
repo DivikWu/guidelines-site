@@ -1,14 +1,5 @@
-import AppShell from '../../../components/AppShell';
-import { docs } from '../../../data/docs';
-import { SearchProvider } from '../../../components/SearchProvider';
+import RedirectToDocs from '@/components/RedirectToDocs';
 
 export default function ElevationPage() {
-  const elevationDoc = docs.find(doc => doc.id === 'elevation');
-  const docsToShow = elevationDoc ? [elevationDoc] : docs;
-
-  return (
-    <SearchProvider>
-      <AppShell docs={docsToShow} />
-    </SearchProvider>
-  );
+  return <RedirectToDocs path="/docs/C_基础规范/层级与阴影" />;
 }

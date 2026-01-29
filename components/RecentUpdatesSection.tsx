@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { recentUpdates } from '../data/home';
 import SectionTitle from './SectionTitle';
 import Icon from './Icon';
+import type { RecentUpdate } from '@/data/home';
 
 type ViewMode = 'list' | 'grid';
 
-export default function RecentUpdatesSection() {
+export default function RecentUpdatesSection({ updates }: { updates?: RecentUpdate[] | null }) {
+  const recentUpdates = updates ?? [];
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
   const getStatusTagClass = (status: string) => {
@@ -72,7 +73,9 @@ export default function RecentUpdatesSection() {
             <Link key={update.id} href={update.href} className="recent-updates-card">
               <div className="recent-updates-card__content">
                 <h3 className="recent-updates-card__title">{update.title}</h3>
-                <p className="recent-updates-card__description">{update.description}</p>
+                {update.description != null && update.description !== '' && (
+                  <p className="recent-updates-card__description">{update.description}</p>
+                )}
               </div>
               <div className="recent-updates-card__tags">
                 <span className={getStatusTagClass(update.status)}>

@@ -1075,6 +1075,146 @@ body {
 }
 .doc--hidden { display: none; }
 
+/* Doc markdown tables (GFM) */
+.doc-table-wrap {
+  overflow-x: auto;
+  margin: var(--spacing-200) 0;
+  border: 1px solid var(--border-subtle, var(--color-border));
+  border-radius: var(--radius-md, var(--yami-border-radius-medium));
+  background: var(--background-primary);
+}
+.doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+}
+.doc-table__head {
+  background: var(--fill-secondary, var(--yami-color-palette-neutral-100));
+  border-bottom: 1px solid var(--border-normal, var(--color-border));
+}
+.doc-table__head .doc-table__cell--head {
+  padding: var(--spacing-200) var(--spacing-300);
+  font-size: 0.875em;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--foreground-secondary);
+}
+.doc-table__body .doc-table__row {
+  border-bottom: 1px solid var(--border-subtle, var(--color-border));
+  transition: background-color 0.15s ease;
+}
+.doc-table__body .doc-table__row:last-child {
+  border-bottom: none;
+}
+.doc-table__body .doc-table__row:hover {
+  background: var(--state-hover, rgba(0, 0, 0, 0.02));
+}
+.doc-table__cell {
+  padding: var(--spacing-200) var(--spacing-300);
+  text-align: left;
+  vertical-align: middle;
+  color: var(--foreground-primary);
+}
+.doc-table__cell:first-child {
+  font-weight: var(--fw-medium);
+}
+.doc-table__cell--head {
+  font-weight: var(--fw-medium);
+  color: var(--foreground-primary);
+}
+[data-theme='dark'] .doc-table-wrap {
+  border-color: var(--border-subtle);
+}
+[data-theme='dark'] .doc-table__head {
+  background: var(--fill-secondary);
+}
+[data-theme='dark'] .doc-table__body .doc-table__row:hover {
+  background: var(--state-hover);
+}
+
+/* Doc markdown horizontal rule (hr) */
+.doc-hr {
+  border: none;
+  height: 1px;
+  margin: var(--spacing-300) 0;
+  background: var(--divider-section, var(--border-subtle, var(--color-border)));
+}
+
+[data-theme='dark'] .doc-hr {
+  background: var(--divider-section, var(--border-subtle));
+}
+
+/* Doc callout / 应用块 (Obsidian-style > [!type] Title) */
+.doc-callout {
+  margin: var(--spacing-200) 0;
+  padding: var(--spacing-150) var(--spacing-200);
+  border-radius: var(--radius-md);
+  background: var(--fill-secondary, var(--yami-color-palette-neutral-100));
+}
+
+.doc-callout__title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-100);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-body);
+  margin-bottom: var(--spacing-100);
+  color: var(--foreground-primary);
+}
+
+[data-theme='dark'] .doc-callout__title {
+  color: var(--foreground-primary);
+}
+
+.doc-callout__icon {
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.doc-callout__body {
+  font-size: var(--fs-body);
+  line-height: 20px;
+  color: var(--foreground-secondary, var(--color-text-secondary));
+}
+
+.doc-callout__body .typo-p {
+  line-height: 20px;
+  margin-bottom: var(--spacing-100);
+}
+
+.doc-callout__body .typo-p:last-child {
+  margin-bottom: 0;
+}
+
+
+[data-theme='dark'] .doc-callout {
+  background: var(--fill-secondary);
+}
+
+.doc-quote {
+  margin: var(--spacing-200) 0;
+  padding-left: var(--spacing-300);
+  border-left: 4px solid var(--border-subtle, var(--color-border));
+  color: var(--foreground-secondary);
+}
+
+/* 规范状态（文档末尾，仅 status / last_updated，横排灰色） */
+.doc-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-200) var(--spacing-400);
+  margin-top: var(--spacing-400);
+  padding-top: var(--spacing-300);
+  border-top: 1px solid var(--divider-section, var(--border-subtle, var(--color-border)));
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--color-text-secondary);
+}
+.doc-status__value {
+  color: var(--color-text-secondary);
+}
+
 /* Logo page specific styles */
 .doc#logo {
   margin-left: 32px;
@@ -1094,34 +1234,35 @@ body {
   font-size: var(--fs-h1); 
   line-height: var(--lh-h1); 
   font-weight: var(--fw-medium); 
-  margin: var(--spacing-400) 0 var(--spacing-300);
+  margin: var(--spacing-400) 0 var(--spacing-100);
   text-align: left;
 }
 .typo-h2 { 
   font-size: var(--fs-h2); 
   line-height: var(--lh-h2); 
   font-weight: var(--fw-medium); 
-  margin: var(--spacing-300) 0 var(--spacing-200); 
-  border-bottom: 1px solid var(--divider-section, var(--border-subtle, var(--color-border))); 
-  padding-bottom: var(--spacing-100);
+  margin: var(--spacing-400) 0 var(--spacing-100); 
   text-align: left;
 }
 .typo-h3 { 
   font-size: var(--fs-h3); 
   line-height: var(--lh-h3); 
   font-weight: var(--fw-medium); 
-  margin: var(--spacing-300) 0 var(--spacing-150);
+  margin: var(--spacing-400) 0 var(--spacing-100);
   text-align: left;
 }
 .typo-p { 
   font-size: var(--fs-body); 
   line-height: var(--lh-body); 
-  margin: 0 0 var(--spacing-200); 
+  margin: 0 0 var(--spacing-150); 
   color: var(--color-text-primary);
   text-align: left;
 }
 .typo-ul, .typo-ol { 
-  margin: 0 0 var(--spacing-200) var(--spacing-400);
+  margin: 0 0 var(--spacing-200) 0;
+  padding-left: var(--spacing-300);
+  width: 100%;
+  box-sizing: border-box;
   text-align: left;
 }
 .typo-li { 

@@ -70,7 +70,7 @@ The UI fixes modified critical user interaction flows (Tab order, modal close lo
 ### ✅ How to Verify
 
 #### **Quick Check (10 min)** — Recommended for PR Review
-1. Open [`docs/regression/PR_REVIEW_CHECKLIST.md`](./docs/regression/PR_REVIEW_CHECKLIST.md)
+1. Open [`docs/regression/PR_REVIEW_CHECKLIST.md`](./PR_REVIEW_CHECKLIST.md)
 2. Execute **P0 items only** (5 checks):
    - Tab enters SearchModal input
    - Tab order complete (input → clear → results)
@@ -80,12 +80,12 @@ The UI fixes modified critical user interaction flows (Tab order, modal close lo
 3. Sign off in the checklist
 
 #### **Full Verification (30-60 min)** — Recommended for QA
-1. Follow [`docs/regression/search-modal-header-ui-consistency.md`](./docs/regression/search-modal-header-ui-consistency.md)
+1. Follow [`docs/regression/search-modal-header-ui-consistency.md`](./search-modal-header-ui-consistency.md)
 2. Test across desktop (≥768px) and mobile (<768px)
 3. Use Chrome DevTools to verify token alignment and focus states
 
 #### **Entry Point**
-Start at [`docs/regression/README.md`](./docs/regression/README.md) for quick navigation guide.
+Start at [`docs/regression/README.md`](./README.md) for quick navigation guide.
 
 ---
 
@@ -162,9 +162,9 @@ Start at [`docs/regression/README.md`](./docs/regression/README.md) for quick na
 
 **Estimated Review Time**: 15-20 min  
 **Approach**:
-1. ✅ Read [`docs/regression/README.md`](./docs/regression/README.md) (3 min) — understand structure
-2. ✅ Skim [`search-modal-header-ui-consistency.md`](./docs/regression/search-modal-header-ui-consistency.md) — verify SOP completeness (5 min)
-3. ✅ Execute [`PR_REVIEW_CHECKLIST.md`](./docs/regression/PR_REVIEW_CHECKLIST.md) **P0 items** (10 min) — hands-on verification
+1. ✅ Read [`docs/regression/README.md`](./README.md) (3 min) — understand structure
+2. ✅ Skim [`search-modal-header-ui-consistency.md`](./search-modal-header-ui-consistency.md) — verify SOP completeness (5 min)
+3. ✅ Execute [`PR_REVIEW_CHECKLIST.md`](./PR_REVIEW_CHECKLIST.md) **P0 items** (10 min) — hands-on verification
 4. ✅ Approve if all P0 checks pass
 
 #### **P0 Must-Test Items** (from checklist):

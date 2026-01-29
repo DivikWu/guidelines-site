@@ -1,98 +1,23 @@
-'use client';
-
-import HomePage from '../components/HomePage';
 import { SearchProvider } from '../components/SearchProvider';
-import Header from '../components/Header';
-import SearchModal, { SearchItem } from '../components/SearchModal';
-import { docs } from '../data/docs';
-import { useSearch } from '../components/SearchProvider';
-import { useMemo, useLayoutEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import HomePageClient from '../components/HomePageClient';
+import { getQuickStartCardsFromIndex } from '@/lib/content/nav-index';
+import { getRecentUpdates } from '@/lib/content/recent-updates';
+import { DEFAULT_CONTENT_DIR } from '@/lib/content/constants';
 
-function HomePageWrapper() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const { isOpen: isSearchModalOpen, closeSearch, openSearch } = useSearch();
+/** 首页卡片与最近更新来自 content，每次请求重新读取以保持与文档同步 */
+export const revalidate = 0;
 
-  // 处理路由切换到主页时的滚动，避免 Next.js 自动滚动警告
-  // 使用 useLayoutEffect 确保在浏览器绘制前（Next.js 尝试滚动前）就滚动到顶部
-  useLayoutEffect(() => {
-    if (pathname === '/' && typeof window !== 'undefined') {
-      // 手动滚动到顶部，避免 Next.js 检测到固定 Header 时的警告
-      window.scrollTo(0, 0);
-    }
-  }, [pathname]);
-
-  // 将 docs 转换为 SearchItem 格式
-  const searchItems: SearchItem[] = useMemo(() => docs.map(doc => {
-    const titleMatch = doc.markdown.match(/^#\s+(.+)$/m);
-    const title = titleMatch ? titleMatch[1].trim() : doc.id;
-    const descriptionMatch = doc.markdown.replace(/^#\s+.+$/m, '').trim().match(/^([^#\n].+)$/m);
-    const description = descriptionMatch ? descriptionMatch[1].trim().slice(0, 60) + '...' : undefined;
-
-    // 根据 doc id 确定路由
-    let href = '/overview';
-    if (doc.id === 'overview' || doc.id === 'changelog' || doc.id === 'update-process') {
-      href = '/overview';
-    } else if (doc.id.startsWith('brand-') || doc.id === 'logo' || doc.id === 'typeface') {
-      href = '/foundations/brand';
-    } else if (['color', 'typography', 'spacing', 'layout', 'radius', 'elevation', 'iconography', 'motion'].includes(doc.id)) {
-      href = `/foundations/${doc.id}`;
-    } else if (['button', 'tabs', 'badge', 'heading', 'filter', 'navbar', 'product-card', 'forms'].includes(doc.id)) {
-      href = `/components/${doc.id}`;
-    } else if (doc.id === 'patterns-overview') {
-      href = '/components';
-    } else if (doc.id === 'resources-overview') {
-      href = '/resources';
-    }
-
-    return {
-      id: doc.id,
-      type: (doc.id.includes('button') || doc.id.includes('tabs') || doc.id.includes('badge') || 
-             doc.id.includes('heading') || doc.id.includes('filter') || doc.id.includes('navbar') ||
-             doc.id.includes('product-card') || doc.id.includes('forms')) ? 'component' : 
-            (doc.id.includes('changelog') || doc.id.includes('update-process')) ? 'resource' : 'page',
-      title,
-      description,
-      href
-    };
-  }), []);
-
-  const handleSearchSelect = (pageId: string) => {
-    const item = searchItems.find(item => item.id === pageId);
-    if (item) {
-      router.push(item.href);
-      closeSearch();
-    }
-  };
-
-  return (
-    <>
-      <Header 
-        onToggleSidebar={() => {}}
-        isOpen={false}
-        docs={docs}
-        onSearchSelect={handleSearchSelect}
-        isOverview={false}
-        showMenuButton={false}
-        showExtraActions
-        showSearchSlot
-      />
-      <SearchModal
-        open={isSearchModalOpen}
-        onOpenChange={(open) => open ? openSearch() : closeSearch()}
-        items={searchItems}
-        onSelect={(item) => handleSearchSelect(item.id)}
-      />
-      <HomePage />
-    </>
-  );
-}
-
-export default function Page() {
+export default async function Page() {
+  const [cards, recentUpdates] = await Promise.all([
+    getQuickStartCardsFromIndex(DEFAULT_CONTENT_DIR),
+    Promise.resolve(getRecentUpdates(DEFAULT_CONTENT_DIR)),
+  ]);
   return (
     <SearchProvider>
-      <HomePageWrapper />
+      <HomePageClient
+        initialQuickStartCards={cards.length > 0 ? cards : undefined}
+        initialRecentUpdates={recentUpdates}
+      />
     </SearchProvider>
   );
 }

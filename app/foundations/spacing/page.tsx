@@ -1,14 +1,5 @@
-import AppShell from '../../../components/AppShell';
-import { docs } from '../../../data/docs';
-import { SearchProvider } from '../../../components/SearchProvider';
+import RedirectToDocs from '@/components/RedirectToDocs';
 
 export default function SpacingPage() {
-  const spacingDoc = docs.find(doc => doc.id === 'spacing');
-  const docsToShow = spacingDoc ? [spacingDoc] : docs;
-
-  return (
-    <SearchProvider>
-      <AppShell docs={docsToShow} />
-    </SearchProvider>
-  );
+  return <RedirectToDocs path="/docs/C_基础规范/间距" />;
 }
