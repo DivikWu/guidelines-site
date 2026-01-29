@@ -4,8 +4,9 @@ const basePath = isGithubPages ? (process.env.NEXT_PUBLIC_BASE_PATH || '') : ''
 
 // 仅在对静态站点构建时使用 output: export；本地 dev 不导出，文档路由可随 content/ 动态渲染，同步后无需重启
 const nextConfig = {
-  ...(isGithubPages ? { output: 'export' } : {}),
+  ...(isGithubPages ? { output: 'export', trailingSlash: true } : {}),
   basePath,
+  // GitHub Pages 项目站点的根即 /guidelines-site，assetPrefix 与 basePath 一致
   assetPrefix: basePath ? `${basePath}/` : '',
   images: { unoptimized: true },
 }

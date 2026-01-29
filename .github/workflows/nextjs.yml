@@ -50,11 +50,14 @@ jobs:
 
       - name: Build with Next.js
         # 使用 npm run build，确保执行字体 / asset 修复脚本
-        # 设置 GITHUB_PAGES 环境变量以启用 basePath
+        # 设置 GITHUB_PAGES 环境变量以启用 basePath（与仓库名一致，站点根为 /guidelines-site）
         env:
           GITHUB_PAGES: "true"
           NEXT_PUBLIC_BASE_PATH: "/guidelines-site"
         run: npm run build
+
+      - name: Verify export root
+        run: ls -la out/ && test -f out/index.html && echo "index.html present at root"
     
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
