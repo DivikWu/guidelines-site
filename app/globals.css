@@ -1489,7 +1489,7 @@ body {
   .content {
     width: 100% !important;
     margin-left: 0 !important;
-    padding: var(--spacing-300) var(--spacing-200);
+    padding: 8px;
     display: flex;
     flex-direction: column;
     align-items: center; /* 确保移动端也保持居中 */
@@ -1499,6 +1499,7 @@ body {
 
   .doc {
     min-height: calc(100vh - var(--header-height) - var(--spacing-300) * 2);
+    padding: 16px;
   }
   
   .app-body {
@@ -3027,12 +3028,17 @@ html[data-search-open="true"] .header .header__search input:focus {
   }
   
   .quick-start-section__container {
-    padding-left: 16px;
-    padding-right: 16px;
+    padding-left: 8px;
+    padding-right: 8px;
   }
   
   .recent-updates-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .recent-updates-section__container {
+    padding-left: 8px;
+    padding-right: 8px;
   }
   
   .recent-updates-section__header {

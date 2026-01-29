@@ -427,7 +427,7 @@ function Header({
       <div className="header__actions">
         <button onClick={toggle} aria-label="切换主题模式" title="主题">
           <Icon 
-            name="ds-icon-sun-01" 
+            name="ds-icon-sun-03" 
             size={20}
             className="header__action-icon leading-none"
           />
