@@ -153,6 +153,10 @@ input, button, select, textarea, kbd {
   color: var(--foreground-primary);
 }
 
+html {
+  scroll-padding-top: var(--layout-header-height);
+}
+
 body {
   margin: 0;
   font-family: var(--font-family-brand, var(--font-body)), var(--font-family-cjk), sans-serif;

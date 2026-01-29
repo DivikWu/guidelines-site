@@ -6,12 +6,22 @@ import Header from '../components/Header';
 import SearchModal, { SearchItem } from '../components/SearchModal';
 import { docs } from '../data/docs';
 import { useSearch } from '../components/SearchProvider';
-import { useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useMemo, useLayoutEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 
 function HomePageWrapper() {
   const router = useRouter();
+  const pathname = usePathname();
   const { isOpen: isSearchModalOpen, closeSearch, openSearch } = useSearch();
+
+  // 处理路由切换到主页时的滚动，避免 Next.js 自动滚动警告
+  // 使用 useLayoutEffect 确保在浏览器绘制前（Next.js 尝试滚动前）就滚动到顶部
+  useLayoutEffect(() => {
+    if (pathname === '/' && typeof window !== 'undefined') {
+      // 手动滚动到顶部，避免 Next.js 检测到固定 Header 时的警告
+      window.scrollTo(0, 0);
+    }
+  }, [pathname]);
 
   // 将 docs 转换为 SearchItem 格式
   const searchItems: SearchItem[] = useMemo(() => docs.map(doc => {

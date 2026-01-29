@@ -35,10 +35,6 @@ function Header({
   showSearchSlot = false,
   onToggleDesktopSidebar
 }: HeaderProps) {
-  // #region agent log
-  const isServer = typeof window === 'undefined';
-  fetch('http://127.0.0.1:7243/ingest/bec5ef14-f4e7-4569-92de-812c24e45b28',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Header.tsx:19',message:'Header render start',data:{docsLength:docs.length,hasOnToggleSidebar:!!onToggleSidebar,hasOnSearchSelect:!!onSearchSelect,isServer},timestamp:Date.now(),sessionId:'debug-session',runId:'hydrate-debug',hypothesisId:'H1'})}).catch(()=>{});
-  // #endregion
   const { theme, toggle } = useTokenTheme();
   
   // 检查 search-hidden 状态以控制搜索按钮显示
@@ -60,9 +56,6 @@ function Header({
     
     return () => observer.disconnect();
   }, []);
-  // #region agent log
-  fetch('http://127.0.0.1:7243/ingest/bec5ef14-f4e7-4569-92de-812c24e45b28',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Header.tsx:23',message:'useTokenTheme result',data:{theme,isServer},timestamp:Date.now(),sessionId:'debug-session',runId:'hydrate-debug',hypothesisId:'H2'})}).catch(()=>{});
-  // #endregion
   const headerRef = useRef<HTMLElement | null>(null);
   const searchRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -79,15 +72,9 @@ function Header({
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const pathname = usePathname();
   const { openSearch } = useSearch();
-  // #region agent log
-  fetch('http://127.0.0.1:7243/ingest/bec5ef14-f4e7-4569-92de-812c24e45b28',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Header.tsx:35',message:'State initialization',data:{searchQuery,showResults,selectedIndex,isScrolled,mounted,isServer},timestamp:Date.now(),sessionId:'debug-session',runId:'hydrate-debug',hypothesisId:'H4'})}).catch(()=>{});
-  // #endregion
 
   // 标记组件已在客户端挂载
   useEffect(() => {
-    // #region agent log
-    fetch('http://127.0.0.1:7243/ingest/bec5ef14-f4e7-4569-92de-812c24e45b28',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Header.tsx:42',message:'Header mounted effect (client only)',data:{headerRefExists:!!headerRef.current,headerTagName:headerRef.current?.tagName,scrollY:typeof window !== 'undefined' ? window.scrollY : null},timestamp:Date.now(),sessionId:'debug-session',runId:'hydrate-debug',hypothesisId:'H1'})}).catch(()=>{});
-    // #endregion
     setMounted(true);
   }, []);
 
@@ -151,27 +138,18 @@ function Header({
   // 只在客户端挂载后才检查滚动状态，避免水合不匹配
   useEffect(() => {
     if (!mounted) {
-      // #region agent log
-      fetch('http://127.0.0.1:7243/ingest/bec5ef14-f4e7-4569-92de-812c24e45b28',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Header.tsx:52',message:'Scroll effect skipped (not mounted)',data:{mounted},timestamp:Date.now(),sessionId:'debug-session',runId:'hydrate-debug',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
       return;
     }
     
     const handleScroll = () => {
       const scrollTop = window.scrollY || document.documentElement.scrollTop;
       const newIsScrolled = scrollTop > 0;
-      // #region agent log
-      fetch('http://127.0.0.1:7243/ingest/bec5ef14-f4e7-4569-92de-812c24e45b28',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Header.tsx:58',message:'Scroll handler',data:{scrollTop,newIsScrolled,currentIsScrolled:isScrolled},timestamp:Date.now(),sessionId:'debug-session',runId:'hydrate-debug',hypothesisId:'H1'})}).catch(()=>{});
-      // #endregion
       setIsScrolled(newIsScrolled);
     };
 
     // 初始化检查
     const initialScrollTop = window.scrollY || document.documentElement.scrollTop;
     const initialIsScrolled = initialScrollTop > 0;
-    // #region agent log
-    fetch('http://127.0.0.1:7243/ingest/bec5ef14-f4e7-4569-92de-812c24e45b28',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Header.tsx:66',message:'Scroll effect init',data:{initialScrollTop,initialIsScrolled,mounted},timestamp:Date.now(),sessionId:'debug-session',runId:'hydrate-debug',hypothesisId:'H1'})}).catch(()=>{});
-    // #endregion
     setIsScrolled(initialIsScrolled);
     window.addEventListener('scroll', handleScroll, { passive: true });
     
@@ -349,11 +327,8 @@ function Header({
     };
   });
 
-  // #region agent log
   const finalClassName = `header ${mounted && isScrolled ? 'header--scrolled' : ''}`;
   const searchClassName = `header__search ${isSearchExpanded ? 'header__search--expanded' : showSearchSlot ? 'header__search--slot' : 'header__search--collapsed'}`;
-  fetch('http://127.0.0.1:7243/ingest/bec5ef14-f4e7-4569-92de-812c24e45b28',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'Header.tsx:201',message:'Header return statement',data:{mounted,isScrolled,showResults,className:finalClassName,isServer,headerRefExists:!!headerRef.current},timestamp:Date.now(),sessionId:'debug-session',runId:'hydrate-debug',hypothesisId:'H1'})}).catch(()=>{});
-  // #endregion
   // 最终显示规则实现：
   // 1. 非 Overview：永远显示
   // 2. Overview：仅当页面内 Search 模块完全隐藏 (isSearchHidden) 时显示

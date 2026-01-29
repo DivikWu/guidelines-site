@@ -3,7 +3,6 @@ import '../styles/tokens.css';
 import '../styles/theme.css';
 import './globals.css';
 import { TokenProvider } from '../components/TokenProvider';
-import FontDebugger from '../components/FontDebugger';
 
 export const metadata = {
   title: 'YAMI Design Guidelines | 设计规范',
@@ -22,6 +21,12 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <head>
+        {/* 预加载字体 CSS 文件，确保字体定义及时应用 */}
+        <link
+          rel="preload"
+          href={`${fontBasePath}/icofont.css`}
+          as="style"
+        />
         {/* 预加载字体文件，提升加载性能 */}
         <link
           rel="preload"
@@ -34,7 +39,6 @@ export default function RootLayout({
         <link rel="stylesheet" href={`${fontBasePath}/icofont.css`} />
       </head>
       <body>
-        <FontDebugger />
         <TokenProvider>{children}</TokenProvider>
       </body>
     </html>
