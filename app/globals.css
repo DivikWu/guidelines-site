@@ -129,6 +129,25 @@
   --palette-placeholder-bg: rgba(255, 255, 255, 0.04); /* skeleton/placeholder */
 }
 
+/* 顶部加载进度条：固定顶部，不占布局高度，Primary 色 */
+.top-loading-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 3000;
+  background: transparent;
+  pointer-events: none;
+  transition: opacity var(--yami-animation-duration-normal, 250ms) var(--yami-animation-easing-ease-out, ease-out);
+}
+.top-loading-bar__fill {
+  height: 100%;
+  width: var(--progress, 0%);
+  background: #000;
+  transition: width 80ms linear;
+}
+
 * { 
   box-sizing: border-box; 
   /* 隐藏所有元素的滚动条，但保持可滚动性 */
@@ -2164,6 +2183,69 @@ body {
   0% { opacity: 0.5; }
   50% { opacity: 1; }
   100% { opacity: 0.5; }
+}
+
+/* 页面主内容区骨架屏：标题 + 正文行 + 可选列表（padding 由外层 .page-skeleton-wrapper.doc 提供） */
+.page-skeleton {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-300);
+  pointer-events: none;
+}
+.page-skeleton__title {
+  height: var(--lh-h2, 1.25em);
+  max-height: 32px;
+  width: 65%;
+  background: var(--palette-placeholder-bg, var(--fill-secondary));
+  border-radius: var(--radius-md);
+  animation: skeletonPulse 1.5s infinite ease-in-out;
+}
+.page-skeleton__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-200);
+}
+.page-skeleton__line {
+  height: var(--lh-body, 1.5em);
+  max-height: 20px;
+  background: var(--palette-placeholder-bg, var(--fill-secondary));
+  border-radius: var(--radius-sm);
+  animation: skeletonPulse 1.5s infinite ease-in-out;
+}
+.page-skeleton__line--list-first {
+  width: 85%;
+}
+.page-skeleton__line--list-second {
+  width: 60%;
+  margin-top: 4px;
+}
+.page-skeleton__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-300);
+  margin-top: var(--spacing-200);
+}
+.page-skeleton__list-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+[data-theme='dark'] .page-skeleton__title,
+[data-theme='dark'] .page-skeleton__line {
+  background: var(--palette-placeholder-bg, rgba(255, 255, 255, 0.04));
+}
+
+/* 骨架屏外层：与 .doc 同尺寸与背景，减少 CLS */
+.page-skeleton-wrapper.doc {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  min-height: calc(100vh - var(--header-height) - var(--spacing-200) * 2);
+  background: var(--background-secondary);
+  padding: var(--spacing-400) var(--spacing-500);
+  border-radius: var(--radius-lg, var(--yami-border-radius-large));
+  box-shadow: var(--shadow-1, var(--yami-shadow-e1));
 }
 
 /* 移动端适配 */

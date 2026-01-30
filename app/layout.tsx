@@ -6,6 +6,7 @@ import Script from 'next/script';
 import { BasePathProvider } from '../contexts/BasePathContext';
 import { TokenProvider } from '../components/TokenProvider';
 import { SearchProvider } from '../components/SearchProvider';
+import TopLoadingBar from '../components/TopLoadingBar';
 
 export const metadata = {
   title: 'YAMI Design Guidelines | 设计规范',
@@ -44,6 +45,7 @@ export default function RootLayout({
         <link rel="stylesheet" href={`${fontBasePath}/icofont.css`} />
       </head>
       <body data-layout="root">
+        <TopLoadingBar />
         <Script
           id="theme-init"
           strategy="beforeInteractive"
