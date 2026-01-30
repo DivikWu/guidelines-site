@@ -1,4 +1,4 @@
-import { getDocTitleAndDescription } from "./loaders";
+import { getDocTitleAndDescriptionAsync } from "./loaders";
 
 export interface RecentUpdate {
   id: string;
@@ -26,16 +26,24 @@ const recentUpdatesMeta: {
   { id: "motion", status: "Not Started", href: "/docs/C_基础规范/动效", contentPath: "docs/C_基础规范/✨ 动效.md" },
 ];
 
-/** 从 content 文档解析最近更新列表：每条使用文档的一级标题与紧随其后的描述段落 */
-export function getRecentUpdates(contentRoot?: string): RecentUpdate[] {
-  return recentUpdatesMeta.map((meta) => {
-    const { title, description } = getDocTitleAndDescription(meta.contentPath, contentRoot);
-    return {
-      id: meta.id,
-      title: title || meta.id,
-      description: description ?? null,
-      status: meta.status,
-      href: meta.href,
-    };
-  });
+/** 从 content 文档解析最近更新列表：每条使用文档的一级标题与紧随其后的描述段落。并行读取各文档。 */
+export async function getRecentUpdates(
+  contentRoot?: string
+): Promise<RecentUpdate[]> {
+  const results = await Promise.all(
+    recentUpdatesMeta.map(async (meta) => {
+      const { title, description } = await getDocTitleAndDescriptionAsync(
+        meta.contentPath,
+        contentRoot
+      );
+      return {
+        id: meta.id,
+        title: title || meta.id,
+        description: description ?? null,
+        status: meta.status,
+        href: meta.href,
+      };
+    })
+  );
+  return results;
 }

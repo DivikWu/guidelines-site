@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback, ReactNode } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import Icon from './Icon';
+import { getSearchRecent } from '@/lib/search-recent-cache';
 
 export interface SearchItem {
   id: string;
@@ -43,6 +44,19 @@ const DEFAULT_MOCK_ITEMS: SearchItem[] = [
   { id: 'update-process', type: 'resource', title: '更新流程 Update Process', description: '设计系统更新流程规范', href: '#update-process' },
 ];
 
+const LATEST_IDS = ['button', 'tabs', 'filter', 'badge'] as const;
+const LATEST_ID_SET = new Set<string>(LATEST_IDS);
+
+const SEARCH_MODAL_SKELETON_ITEMS = [1, 2, 3].map((i) => (
+  <div key={i} className="search-modal__skeleton-item">
+    <div className="search-modal__skeleton-icon" />
+    <div className="search-modal__skeleton-content">
+      <div className="search-modal__skeleton-title" />
+      <div className="search-modal__skeleton-desc" />
+    </div>
+  </div>
+));
+
 export default function SearchModal({
   open,
   onOpenChange,
@@ -53,44 +67,36 @@ export default function SearchModal({
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isLoading, setIsLoading] = useState(false);
-  const [recentItems, setRecentItems] = useState<SearchItem[]>([]);
+  const [recentItems, setRecentItems] = useState<SearchItem[]>(() => {
+    if (typeof window === 'undefined') return [];
+    return getSearchRecent() as SearchItem[];
+  });
   const inputRef = useRef<HTMLInputElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const resultsListRef = useRef<HTMLUListElement>(null);
   const [mounted, setMounted] = useState(false);
-  const previousBodyOverflowRef = useRef<string>('');
-  const previousBodyPaddingRightRef = useRef<string>('');
+  const previousBodyStyleRef = useRef<string>('');
 
-  // 加载最近访问
+  // 打开时刷新最近访问（跨标签同步）
   useEffect(() => {
-    if (open) {
-      const saved = localStorage.getItem('search-recent');
-      if (saved) {
-        try {
-          setRecentItems(JSON.parse(saved));
-        } catch (e) {
-          console.error('Failed to parse recent items', e);
-        }
-      }
+    if (open && typeof window !== 'undefined') {
+      setRecentItems(getSearchRecent() as SearchItem[]);
     }
   }, [open]);
 
-  // 1. 锁滚动稳定性修复：防止滚动条消失导致的页面跳动
+  // 1. 锁滚动稳定性修复：防止滚动条消失导致的页面跳动（单次 cssText 赋值减少 reflow）
   const lockScroll = useCallback(() => {
     const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
-    previousBodyOverflowRef.current = document.body.style.overflow;
-    previousBodyPaddingRightRef.current = document.body.style.paddingRight;
-    
-    document.body.style.overflow = 'hidden';
-    if (scrollBarWidth > 0) {
-      document.body.style.paddingRight = `${scrollBarWidth}px`;
-    }
+    previousBodyStyleRef.current = document.body.style.cssText;
+    const extra =
+      'overflow: hidden;' +
+      (scrollBarWidth > 0 ? `padding-right: ${scrollBarWidth}px;` : '');
+    document.body.style.cssText = previousBodyStyleRef.current + (previousBodyStyleRef.current ? ';' : '') + extra;
   }, []);
 
   const unlockScroll = useCallback(() => {
-    document.body.style.overflow = previousBodyOverflowRef.current;
-    document.body.style.paddingRight = previousBodyPaddingRightRef.current;
+    document.body.style.cssText = previousBodyStyleRef.current;
   }, []);
 
   // 仅在客户端挂载
@@ -139,9 +145,9 @@ export default function SearchModal({
   useEffect(() => {
     if (!query.trim()) {
       // 1. 最近更新 (Latest Updates) - 静态兜底 4 条
-      const latestIds = ['button', 'tabs', 'filter', 'badge'];
-      const latestItems = items.filter(item => latestIds.includes(item.id))
-        .sort((a, b) => latestIds.indexOf(a.id) - latestIds.indexOf(b.id))
+      const latestItems = items
+        .filter((item) => LATEST_ID_SET.has(item.id))
+        .toSorted((a, b) => LATEST_IDS.indexOf(a.id as (typeof LATEST_IDS)[number]) - LATEST_IDS.indexOf(b.id as (typeof LATEST_IDS)[number]))
         .slice(0, 4);
       
       // 2. 最近访问 (Recent) - 来自 localStorage (recentItems state)，限制显示 4 条
@@ -231,6 +237,13 @@ export default function SearchModal({
     }
   };
 
+  const highlightRegex = useMemo(() => {
+    const trimmed = query.trim();
+    if (!trimmed) return null;
+    const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return new RegExp(`(${escaped})`, 'gi');
+  }, [query]);
+
   // 渲染单个搜索项
   const renderItem = (item: SearchItem, index: number) => {
     const isSelected = index === selectedIndex;
@@ -252,14 +265,14 @@ export default function SearchModal({
           </div>
           <div className="search-modal__item-content">
             <div className="search-modal__item-title">
-              {highlightText(item.title || item.id, query)}
+              {highlightText(item.title || item.id)}
               {normalizedType && normalizedType !== 'page' && (
                 <span className="search-modal__item-tag">{normalizedType.toUpperCase()}</span>
               )}
             </div>
             {item.description && (
               <div className="search-modal__item-description">
-                {highlightText(item.description, query)}
+                {highlightText(item.description)}
               </div>
             )}
           </div>
@@ -272,12 +285,11 @@ export default function SearchModal({
   };
 
   // 高亮匹配文本
-  const highlightText = (text: string, query: string) => {
-    if (!query.trim()) return text;
-    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-    const parts = text.split(regex);
-    return parts.map((part, index) => 
-      regex.test(part) ? (
+  const highlightText = (text: string) => {
+    if (!highlightRegex) return text;
+    const parts = text.split(highlightRegex);
+    return parts.map((part, index) =>
+      index % 2 === 1 ? (
         <mark key={index} className="search-modal__highlight">{part}</mark>
       ) : (
         part
@@ -359,15 +371,7 @@ export default function SearchModal({
             {isLoading ? (
               // 加载状态：骨架屏占位
               <div className="search-modal__loading">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="search-modal__skeleton-item">
-                    <div className="search-modal__skeleton-icon" />
-                    <div className="search-modal__skeleton-content">
-                      <div className="search-modal__skeleton-title" />
-                      <div className="search-modal__skeleton-desc" />
-                    </div>
-                  </div>
-                ))}
+                {SEARCH_MODAL_SKELETON_ITEMS}
               </div>
             ) : displayedItems.length === 0 ? (
               // 空状态
@@ -384,8 +388,7 @@ export default function SearchModal({
               // 默认视图：分组展示
               <div ref={listRef} style={{ display: 'flex', flexDirection: 'column', gap: '16px', paddingTop: '8px' }}>
                 {(() => {
-                  const latestIds = ['button', 'tabs', 'filter', 'badge'];
-                  const latestItems = items.filter(item => latestIds.includes(item.id)).slice(0, 4);
+                  const latestItems = items.filter((item) => LATEST_ID_SET.has(item.id)).slice(0, 4);
                   const latestLen = latestItems.length;
                   const displayRecentItems = recentItems.slice(0, 4);
                   const recentLen = displayRecentItems.length;

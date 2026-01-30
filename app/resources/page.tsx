@@ -1,6 +1,5 @@
 import AppShell from '../../components/AppShell';
 import { docs } from '../../data/docs';
-import { SearchProvider } from '../../components/SearchProvider';
 
 export default function ResourcesPage() {
   // 过滤出 Resources 相关的文档
@@ -32,15 +31,11 @@ export default function ResourcesPage() {
 `
     };
     return (
-      <SearchProvider>
-        <AppShell docs={[placeholderDoc]} />
-      </SearchProvider>
+      <AppShell docs={[placeholderDoc]} />
     );
   }
 
   return (
-    <SearchProvider>
-      <AppShell docs={resourcesDocs} />
-    </SearchProvider>
+    <AppShell docs={resourcesDocs} />
   );
 }

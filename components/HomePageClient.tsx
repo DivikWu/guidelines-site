@@ -1,13 +1,18 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import HomePage from './HomePage';
-import { SearchProvider } from './SearchProvider';
 import Header from './Header';
-import SearchModal, { SearchItem } from './SearchModal';
+import type { SearchItem } from './SearchModal';
 import { docs } from '../data/docs';
 import { useSearch } from './SearchProvider';
-import { useMemo, useLayoutEffect } from 'react';
+import { useMemo, useLayoutEffect, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
+
+const SearchModal = dynamic(
+  () => import('@/components/SearchModal').then((m) => ({ default: m.default })),
+  { ssr: false }
+);
 import type { QuickStartCard } from '@/lib/content/nav-index';
 import type { RecentUpdate } from '@/data/home';
 
@@ -73,26 +78,31 @@ export default function HomePageClient({
     };
   }), []);
 
-  const handleSearchSelect = (pageId: string) => {
-    const item = searchItems.find(item => item.id === pageId);
-    if (item) {
-      router.push(item.href);
-      closeSearch();
-    }
-  };
+  const handleSearchSelect = useCallback(
+    (pageId: string) => {
+      const item = searchItems.find((i) => i.id === pageId);
+      if (item) {
+        router.push(item.href, { scroll: false });
+        closeSearch();
+      }
+    },
+    [router, closeSearch, searchItems]
+  );
 
   return (
     <>
-      <Header
-        onToggleSidebar={() => {}}
-        isOpen={false}
-        docs={docs}
-        onSearchSelect={handleSearchSelect}
-        isOverview={false}
-        showMenuButton={false}
-        showExtraActions
-        showSearchSlot
-      />
+      <div className="header-wrapper">
+        <Header
+          onToggleSidebar={() => {}}
+          isOpen={false}
+          docs={docs}
+          onSearchSelect={handleSearchSelect}
+          isOverview={false}
+          showMenuButton={false}
+          showExtraActions
+          showSearchSlot
+        />
+      </div>
       <SearchModal
         open={isSearchModalOpen}
         onOpenChange={(open) => open ? openSearch() : closeSearch()}

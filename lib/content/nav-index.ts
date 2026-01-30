@@ -163,15 +163,18 @@ const FALLBACK_HREFS = [
   `/docs/${encodeURIComponent("F_资源")}/${encodeURIComponent("Token概述")}`,
 ];
 
-/** 从导航索引文件解析「导航索引」区块（支持表格或 **标题**+描述 格式），得到 QuickStartCard[]；失败或缺失时返回空数组 */
-export function getQuickStartCardsFromIndex(contentRoot?: string): QuickStartCard[] {
+/** 从导航索引文件解析「导航索引」区块（支持表格或 **标题**+描述 格式），得到 QuickStartCard[]；失败或缺失时返回空数组。读文件与 getContentTree 并行执行。 */
+export async function getQuickStartCardsFromIndex(
+  contentRoot?: string
+): Promise<QuickStartCard[]> {
   const root = contentRoot ?? getContentRoot();
   const indexPath = findNavIndexPath(root);
   if (!indexPath || !fs.existsSync(indexPath)) return [];
 
-  const raw = fs.readFileSync(indexPath, "utf-8");
-  const body = stripFrontMatter(raw);
+  const rawPromise = fs.promises.readFile(indexPath, "utf-8");
   const tree = getContentTree(contentRoot ?? DEFAULT_CONTENT_DIR);
+  const raw = await rawPromise;
+  const body = stripFrontMatter(raw);
   const resolveHref = buildDocIdToHref(tree);
 
   // 优先解析表格格式（含 wikilink）

@@ -1,22 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, Children, useEffect } from 'react';
 import Tabs from './Tabs';
-import DocContent from './DocContent';
-import { DocPage } from '../data/docs';
+
+const TAB_IDS = ['overview', 'changelog', 'update-process'] as const;
 
 interface OverviewContentProps {
-  overviewPage: DocPage;
-  changelogPage: DocPage;
-  updateProcessPage: DocPage;
+  children?: React.ReactNode;
 }
 
-export default function OverviewContent({ 
-  overviewPage, 
-  changelogPage, 
-  updateProcessPage 
-}: OverviewContentProps) {
-  const [activeTab, setActiveTab] = useState('overview');
+export default function OverviewContent({ children }: OverviewContentProps) {
+  const [activeTab, setActiveTab] = useState<string>('overview');
+  const items = Children.toArray(children);
 
   const tabs = [
     { id: 'overview', label: 'Overview' },
@@ -24,28 +19,19 @@ export default function OverviewContent({
     { id: 'update-process', label: 'Update Process' }
   ];
 
-  // 设置 CSS 变量用于指示器宽度计算
-  if (typeof window !== 'undefined') {
-    document.documentElement.style.setProperty('--tabs-count', tabs.length.toString());
-  }
-
-  const getActivePage = () => {
-    switch (activeTab) {
-      case 'overview':
-        return overviewPage;
-      case 'changelog':
-        return changelogPage;
-      case 'update-process':
-        return updateProcessPage;
-      default:
-        return overviewPage;
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      document.documentElement.style.setProperty('--tabs-count', String(tabs.length));
     }
-  };
+  }, [tabs.length]);
+
+  const activeIndex = Math.max(0, TAB_IDS.indexOf(activeTab as (typeof TAB_IDS)[number]));
+  const visibleChild = items[activeIndex] ?? null;
 
   return (
     <div className="overview-content">
       <Tabs tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
-      <DocContent page={getActivePage()} hidden={false} />
+      {visibleChild}
     </div>
   );
 }

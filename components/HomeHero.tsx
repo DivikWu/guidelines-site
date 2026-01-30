@@ -5,7 +5,7 @@ import { useSearch } from './SearchProvider';
 import Icon from './Icon';
 
 export default function HomeHero() {
-  const { openSearch } = useSearch();
+  const { openSearch, preloadSearch } = useSearch();
   const searchRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -62,6 +62,8 @@ export default function HomeHero() {
               type="search"
               className="home-hero__search-input"
               placeholder="搜索组件、规范或关键词"
+              onMouseEnter={preloadSearch}
+              onFocus={preloadSearch}
               onClick={() => openSearch()}
               readOnly
               aria-label="搜索"

@@ -511,6 +511,11 @@ body {
   margin: 0;
 }
 
+/* 包裹 fixed header，避免 Next.js layout-router 的 auto-scroll 警告 */
+.header-wrapper {
+  /* 仅作包裹，fixed 子元素已脱离流，不占空间 */
+}
+
 .header {
   position: fixed;
   top: 0;
@@ -847,6 +852,8 @@ body {
 
 .search-results__item {
   border-bottom: 1px solid var(--divider-section, var(--divider-normal, var(--border-subtle, var(--color-border))));
+  content-visibility: auto;
+  contain-intrinsic-size: 0 60px;
 }
 
 [data-theme='dark'] .search-results__item {
@@ -1062,6 +1069,8 @@ body {
   background-color: transparent;
 }
 .doc { 
+  content-visibility: auto;
+  contain-intrinsic-size: auto 500px;
   scroll-margin-top: calc(var(--header-height) + var(--spacing-200)); 
   text-align: left;
   max-width: 960px;

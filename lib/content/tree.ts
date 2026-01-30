@@ -38,7 +38,7 @@ export function getContentTree(contentRoot?: string): ContentTree {
     .readdirSync(root, { withFileTypes: true })
     .filter((d) => d.isDirectory())
     .map((d) => d.name)
-    .sort();
+    .toSorted();
 
   const sections: ContentSection[] = [];
 
@@ -54,7 +54,7 @@ export function getContentTree(contentRoot?: string): ContentTree {
     const files = entries
       .filter((e) => e.isFile() && e.name.endsWith(".md"))
       .map((f) => f.name)
-      .sort();
+      .toSorted();
 
     const items = files.map((fileName) => {
       const rawName = fileName.replace(/\.md$/, "");

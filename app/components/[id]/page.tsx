@@ -1,6 +1,5 @@
 import AppShell from '../../../components/AppShell';
 import { docs } from '../../../data/docs';
-import { SearchProvider } from '../../../components/SearchProvider';
 
 interface ComponentPageProps {
   params: { id: string };
@@ -19,8 +18,6 @@ export default function ComponentPage({ params }: ComponentPageProps) {
   const docsToShow = componentDoc ? [componentDoc] : docs;
 
   return (
-    <SearchProvider>
-      <AppShell docs={docsToShow} />
-    </SearchProvider>
+    <AppShell docs={docsToShow} />
   );
 }

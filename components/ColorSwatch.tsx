@@ -43,7 +43,7 @@ export default function ColorSwatch({ name, value, description }: ColorSwatchPro
         <div className="color-swatch__name">{name}</div>
         <div className="color-swatch__value">{value}</div>
       </div>
-      {description && <div className="color-swatch__description">{description}</div>}
+      {description ? <div className="color-swatch__description">{description}</div> : null}
     </div>
   );
 }

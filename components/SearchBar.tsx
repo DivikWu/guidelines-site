@@ -14,7 +14,7 @@ interface SearchBarProps {
 export default function SearchBar({ docs = [] }: SearchBarProps) {
   const searchBarRef = useRef<HTMLElement>(null);
   const searchTriggerRef = useRef<HTMLInputElement>(null);
-  const { openSearch } = useSearch();
+  const { openSearch, preloadSearch } = useSearch();
   
   // 使用 IntersectionObserver 监听搜索模块容器本身
   // rootMargin 为 0 确保只有完全离开视口时才触发
@@ -65,6 +65,8 @@ export default function SearchBar({ docs = [] }: SearchBarProps) {
                 type="search"
                 className="search-bar__input"
                 placeholder="搜索规范、组件或资源…"
+                onMouseEnter={preloadSearch}
+                onFocus={preloadSearch}
                 onClick={() => openSearch()}
                 readOnly
                 aria-label="搜索"

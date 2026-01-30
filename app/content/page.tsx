@@ -1,5 +1,4 @@
 import AppShell from '../../components/AppShell';
-import { SearchProvider } from '../../components/SearchProvider';
 
 export default function ContentPage() {
   // 创建内容策略的占位文档
@@ -26,8 +25,6 @@ export default function ContentPage() {
   };
 
   return (
-    <SearchProvider>
-      <AppShell docs={[contentDoc]} />
-    </SearchProvider>
+    <AppShell docs={[contentDoc]} />
   );
 }

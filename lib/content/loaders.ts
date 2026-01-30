@@ -86,7 +86,52 @@ export type DocFrontmatter = {
 };
 
 /**
- * 从 content 根目录按相对路径读取 md 的 front matter，返回 category、status、last_updated。
+ * 从 content 根目录读取 md 的 front matter，返回 title、description（异步版本，用于并行加载）。
+ * @returns Promise<{ title, description }>
+ */
+export async function getDocTitleAndDescriptionAsync(
+  relativePath: string,
+  contentRoot?: string
+): Promise<{ title: string; description: string | null }> {
+  const root = contentRoot ?? getContentRoot();
+  const fullPath = path.join(root, relativePath);
+  let raw: string | undefined;
+  try {
+    const stat = await fs.promises.stat(fullPath);
+    if (stat.isFile()) {
+      raw = await fs.promises.readFile(fullPath, "utf-8");
+    }
+  } catch {
+    // ENOENT or other: try Obsidian mapping fallback
+  }
+  if (!raw && LOCAL_CONTENT_DIR && root === LOCAL_CONTENT_DIR) {
+    const sourcePath = getSourcePathForCanonical(relativePath);
+    if (sourcePath) {
+      const sourceFull = path.join(root, sourcePath);
+      try {
+        const stat = await fs.promises.stat(sourceFull);
+        if (stat.isFile()) {
+          raw = await fs.promises.readFile(sourceFull, "utf-8");
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }
+  if (!raw) return { title: "", description: null };
+
+  const fmMatch = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
+  const fm = fmMatch ? parseFrontmatterFields(fmMatch[1]) : {};
+  const t = fm.title?.trim();
+  const d = fm.description?.trim();
+  return {
+    title: t !== undefined && t !== "" ? t : "",
+    description: d !== undefined && d !== "" ? d : null,
+  };
+}
+
+/**
+ * 从 content 根目录读取 md 的 front matter，返回 category、status、last_updated。
  * 不存在或无法解析时返回空对象。
  */
 /**
@@ -145,4 +190,33 @@ export function getDocFrontmatter(
   const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!match) return {};
   return parseFrontmatterFields(match[1]);
+}
+
+/**
+ * 从 content 根目录按相对路径读取一个 md 文件，一次 I/O 同时返回正文与 frontmatter。
+ * 不存在或非文件时返回 { markdown: null, frontmatter: {} }。
+ */
+export function getMarkdownAndFrontmatter(
+  relativePath: string,
+  contentRoot?: string
+): { markdown: string | null; frontmatter: DocFrontmatter } {
+  const root = contentRoot ?? getContentRoot();
+  const fullPath = path.join(root, relativePath);
+  let raw: string | undefined;
+  if (fs.existsSync(fullPath) && fs.statSync(fullPath).isFile()) {
+    raw = fs.readFileSync(fullPath, "utf-8");
+  } else if (LOCAL_CONTENT_DIR && root === LOCAL_CONTENT_DIR) {
+    const sourcePath = getSourcePathForCanonical(relativePath);
+    if (sourcePath) {
+      const sourceFull = path.join(root, sourcePath);
+      if (fs.existsSync(sourceFull) && fs.statSync(sourceFull).isFile()) {
+        raw = fs.readFileSync(sourceFull, "utf-8");
+      }
+    }
+  }
+  if (!raw) return { markdown: null, frontmatter: {} };
+  const fmMatch = raw.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
+  const fm = fmMatch ? parseFrontmatterFields(fmMatch[1]) : {};
+  const markdown = fmMatch ? raw.slice(fmMatch[0].length).trimStart() : raw;
+  return { markdown, frontmatter: fm };
 }

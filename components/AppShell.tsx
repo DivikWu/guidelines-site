@@ -1,18 +1,25 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import Header from './Header';
 import IconNav from './IconNav';
 import TokenNav from './TokenNav';
 import NavDrawer from './NavDrawer';
-import DocContent from './DocContent';
-import SearchModal, { SearchItem } from './SearchModal';
+import type { SearchItem } from './SearchModal';
 import { useSearch } from './SearchProvider';
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+
+const SearchModal = dynamic(
+  () => import('./SearchModal').then((m) => ({ default: m.default })),
+  { ssr: false }
+);
+import { useState, useEffect, useRef, useMemo, useCallback, startTransition } from 'react';
+import { useEventListener } from '@/hooks/useEventListener';
 import { usePathname, useRouter } from 'next/navigation';
 import { DocPage } from '../data/docs';
 import { getSectionConfig, findSectionByItemId } from '../config/navigation';
 import type { ContentTree } from '@/lib/content/tree';
 import type { DocFrontmatter } from '@/lib/content/loaders';
+import { getSearchRecent, setSearchRecent } from '@/lib/search-recent-cache';
 
 export default function AppShell({
   docs,
@@ -20,12 +27,14 @@ export default function AppShell({
   docsRouteSection = null,
   docsRouteFile = null,
   docMeta = null,
+  children,
 }: {
   docs: DocPage[];
   contentTree?: ContentTree | null;
   docsRouteSection?: string | null;
   docsRouteFile?: string | null;
   docMeta?: DocFrontmatter | null;
+  children?: React.ReactNode;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -73,6 +82,20 @@ export default function AppShell({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const docIds = useMemo(() => new Set(docs.map((doc) => doc.id)), [docs]);
+  const docRouteMap = useMemo(() => {
+    if (!contentTree) return null;
+    const map = new Map<string, string>();
+    for (const section of contentTree.sections) {
+      for (const item of section.items) {
+        map.set(item.id, `/docs/${encodeURIComponent(section.id)}/${encodeURIComponent(item.id)}`);
+      }
+    }
+    return map;
+  }, [contentTree]);
+  const scrollRafIdRef = useRef<number | null>(null);
+  const lastMobileRef = useRef(false);
+  const docsRef = useRef(docs);
+  docsRef.current = docs;
 
   // 1. 稳定 Header 搜索按钮状态：通过监测 sentinel 决定是否显示 Header 搜索
   useEffect(() => {
@@ -142,18 +165,30 @@ export default function AppShell({
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  useEffect(() => {
-    const onScroll = () => {
-      const sections = docs.map(d => document.getElementById(d.id)).filter(Boolean) as HTMLElement[];
+  // 滚动高亮：每帧最多计算一次，仅当 activeToken 实际变化时 setState；passive 提升滚动性能
+  const onScrollHighlight = useCallback(() => {
+    if (scrollRafIdRef.current != null) return;
+    scrollRafIdRef.current = requestAnimationFrame(() => {
+      scrollRafIdRef.current = null;
+      const list = docsRef.current;
+      const sections = list.map(d => document.getElementById(d.id)).filter(Boolean) as HTMLElement[];
       const current = sections.find(section => {
         const rect = section.getBoundingClientRect();
         return rect.top <= window.innerHeight * 0.3 && rect.bottom >= window.innerHeight * 0.3;
       });
-      if (current && current.id !== activeToken) setActiveToken(current.id);
+      if (current) {
+        startTransition(() => {
+          setActiveToken((prev) => (current.id !== prev ? current.id : prev));
+        });
+      }
+    });
+  }, []);
+  useEventListener(typeof window !== 'undefined' ? window : null, 'scroll', onScrollHighlight, { passive: true });
+  useEffect(() => {
+    return () => {
+      if (scrollRafIdRef.current != null) cancelAnimationFrame(scrollRafIdRef.current);
     };
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, [activeToken, docs]);
+  }, []);
 
   // 小屏 drawer 打开时锁定背景滚动
   useEffect(() => {
@@ -178,32 +213,25 @@ export default function AppShell({
   }, [mobileOpen]);
 
   // 检测是否为移动端（使用断点 768px）
-  // 使用 matchMedia 确保稳定判断，避免 resize 时频繁触发
+  // 使用 matchMedia 确保稳定判断，避免 resize 时频繁触发；lastMobileRef 避免 isMobile 依赖导致 effect 重跑
   useEffect(() => {
-    // 使用 matchMedia 进行稳定判断，匹配标准移动端断点
     const mediaQuery = window.matchMedia('(max-width: 767px)');
-    
+
     const checkMobile = () => {
       const mobile = mediaQuery.matches;
-      const wasMobile = isMobile;
+      const wasMobile = lastMobileRef.current;
+      lastMobileRef.current = mobile;
       setIsMobile(mobile);
-      
-      // 仅在跨越断点时关闭 drawer：
-      // 1. 从小屏变为大屏：强制关闭 drawer
-      // 2. 从大屏变为小屏：保持 drawer 状态（不自动关闭）
+
       if (wasMobile && !mobile && mobileOpen) {
-        // 从小屏变为大屏，关闭 drawer
         setMobileOpen(false);
       }
     };
 
-    // 初始检查
     checkMobile();
-    
-    // 使用 matchMedia 的 change 事件
     mediaQuery.addEventListener('change', checkMobile);
     return () => mediaQuery.removeEventListener('change', checkMobile);
-  }, [isMobile, mobileOpen]);
+  }, [mobileOpen]);
 
   // 路由切换后自动关闭 drawer（小屏）
   // 仅在 pathname 真正变化时关闭，避免初始渲染时误关闭
@@ -255,37 +283,32 @@ export default function AppShell({
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   }, []);
 
-  // 根据 doc id 确定路由
-  const getDocRoute = (docId: string): string => {
-    if (contentTree) {
-      for (const section of contentTree.sections) {
-        const item = section.items.find((i) => i.id === docId);
-        if (item) {
-          return `/docs/${encodeURIComponent(section.id)}/${encodeURIComponent(docId)}`;
-        }
-      }
-      return pathname;
-    }
+  // 根据 doc id 确定路由（contentTree 时用 Map 查找，否则走静态 fallback）
+  const getDocRouteFallback = useCallback((docId: string): string => {
     if (docId === 'overview' || docId === 'changelog' || docId === 'update-process') {
       return '/overview';
-    } else if (docId.startsWith('brand-') || docId === 'logo' || docId === 'typeface') {
-      return '/foundations/brand';
-    } else if (['color', 'typography', 'spacing', 'layout', 'radius', 'elevation', 'iconography', 'motion'].includes(docId)) {
-      return `/foundations/${docId}`;
-    } else if (['button', 'tabs', 'badge', 'heading', 'filter', 'navbar', 'product-card', 'forms'].includes(docId)) {
-      return `/components/${docId}`;
-    } else if (docId === 'patterns-overview') {
-      return '/components';
-    } else if (docId === 'resources-overview') {
-      return '/resources';
-    } else if (docId === 'content') {
-      return '/content';
-    } else if (docId === 'introduction') {
-      return '/getting-started/introduction';
     }
-    // 默认返回当前路径，使用 hash 导航
+    if (docId.startsWith('brand-') || docId === 'logo' || docId === 'typeface') {
+      return '/foundations/brand';
+    }
+    if (['color', 'typography', 'spacing', 'layout', 'radius', 'elevation', 'iconography', 'motion'].includes(docId)) {
+      return `/foundations/${docId}`;
+    }
+    if (['button', 'tabs', 'badge', 'heading', 'filter', 'navbar', 'product-card', 'forms'].includes(docId)) {
+      return `/components/${docId}`;
+    }
+    if (docId === 'patterns-overview') return '/components';
+    if (docId === 'resources-overview') return '/resources';
+    if (docId === 'content') return '/content';
+    if (docId === 'introduction') return '/getting-started/introduction';
     return pathname;
-  };
+  }, [pathname]);
+
+  const getDocRoute = useCallback((docId: string): string => {
+    const fromMap = docRouteMap?.get(docId);
+    if (fromMap) return fromMap;
+    return getDocRouteFallback(docId);
+  }, [docRouteMap, getDocRouteFallback]);
 
   // 使用 useCallback 稳定 handleSearchSelect 引用，防止 Header 不必要的重新渲染
   const handleSearchSelect = useCallback((pageId: string) => {
@@ -307,9 +330,9 @@ export default function AppShell({
     const route = getDocRoute(pageId);
     const currentRoute = route.split('#')[0];
     
-    // 如果路由不同，进行跳转
+    // 如果路由不同，进行跳转（scroll: false 避免 Next.js 与自定义 scrollIntoView 冲突，减少 auto-scroll 警告）
     if (currentRoute !== pathname) {
-      router.push(route.includes('#') ? route : `${route}#${pageId}`);
+      router.push(route.includes('#') ? route : `${route}#${pageId}`, { scroll: false });
       setMobileOpen(false);
       closeSearch();
       return;
@@ -322,7 +345,7 @@ export default function AppShell({
     setTimeout(() => {
       document.getElementById(pageId)?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
-  }, [pathname, router, closeSearch, contentTree]);
+  }, [pathname, router, closeSearch, contentTree, getDocRoute]);
 
   // 将 docs 转换为 SearchItem 格式并提取元数据
   const searchItems: SearchItem[] = useMemo(() => {
@@ -343,28 +366,6 @@ export default function AppShell({
       return items;
     }
 
-    const getDocRouteForSearch = (docId: string): string => {
-      if (docId === 'overview' || docId === 'changelog' || docId === 'update-process') {
-        return '/overview';
-      } else if (docId.startsWith('brand-') || docId === 'logo' || docId === 'typeface') {
-        return '/foundations/brand';
-      } else if (['color', 'typography', 'spacing', 'layout', 'radius', 'elevation', 'iconography', 'motion'].includes(docId)) {
-        return `/foundations/${docId}`;
-      } else if (['button', 'tabs', 'badge', 'heading', 'filter', 'navbar', 'product-card', 'forms'].includes(docId)) {
-        return `/components/${docId}`;
-      } else if (docId === 'patterns-overview') {
-        return '/components';
-      } else if (docId === 'resources-overview') {
-        return '/resources';
-      } else if (docId === 'content') {
-        return '/content';
-      } else if (docId === 'introduction') {
-        return '/getting-started/introduction';
-      }
-      // 默认返回当前路径，使用 hash 导航
-      return pathname;
-    };
-
     return docs.map(doc => {
       // 提取第一行标题 (# Title)
       const titleMatch = doc.markdown.match(/^#\s+(.+)$/m);
@@ -374,8 +375,8 @@ export default function AppShell({
       const descriptionMatch = doc.markdown.replace(/^#\s+.+$/m, '').trim().match(/^([^#\n].+)$/m);
       const description = descriptionMatch ? descriptionMatch[1].trim().slice(0, 60) + '...' : undefined;
 
-      // 根据 doc id 确定路由
-      const route = getDocRouteForSearch(doc.id);
+      // 根据 doc id 确定路由（无 contentTree 时用 fallback）
+      const route = getDocRouteFallback(doc.id);
       const href = route.includes('#') ? route : `${route}#${doc.id}`;
 
       return {
@@ -389,7 +390,7 @@ export default function AppShell({
         href
       };
     });
-  }, [docs, pathname, contentTree]);
+  }, [docs, pathname, contentTree, getDocRouteFallback]);
 
   // 记录最近访问 (Recent)
   useEffect(() => {
@@ -398,33 +399,24 @@ export default function AppShell({
     const currentItem = searchItems.find(item => item.id === activeToken);
     if (!currentItem) return;
 
-    // 获取现有记录
-    const saved = localStorage.getItem('search-recent');
-    let recent: SearchItem[] = [];
-    if (saved) {
-      try {
-        recent = JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to parse recent items', e);
-      }
-    }
-
-    // 去重并限制数量 (5-8条，这里取8条)
+    const recent = getSearchRecent();
     const newRecent = [currentItem, ...recent.filter(i => i.id !== currentItem.id)].slice(0, 8);
-    localStorage.setItem('search-recent', JSON.stringify(newRecent));
+    setSearchRecent(newRecent);
   }, [activeToken, searchItems]);
 
   return (
     <div className="app-shell" suppressHydrationWarning>
-      <Header 
-        onToggleSidebar={handleToggleMobileSidebar} 
-        isOpen={mobileOpen}
-        docs={docs}
-        onSearchSelect={handleSearchSelect}
-        isOverview={false}
-        showMenuButton={isMobile}
-        onToggleDesktopSidebar={onToggleDesktopSidebar}
-      />
+      <div className="header-wrapper">
+        <Header 
+          onToggleSidebar={handleToggleMobileSidebar} 
+          isOpen={mobileOpen}
+          docs={docs}
+          onSearchSelect={handleSearchSelect}
+          isOverview={false}
+          showMenuButton={isMobile}
+          onToggleDesktopSidebar={onToggleDesktopSidebar}
+        />
+      </div>
       
       {/* SearchModal - 全局唯一实例 */}
       <SearchModal
@@ -477,16 +469,9 @@ export default function AppShell({
           </aside>
         )}
         
-        {/* 内容区 */}
+        {/* 内容区：由 RSC 传入的文档内容（DocContent）或 OverviewContent */}
         <main className="content" id="main-content">
-          {docs.map(page => (
-            <DocContent
-              key={page.id}
-              page={page}
-              hidden={page.id !== activeToken}
-              docMeta={docs.length === 1 && docMeta ? docMeta : undefined}
-            />
-          ))}
+          {children ?? null}
         </main>
       </div>
     </div>

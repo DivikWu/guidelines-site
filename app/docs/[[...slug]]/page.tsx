@@ -1,8 +1,9 @@
 import { redirect, notFound } from 'next/navigation';
 import { getContentTree } from '@/lib/content/tree';
 import { DEFAULT_CONTENT_DIR } from '@/lib/content/constants';
-import { getMarkdownByRelativePath, getDocFrontmatter } from '@/lib/content/loaders';
+import { getMarkdownAndFrontmatter } from '@/lib/content/loaders';
 import DocsPageView from './DocsPageView';
+import DocContent from '@/components/DocContent';
 import type { DocPage } from '@/data/docs';
 
 export function generateStaticParams() {
@@ -89,7 +90,7 @@ export default async function DocsSlugPage({ params }: PageProps) {
   const sectionNode = tree.sections.find((s) => s.id === sectionDecoded);
   const item = sectionNode?.items.find((i) => i.id === fileDecoded);
   const relativePath = item?.path ?? `docs/${sectionDecoded}/${fileDecoded}${fileDecoded.endsWith('.md') ? '' : '.md'}`;
-  const markdown = getMarkdownByRelativePath(relativePath, DEFAULT_CONTENT_DIR);
+  const { markdown, frontmatter: docMeta } = getMarkdownAndFrontmatter(relativePath, DEFAULT_CONTENT_DIR);
 
   if (markdown === null) {
     notFound();
@@ -97,13 +98,14 @@ export default async function DocsSlugPage({ params }: PageProps) {
 
   const normalizedMarkdown = rewriteWikiLinks(markdown, tree);
   const doc: DocPage = { id: fileDecoded, markdown: normalizedMarkdown };
-  const docMeta = getDocFrontmatter(relativePath, DEFAULT_CONTENT_DIR);
   return (
     <DocsPageView
       doc={doc}
       section={sectionDecoded}
       file={fileDecoded}
       docMeta={docMeta}
-    />
+    >
+      <DocContent page={doc} hidden={false} docMeta={docMeta} />
+    </DocsPageView>
   );
 }

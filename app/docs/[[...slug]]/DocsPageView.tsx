@@ -10,11 +10,13 @@ export default function DocsPageView({
   section,
   file,
   docMeta,
+  children,
 }: {
   doc: DocPage;
   section: string;
   file: string;
   docMeta?: DocFrontmatter;
+  children?: React.ReactNode;
 }) {
   const tree = useContentTree();
   if (!tree) return null;
@@ -25,6 +27,8 @@ export default function DocsPageView({
       docsRouteSection={section}
       docsRouteFile={file}
       docMeta={docMeta}
-    />
+    >
+      {children}
+    </AppShell>
   );
 }

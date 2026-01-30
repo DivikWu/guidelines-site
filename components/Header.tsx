@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, useCallback, startTransition } from 'react';
+import { useEventListener } from '@/hooks/useEventListener';
 import { usePathname } from 'next/navigation';
 import { useTokenTheme } from './TokenProvider';
 import BrandLogo from './BrandLogo';
@@ -71,7 +72,7 @@ function Header({
   const [mounted, setMounted] = useState(false);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const pathname = usePathname();
-  const { openSearch } = useSearch();
+  const { openSearch, preloadSearch } = useSearch();
 
   // 标记组件已在客户端挂载
   useEffect(() => {
@@ -134,29 +135,32 @@ function Header({
     }
   }, [mounted]);
 
-  // 监听滚动，控制阴影显示
-  // 只在客户端挂载后才检查滚动状态，避免水合不匹配
-  useEffect(() => {
-    if (!mounted) {
-      return;
-    }
-    
-    const handleScroll = () => {
+  // 监听滚动，控制阴影显示：仅 mounted 后绑定一次，passive + rAF，仅阈值变化时 setState
+  const scrollRafIdRef = useRef<number | null>(null);
+  const lastIsScrolledRef = useRef(false);
+  const handleScroll = useCallback(() => {
+    if (scrollRafIdRef.current != null) return;
+    scrollRafIdRef.current = requestAnimationFrame(() => {
+      scrollRafIdRef.current = null;
       const scrollTop = window.scrollY || document.documentElement.scrollTop;
       const newIsScrolled = scrollTop > 0;
-      setIsScrolled(newIsScrolled);
-    };
-
-    // 初始化检查
+      if (lastIsScrolledRef.current !== newIsScrolled) {
+        lastIsScrolledRef.current = newIsScrolled;
+        startTransition(() => setIsScrolled(newIsScrolled));
+      }
+    });
+  }, []);
+  useEventListener(mounted ? window : null, 'scroll', handleScroll, { passive: true });
+  useEffect(() => {
+    if (!mounted) return;
     const initialScrollTop = window.scrollY || document.documentElement.scrollTop;
     const initialIsScrolled = initialScrollTop > 0;
+    lastIsScrolledRef.current = initialIsScrolled;
     setIsScrolled(initialIsScrolled);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      if (scrollRafIdRef.current != null) cancelAnimationFrame(scrollRafIdRef.current);
     };
-  }, [mounted, isScrolled]);
+  }, [mounted]);
 
   // 搜索功能
   const performSearch = useCallback((query: string) => {
@@ -167,6 +171,10 @@ function Header({
     }
 
     const lowerQuery = query.toLowerCase().trim();
+    const regex = new RegExp(
+      lowerQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+      'gi'
+    );
     const results: SearchResult[] = [];
 
     docs.forEach(page => {
@@ -199,8 +207,8 @@ function Header({
         score += 1;
       }
 
-      // 计算匹配次数
-      const matchCount = (page.markdown.match(new RegExp(lowerQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi')) || []).length;
+      // 计算匹配次数（RegExp 在循环外创建，避免重复实例化）
+      const matchCount = (page.markdown.match(regex) || []).length;
       score += matchCount * 0.5;
 
       if (matches.length > 0) {
@@ -213,8 +221,8 @@ function Header({
     });
 
     // 按分数排序
-    results.sort((a, b) => b.score - a.score);
-    setSearchResults(results);
+    const sortedResults = results.toSorted((a, b) => b.score - a.score);
+    setSearchResults(sortedResults);
     setShowResults(results.length > 0);
   }, [docs]);
 
@@ -375,7 +383,11 @@ function Header({
               value={searchQuery}
               onChange={handleSearchChange}
               onKeyDown={handleKeyDown}
-              onFocus={() => searchQuery && setShowResults(true)}
+              onFocus={() => {
+                preloadSearch();
+                searchQuery && setShowResults(true);
+              }}
+              onMouseEnter={preloadSearch}
               onClick={() => openSearch()}
               readOnly
             />
@@ -394,6 +406,8 @@ function Header({
           <input 
             type="search" 
             placeholder="搜索设计规范..." 
+            onMouseEnter={preloadSearch}
+            onFocus={preloadSearch}
             onClick={() => openSearch()}
             readOnly
           />
@@ -411,6 +425,8 @@ function Header({
           <button 
             ref={searchTriggerRef}
             className="header__search-icon-button"
+            onMouseEnter={preloadSearch}
+            onFocus={preloadSearch}
             onClick={() => openSearch()}
             aria-label="搜索"
             title="搜索"

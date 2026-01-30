@@ -1,6 +1,5 @@
 import AppShell from '../../components/AppShell';
 import { docs } from '../../data/docs';
-import { SearchProvider } from '../../components/SearchProvider';
 
 export default function ComponentsPage() {
   // 过滤出 Components 相关的文档
@@ -9,8 +8,6 @@ export default function ComponentsPage() {
   );
 
   return (
-    <SearchProvider>
-      <AppShell docs={componentDocs} />
-    </SearchProvider>
+    <AppShell docs={componentDocs} />
   );
 }

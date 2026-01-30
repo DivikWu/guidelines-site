@@ -2,7 +2,9 @@
 import '../styles/tokens.css';
 import '../styles/theme.css';
 import './globals.css';
+import Script from 'next/script';
 import { TokenProvider } from '../components/TokenProvider';
+import { SearchProvider } from '../components/SearchProvider';
 
 export const metadata = {
   title: 'YAMI Design Guidelines | 设计规范',
@@ -14,12 +16,14 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // 在构建时确定 basePath（从环境变量读取，由 next.config.mjs 设置）
-  const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+  // 在构建时确定 basePath（与 next.config.mjs 逻辑保持一致）
+  const isGithubPagesBuild =
+    process.env.GITHUB_PAGES === 'true' && process.env.NODE_ENV === 'production';
+  const basePath = isGithubPagesBuild ? (process.env.NEXT_PUBLIC_BASE_PATH || '') : '';
   const fontBasePath = `${basePath}/fonts/icofont`;
   
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" suppressHydrationWarning>
       <head>
         {/* 预加载字体 CSS 文件，确保字体定义及时应用 */}
         <link
@@ -39,7 +43,16 @@ export default function RootLayout({
         <link rel="stylesheet" href={`${fontBasePath}/icofont.css`} />
       </head>
       <body data-layout="root">
-        <TokenProvider>{children}</TokenProvider>
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("yami-theme")||"light";document.documentElement.dataset.theme=t}catch(e){}})();`,
+          }}
+        />
+        <TokenProvider>
+          <SearchProvider>{children}</SearchProvider>
+        </TokenProvider>
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useEventListener } from '@/hooks/useEventListener';
 
 interface TooltipProps {
   content: string;
@@ -83,16 +84,11 @@ export default function Tooltip({
     }, exitDelay);
   };
 
+  // 仅在 tooltip 打开时绑定 scroll/resize，passive 提升滚动性能
+  useEventListener(isVisible ? window : null, 'scroll', updatePosition, { capture: true, passive: true });
+  useEventListener(isVisible ? window : null, 'resize', updatePosition, { passive: true });
   useEffect(() => {
-    if (isVisible) {
-      updatePosition();
-      window.addEventListener('scroll', updatePosition, true);
-      window.addEventListener('resize', updatePosition);
-    }
-    return () => {
-      window.removeEventListener('scroll', updatePosition, true);
-      window.removeEventListener('resize', updatePosition);
-    };
+    if (isVisible) updatePosition();
   }, [isVisible, updatePosition]);
 
   const triggerElement = React.cloneElement(children, {
