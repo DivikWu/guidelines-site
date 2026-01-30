@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Children, useEffect, isValidElement, cloneElement } from 'react';
+import React, { useState, Children, useEffect, isValidElement, cloneElement, startTransition } from 'react';
 import Tabs from './Tabs';
 
 const TAB_IDS = ['overview', 'changelog', 'update-process'] as const;
@@ -29,7 +29,7 @@ export default function OverviewContent({ children }: OverviewContentProps) {
 
   return (
     <div className="overview-content">
-      <Tabs tabs={TABS} activeTab={activeTab} onTabChange={setActiveTab} />
+      <Tabs tabs={TABS} activeTab={activeTab} onTabChange={(tabId) => startTransition(() => setActiveTab(tabId))} />
       {items.map((item, i) =>
         isValidElement(item)
           ? cloneElement(item, { key: TAB_IDS[i], hidden: i !== activeIndex })

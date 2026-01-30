@@ -1,4 +1,4 @@
-import React, { Children, isValidElement, ReactNode } from 'react';
+import React, { Children, isValidElement, memo, ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { DocPage } from '../data/docs';
@@ -88,6 +88,73 @@ function blockquoteToCallout(children: ReactNode): { type: string; title: string
   return { type, title, body };
 }
 
+/** 稳定引用，避免 DocContentBody 因 components 对象变化而无效重渲染；ReactMarkdown 会传入 node */
+type MarkdownElProps<T extends keyof JSX.IntrinsicElements> = { node?: unknown } & React.ComponentPropsWithoutRef<T>;
+
+const DOC_MARKDOWN_COMPONENTS = {
+  h1: ({ node: _n, ...props }: MarkdownElProps<'h1'>) => <h1 className="typo-h1" {...props} />,
+  h2: ({ node: _n, ...props }: MarkdownElProps<'h2'>) => <h2 className="typo-h2" {...props} />,
+  h3: ({ node: _n, ...props }: MarkdownElProps<'h3'>) => <h3 className="typo-h3" {...props} />,
+  p: ({ node: _n, ...props }: MarkdownElProps<'p'>) => <p className="typo-p" {...props} />,
+  ul: ({ node: _n, ...props }: MarkdownElProps<'ul'>) => <ul className="typo-ul" {...props} />,
+  ol: ({ node: _n, ...props }: MarkdownElProps<'ol'>) => <ol className="typo-ol" {...props} />,
+  li: ({ node: _n, ...props }: MarkdownElProps<'li'>) => <li className="typo-li" {...props} />,
+  blockquote: ({ node: _n, children }: { node?: unknown; children?: ReactNode }) => {
+    const callout = blockquoteToCallout(children);
+    if (callout) {
+      const emoji = CALLOUT_EMOJI[callout.type] ?? CALLOUT_EMOJI.note;
+      return (
+        <div
+          className={`doc-callout doc-callout--${callout.type}`}
+          role="note"
+        >
+          <span className="doc-callout__title">
+            <span className="doc-callout__icon" aria-hidden>{emoji}</span>
+            {callout.title}
+          </span>
+          <div className="doc-callout__body">{callout.body}</div>
+        </div>
+      );
+    }
+    return (
+      <blockquote className="doc-quote">
+        {children}
+      </blockquote>
+    );
+  },
+  table: ({ node: _n, ...props }: MarkdownElProps<'table'>) => (
+    <div className="doc-table-wrap">
+      <table className="doc-table" {...props} />
+    </div>
+  ),
+  thead: ({ node: _n, ...props }: MarkdownElProps<'thead'>) => <thead className="doc-table__head" {...props} />,
+  tbody: ({ node: _n, ...props }: MarkdownElProps<'tbody'>) => <tbody className="doc-table__body" {...props} />,
+  tr: ({ node: _n, ...props }: MarkdownElProps<'tr'>) => <tr className="doc-table__row" {...props} />,
+  th: ({ node: _n, ...props }: MarkdownElProps<'th'>) => <th className="doc-table__cell doc-table__cell--head" {...props} />,
+  td: ({ node: _n, ...props }: MarkdownElProps<'td'>) => <td className="doc-table__cell" {...props} />,
+  hr: ({ node: _n, ...props }: MarkdownElProps<'hr'>) => <hr className="doc-hr" {...props} />,
+  code: ({ node: _n, className, children, ...props }: { node?: unknown; className?: string; children?: ReactNode }) => {
+    const isInline = !className;
+    return isInline ? (
+      <code className="token-inline" {...props}>{children}</code>
+    ) : (
+      <code className={`token-block ${className}`} {...props}>{children}</code>
+    );
+  },
+};
+
+/** 仅依赖 page，hidden 变化时由外层重渲染，此组件不重算 Markdown */
+const DocContentBody = memo(function DocContentBody({ page }: { page: DocPage }) {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={DOC_MARKDOWN_COMPONENTS}
+    >
+      {page.markdown}
+    </ReactMarkdown>
+  );
+});
+
 export default function DocContent({
   page,
   hidden,
@@ -100,68 +167,7 @@ export default function DocContent({
   const hasMeta = docMeta && (docMeta.status != null || docMeta.last_updated != null);
   return (
     <article id={page.id} className={`doc ${hidden ? 'doc--hidden' : ''}`}>
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        components={{
-          h1: ({ node, ...props }) => <h1 className="typo-h1" {...props} />,
-          h2: ({ node, ...props }) => <h2 className="typo-h2" {...props} />,
-          h3: ({ node, ...props }) => <h3 className="typo-h3" {...props} />,
-          p: ({ node, ...props }) => <p className="typo-p" {...props} />,
-          ul: ({ node, ...props }) => <ul className="typo-ul" {...props} />,
-          ol: ({ node, ...props }) => <ol className="typo-ol" {...props} />,
-          li: ({ node, ...props }) => <li className="typo-li" {...props} />,
-          blockquote: ({ node, children }) => {
-            const callout = blockquoteToCallout(children);
-            if (callout) {
-              const emoji = CALLOUT_EMOJI[callout.type] ?? CALLOUT_EMOJI.note;
-              return (
-                <div
-                  className={`doc-callout doc-callout--${callout.type}`}
-                  role="note"
-                >
-                  <span className="doc-callout__title">
-                    <span className="doc-callout__icon" aria-hidden>{emoji}</span>
-                    {callout.title}
-                  </span>
-                  <div className="doc-callout__body">{callout.body}</div>
-                </div>
-              );
-            }
-            return (
-              <blockquote className="doc-quote">
-                {children}
-              </blockquote>
-            );
-          },
-          table: ({ node, ...props }) => (
-            <div className="doc-table-wrap">
-              <table className="doc-table" {...props} />
-            </div>
-          ),
-          thead: ({ node, ...props }) => <thead className="doc-table__head" {...props} />,
-          tbody: ({ node, ...props }) => <tbody className="doc-table__body" {...props} />,
-          tr: ({ node, ...props }) => <tr className="doc-table__row" {...props} />,
-          th: ({ node, ...props }) => <th className="doc-table__cell doc-table__cell--head" {...props} />,
-          td: ({ node, ...props }) => <td className="doc-table__cell" {...props} />,
-          hr: ({ node, ...props }) => <hr className="doc-hr" {...props} />,
-          code: ({ className, children, ...props }) => {
-            const isInline = !className
-          
-            return isInline ? (
-              <code className="token-inline" {...props}>
-                {children}
-              </code>
-            ) : (
-              <code className={`token-block ${className}`} {...props}>
-                {children}
-              </code>
-            )
-          },
-          
-        }}
-      >
-        {page.markdown}
-      </ReactMarkdown>
+      <DocContentBody page={page} />
       {hasMeta && (docMeta!.status != null || docMeta!.last_updated != null) && (
         <footer className="doc-status">
           {docMeta!.status != null && (

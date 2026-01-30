@@ -1,7 +1,5 @@
 'use client';
 
-import { useRef, useLayoutEffect, useState } from 'react';
-
 interface Tab {
   id: string;
   label: string;
@@ -14,27 +12,17 @@ interface TabsProps {
 }
 
 export default function Tabs({ tabs, activeTab, onTabChange }: TabsProps) {
-  const [indicatorStyle, setIndicatorStyle] = useState<{ left: number; width: number }>({ left: 0, width: 0 });
-  const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
-
-  useLayoutEffect(() => {
-    const activeIndex = tabs.findIndex(t => t.id === activeTab);
-    const activeTabElement = tabRefs.current[activeIndex];
-    if (activeTabElement) {
-      const { offsetLeft, offsetWidth } = activeTabElement;
-      setIndicatorStyle({ left: offsetLeft, width: offsetWidth });
-    }
-  }, [activeTab, tabs]);
-
+  const activeIndex = Math.max(0, tabs.findIndex(t => t.id === activeTab));
   return (
-    <div className="tabs">
+    <div
+      className="tabs"
+      style={{ ['--active-index' as string]: activeIndex }}
+    >
       <div className="tabs__list" role="tablist">
-        {tabs.map((tab, index) => (
+        {tabs.map((tab) => (
           <button
             key={tab.id}
-            ref={(el) => {
-              tabRefs.current[index] = el
-            }}
+            type="button"
             className={`tabs__item ${activeTab === tab.id ? 'tabs__item--active' : ''}`}
             role="tab"
             aria-selected={activeTab === tab.id}
@@ -44,13 +32,7 @@ export default function Tabs({ tabs, activeTab, onTabChange }: TabsProps) {
           </button>
         ))}
       </div>
-      <div 
-        className="tabs__indicator" 
-        style={{ 
-          left: `${indicatorStyle.left}px`,
-          width: `${indicatorStyle.width}px`
-        }} 
-      />
+      <div className="tabs__indicator" aria-hidden />
     </div>
   );
 }
