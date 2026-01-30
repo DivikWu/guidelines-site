@@ -1,6 +1,6 @@
 #!/bin/bash
 # 修复端口占用脚本
-# 使用方法: ./fix-port.sh
+# 使用方法: ./scripts/fix-port.sh 或从仓库根目录执行 bash scripts/fix-port.sh
 
 echo "正在检查端口占用情况..."
 
