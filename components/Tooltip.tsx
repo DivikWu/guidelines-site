@@ -70,19 +70,19 @@ export default function Tooltip({
     setCoords({ top, left });
   }, [position, offset]);
 
-  const handleMouseEnter = () => {
+  const handleMouseEnter = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
       setIsVisible(true);
     }, enterDelay);
-  };
+  }, [enterDelay]);
 
-  const handleMouseLeave = () => {
+  const handleMouseLeave = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
       setIsVisible(false);
     }, exitDelay);
-  };
+  }, [exitDelay]);
 
   // 仅在 tooltip 打开时绑定 scroll/resize，passive 提升滚动性能
   useEventListener(isVisible ? window : null, 'scroll', updatePosition, { capture: true, passive: true });
@@ -91,7 +91,7 @@ export default function Tooltip({
     if (isVisible) updatePosition();
   }, [isVisible, updatePosition]);
 
-  const triggerElement = React.cloneElement(children, {
+  const triggerElement = React.cloneElement(children as React.ReactElement<Record<string, unknown>>, {
     ref: triggerRef,
     onMouseEnter: handleMouseEnter,
     onMouseLeave: handleMouseLeave,

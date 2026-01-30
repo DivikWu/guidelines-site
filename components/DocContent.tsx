@@ -23,8 +23,9 @@ function getTextFromNode(node: ReactNode): string {
   if (typeof node === 'number') return String(node);
   if (node == null) return '';
   if (Array.isArray(node)) return node.map(getTextFromNode).join('');
-  if (isValidElement(node) && node.props?.children != null) {
-    return getTextFromNode(node.props.children);
+  if (isValidElement(node)) {
+    const props = node.props as { children?: ReactNode };
+    if (props?.children != null) return getTextFromNode(props.children);
   }
   return '';
 }
@@ -89,7 +90,7 @@ function blockquoteToCallout(children: ReactNode): { type: string; title: string
 }
 
 /** 稳定引用，避免 DocContentBody 因 components 对象变化而无效重渲染；ReactMarkdown 会传入 node */
-type MarkdownElProps<T extends keyof JSX.IntrinsicElements> = { node?: unknown } & React.ComponentPropsWithoutRef<T>;
+type MarkdownElProps<T extends keyof React.JSX.IntrinsicElements> = { node?: unknown } & React.ComponentPropsWithoutRef<T>;
 
 const DOC_MARKDOWN_COMPONENTS = {
   h1: ({ node: _n, ...props }: MarkdownElProps<'h1'>) => <h1 className="typo-h1" {...props} />,

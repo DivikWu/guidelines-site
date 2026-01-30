@@ -28,12 +28,7 @@ export default function NavDrawer({
 }: NavDrawerProps) {
   const router = useRouter();
 
-  // 如果未打开，不渲染 overlay 和 panel，避免影响布局
-  if (!isOpen) {
-    return null;
-  }
-
-  // Mobile-only: Accordion behavior (one open at a time)
+  // Mobile-only: Accordion behavior (one open at a time). Hooks must run before any conditional return.
   const [expandedSectionId, setExpandedSectionId] = useState<string | null>(activeCategory);
 
   // When current activeCategory changes while drawer is open, auto-expand it
@@ -102,6 +97,11 @@ export default function NavDrawer({
     const i = raw.indexOf("_");
     return i >= 0 ? raw.slice(i + 1) : raw;
   };
+
+  // 如果未打开，不渲染 overlay 和 panel，避免影响布局（放在所有 Hooks 之后以符合 Rules of Hooks）
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <>

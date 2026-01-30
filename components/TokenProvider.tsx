@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -34,8 +34,10 @@ export const TokenProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [theme]);
 
+  const value = useMemo(() => ({ theme, toggle }), [theme, toggle]);
+
   return (
-    <TokenContext.Provider value={{ theme, toggle }}>
+    <TokenContext.Provider value={value}>
       {children}
     </TokenContext.Provider>
   );

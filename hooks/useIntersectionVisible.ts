@@ -9,13 +9,16 @@ interface UseIntersectionVisibleOptions {
 }
 
 /**
- * Hook to detect if an element is visible in the viewport using IntersectionObserver
- * @param ref - React ref to the element to observe
- * @param options - IntersectionObserver options
+ * Hook to detect if an element is visible in the viewport using IntersectionObserver.
+ *
+ * @param ref - React ref to the element to observe. Pass a ref from useRef() so the
+ *   reference is stable across renders; an inline ref object created each render
+ *   will cause the effect to run on every render.
+ * @param options - IntersectionObserver options (root, rootMargin, threshold)
  * @returns boolean indicating if the element is visible
  */
 export function useIntersectionVisible(
-  ref: RefObject<Element>,
+  ref: RefObject<Element | null>,
   options: UseIntersectionVisibleOptions = {}
 ): boolean {
   const [isVisible, setIsVisible] = useState(false);

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import { useEventListener } from '@/hooks/useEventListener';
 
@@ -63,8 +63,13 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
     closeSearch();
   }, [pathname, closeSearch]);
 
+  const value = useMemo(
+    () => ({ isOpen, openSearch, closeSearch, toggleSearch, preloadSearch }),
+    [isOpen, openSearch, closeSearch, toggleSearch, preloadSearch]
+  );
+
   return (
-    <SearchContext.Provider value={{ isOpen, openSearch, closeSearch, toggleSearch, preloadSearch }}>
+    <SearchContext.Provider value={value}>
       {children}
     </SearchContext.Provider>
   );

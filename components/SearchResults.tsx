@@ -1,7 +1,14 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { DocPage } from '../data/docs';
+
+/** 根据 query 生成高亮用正则（仅依赖 query，避免在渲染路径中重复创建） */
+function buildHighlightRegex(query: string): RegExp | null {
+  if (!query.trim()) return null;
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return new RegExp(`(${escaped})`, 'gi');
+}
 
 export interface SearchResult {
   page: DocPage;
@@ -23,6 +30,21 @@ interface SearchResultsProps {
 export default function SearchResults({ results, onSelect, query, selectedIndex = -1 }: SearchResultsProps) {
   const selectedRef = useRef<HTMLLIElement>(null);
 
+  const highlightRegex = useMemo(() => buildHighlightRegex(query), [query]);
+
+  // 高亮匹配文本：使用 split 后的索引判断（奇数索引为捕获组，避免全局正则 test 的 lastIndex 问题）
+  const highlightText = (text: string, regex: RegExp | null) => {
+    if (!regex) return text;
+    const parts = text.split(regex);
+    return parts.map((part, index) =>
+      index % 2 === 1 ? (
+        <mark key={index} className="search-results__highlight">{part}</mark>
+      ) : (
+        part
+      )
+    );
+  };
+
   // 滚动到选中项
   useEffect(() => {
     if (selectedIndex >= 0 && selectedRef.current) {
@@ -40,20 +62,6 @@ export default function SearchResults({ results, onSelect, query, selectedIndex 
       </div>
     );
   }
-
-  // 高亮匹配文本
-  const highlightText = (text: string, query: string) => {
-    if (!query) return text;
-    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-    const parts = text.split(regex);
-    return parts.map((part, index) => 
-      regex.test(part) ? (
-        <mark key={index} className="search-results__highlight">{part}</mark>
-      ) : (
-        part
-      )
-    );
-  };
 
   // 获取页面标题（从 markdown 中提取第一个 # 标题）
   const getPageTitle = (markdown: string): string => {
@@ -101,11 +109,11 @@ export default function SearchResults({ results, onSelect, query, selectedIndex 
                 onClick={() => onSelect(result.page.id)}
               >
                 <div className="search-results__title">
-                  {highlightText(title, query)}
+                  {highlightText(title, highlightRegex)}
                 </div>
                 {snippet && (
                   <div className="search-results__snippet">
-                    {highlightText(snippet, query)}
+                    {highlightText(snippet, highlightRegex)}
                   </div>
                 )}
               </button>

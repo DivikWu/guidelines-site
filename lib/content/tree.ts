@@ -1,3 +1,4 @@
+import { cache } from "react";
 import fs from "node:fs";
 import path from "node:path";
 import { getContentRoot, DEFAULT_CONTENT_DIR } from "./constants";
@@ -25,9 +26,10 @@ export interface ContentTree {
 /**
  * List content directory tree from content/docs/: top-level dirs under docs/
  * and their .md files. Paths are relative to content root (e.g. docs/A_快速开始/xxx.md).
+ * Cached per request so layout and page share the same result (Next 16+).
  * @param contentRoot 若传入则使用该目录，否则用 getContentRoot()（会受 YDS_CONTENT_DIR 影响）
  */
-export function getContentTree(contentRoot?: string): ContentTree {
+export const getContentTree = cache(function getContentTree(contentRoot?: string): ContentTree {
   const contentRootResolved = contentRoot ?? getContentRoot();
   const root = path.join(contentRootResolved, DOCS_SUBDIR);
   if (!fs.existsSync(root) || !fs.statSync(root).isDirectory()) {
@@ -76,4 +78,4 @@ export function getContentTree(contentRoot?: string): ContentTree {
   }
 
   return { sections };
-}
+});
