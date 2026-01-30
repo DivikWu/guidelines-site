@@ -3,6 +3,7 @@ import '../styles/tokens.css';
 import '../styles/theme.css';
 import './globals.css';
 import Script from 'next/script';
+import { BasePathProvider } from '../contexts/BasePathContext';
 import { TokenProvider } from '../components/TokenProvider';
 import { SearchProvider } from '../components/SearchProvider';
 
@@ -23,7 +24,7 @@ export default function RootLayout({
   const fontBasePath = `${basePath}/fonts/icofont`;
   
   return (
-    <html lang="zh-CN" suppressHydrationWarning>
+    <html lang="zh-CN" suppressHydrationWarning data-base-path={basePath}>
       <head>
         {/* 预加载字体 CSS 文件，确保字体定义及时应用 */}
         <link
@@ -50,9 +51,11 @@ export default function RootLayout({
             __html: `(function(){try{var t=localStorage.getItem("yami-theme")||"light";document.documentElement.dataset.theme=t}catch(e){}})();`,
           }}
         />
-        <TokenProvider>
-          <SearchProvider>{children}</SearchProvider>
-        </TokenProvider>
+        <BasePathProvider basePath={basePath}>
+          <TokenProvider>
+            <SearchProvider>{children}</SearchProvider>
+          </TokenProvider>
+        </BasePathProvider>
       </body>
     </html>
   );

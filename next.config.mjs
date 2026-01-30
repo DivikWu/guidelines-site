@@ -7,6 +7,8 @@ const basePath = isGithubPagesBuild ? (process.env.NEXT_PUBLIC_BASE_PATH || '') 
 const nextConfig = {
   ...(isGithubPagesBuild ? { output: 'export' } : {}),
   basePath,
+  // 静态导出 + basePath 时启用尾部斜杠，避免 RSC 请求发到 {basePath}.txt 而非 {basePath}/index.txt（见 vercel/next.js#73427）
+  ...(isGithubPagesBuild ? { trailingSlash: true } : {}),
   // GitHub Pages 项目站点的根即 /guidelines-site，assetPrefix 与 basePath 一致
   assetPrefix: basePath ? `${basePath}/` : '',
   images: { unoptimized: true },
