@@ -84,7 +84,7 @@ export default function Tooltip({
     }, exitDelay);
   }, [exitDelay]);
 
-  // 仅在 tooltip 打开时绑定 scroll/resize，passive 提升滚动性能
+  // 仅在 tooltip 打开时绑定 scroll/resize，passive 提升滚动性能；多 Tooltip 同时打开时各注册一份，若需去重可改为模块级单监听 + 实例回调集合
   useEventListener(isVisible ? window : null, 'scroll', updatePosition, { capture: true, passive: true });
   useEventListener(isVisible ? window : null, 'resize', updatePosition, { passive: true });
   useEffect(() => {

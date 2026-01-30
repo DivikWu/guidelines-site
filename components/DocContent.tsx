@@ -2,7 +2,7 @@ import React, { Children, isValidElement, memo, ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { DocPage } from '../data/docs';
-import type { DocFrontmatter } from '@/lib/content/loaders';
+import type { DocMetaForClient } from '@/lib/content/loaders';
 
 const CALLOUT_REGEX = /^\s*\[!(\w+)\]\s*([\s\S]*)$/;
 const CALLOUT_TYPES = ['info', 'note', 'tip', 'warning', 'danger', 'example', 'quote'];
@@ -28,6 +28,10 @@ function getTextFromNode(node: ReactNode): string {
     if (props?.children != null) return getTextFromNode(props.children);
   }
   return '';
+}
+
+function isCalloutBodyEmpty(body: ReactNode): boolean {
+  return getTextFromNode(body).trim() === '';
 }
 
 function blockquoteToCallout(children: ReactNode): { type: string; title: string; body: ReactNode } | null {
@@ -113,7 +117,9 @@ const DOC_MARKDOWN_COMPONENTS = {
             <span className="doc-callout__icon" aria-hidden>{emoji}</span>
             {callout.title}
           </span>
-          <div className="doc-callout__body">{callout.body}</div>
+          {!isCalloutBodyEmpty(callout.body) && (
+            <div className="doc-callout__body">{callout.body}</div>
+          )}
         </div>
       );
     }
@@ -156,31 +162,33 @@ const DocContentBody = memo(function DocContentBody({ page }: { page: DocPage })
   );
 });
 
-export default function DocContent({
+const DocContent = memo(function DocContent({
   page,
   hidden,
   docMeta,
 }: {
   page: DocPage;
   hidden: boolean;
-  docMeta?: DocFrontmatter;
+  docMeta?: DocMetaForClient;
 }) {
   const hasMeta = docMeta && (docMeta.status != null || docMeta.last_updated != null);
   return (
     <article id={page.id} className={`doc ${hidden ? 'doc--hidden' : ''}`}>
       <DocContentBody page={page} />
-      {hasMeta && (docMeta!.status != null || docMeta!.last_updated != null) && (
+      {hasMeta && (
         <footer className="doc-status">
           {docMeta!.status != null && (
-            <span className="doc-status__value">
+            <span className="doc-status__value" data-status={docMeta!.status}>
               {docMeta!.status.charAt(0).toUpperCase() + docMeta!.status.slice(1).toLowerCase()}
             </span>
           )}
           {docMeta!.last_updated != null && (
-            <span className="doc-status__value">{docMeta!.last_updated}</span>
+            <span className="doc-status__date">{docMeta!.last_updated}</span>
           )}
         </footer>
       )}
     </article>
   );
-}
+});
+
+export default DocContent;

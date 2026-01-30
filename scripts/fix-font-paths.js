@@ -4,12 +4,30 @@ const path = require('path');
 const basePath = '/guidelines-site';
 const outDir = path.join(__dirname, '../out');
 
-// 递归查找所有文件（CSS 或 HTML）
+// 递归查找所有文件（CSS 或 HTML）；跳过无法访问的路径（如含空格或编码问题的目录）
 function findFiles(dir, extensions, fileList = []) {
-  const files = fs.readdirSync(dir);
+  let files;
+  try {
+    files = fs.readdirSync(dir);
+  } catch (err) {
+    if (err.code === 'ENOENT' || err.code === 'EPERM') {
+      console.warn(`Skipping directory: ${dir}`);
+      return fileList;
+    }
+    throw err;
+  }
   files.forEach(file => {
     const filePath = path.join(dir, file);
-    const stat = fs.statSync(filePath);
+    let stat;
+    try {
+      stat = fs.statSync(filePath);
+    } catch (err) {
+      if (err.code === 'ENOENT' || err.code === 'EPERM') {
+        console.warn(`Skipping path: ${filePath}`);
+        return;
+      }
+      throw err;
+    }
     if (stat.isDirectory()) {
       findFiles(filePath, extensions, fileList);
     } else if (extensions.some(ext => file.endsWith(ext))) {
@@ -34,7 +52,16 @@ console.log(`Found ${cssFiles.length} CSS files`);
 
 let fixedCount = 0;
 cssFiles.forEach(cssFilePath => {
-  let content = fs.readFileSync(cssFilePath, 'utf8');
+  let content;
+  try {
+    content = fs.readFileSync(cssFilePath, 'utf8');
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      console.warn(`Skipping missing CSS file: ${cssFilePath}`);
+      return;
+    }
+    throw err;
+  }
   const originalContent = content;
   
   // 1. 替换 @import 路径：@import "/fonts/icofont/icofont.css" -> @import "/guidelines-site/fonts/icofont/icofont.css"
@@ -65,10 +92,18 @@ cssFiles.forEach(cssFilePath => {
   }
   
   if (content !== originalContent) {
-    fs.writeFileSync(cssFilePath, content, 'utf8');
-    const relativePath = path.relative(outDir, cssFilePath);
-    console.log(`Fixed font paths in: ${relativePath}`);
-    fixedCount++;
+    try {
+      fs.writeFileSync(cssFilePath, content, 'utf8');
+      const relativePath = path.relative(outDir, cssFilePath);
+      console.log(`Fixed font paths in: ${relativePath}`);
+      fixedCount++;
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        console.warn(`Skipping write (file gone): ${cssFilePath}`);
+      } else {
+        throw err;
+      }
+    }
   }
 });
 
@@ -80,7 +115,16 @@ console.log(`Found ${htmlFiles.length} HTML files`);
 
 let fixedHtmlCount = 0;
 htmlFiles.forEach(htmlFilePath => {
-  let content = fs.readFileSync(htmlFilePath, 'utf8');
+  let content;
+  try {
+    content = fs.readFileSync(htmlFilePath, 'utf8');
+  } catch (err) {
+    if (err.code === 'ENOENT') {
+      console.warn(`Skipping missing HTML file: ${htmlFilePath}`);
+      return;
+    }
+    throw err;
+  }
   const originalContent = content;
   
   // 替换 HTML 中的字体路径：
@@ -95,10 +139,18 @@ htmlFiles.forEach(htmlFilePath => {
   }
   
   if (content !== originalContent) {
-    fs.writeFileSync(htmlFilePath, content, 'utf8');
-    const relativePath = path.relative(outDir, htmlFilePath);
-    console.log(`Fixed font paths in HTML: ${relativePath}`);
-    fixedHtmlCount++;
+    try {
+      fs.writeFileSync(htmlFilePath, content, 'utf8');
+      const relativePath = path.relative(outDir, htmlFilePath);
+      console.log(`Fixed font paths in HTML: ${relativePath}`);
+      fixedHtmlCount++;
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        console.warn(`Skipping write (file gone): ${htmlFilePath}`);
+      } else {
+        throw err;
+      }
+    }
   }
 });
 

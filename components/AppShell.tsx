@@ -5,6 +5,7 @@ import Header from './Header';
 import IconNav from './IconNav';
 import TokenNav from './TokenNav';
 import NavDrawer from './NavDrawer';
+import ContentSkeleton from './ContentSkeleton';
 import type { SearchItem } from './SearchModal';
 import { useSearch } from './SearchProvider';
 
@@ -18,8 +19,41 @@ import { usePathname, useRouter } from 'next/navigation';
 import { DocPage } from '../data/docs';
 import { getSectionConfig, findSectionByItemId } from '../config/navigation';
 import type { ContentTree } from '@/lib/content/tree';
-import type { DocFrontmatter } from '@/lib/content/loaders';
+import type { DocMetaForClient } from '@/lib/content/loaders';
 import { getSearchRecent, setSearchRecent } from '@/lib/search-recent-cache';
+import { useGlobalShortcuts } from '@/contexts/GlobalShortcutsContext';
+
+/** 模块级纯函数：根据 path 与 contentTree 解析出 category/token，避免每轮渲染新建 */
+function getRouteState(path: string, contentTree: ContentTree | null): { category: string; token: string } {
+  const segments = path.split('/').filter(Boolean);
+  if (contentTree && segments[0] === 'docs' && segments.length >= 3) {
+    const section = decodeURIComponent(segments[1]);
+    const file = decodeURIComponent(segments[2]);
+    return { category: section, token: file };
+  }
+  if (segments.length === 0) return { category: 'home', token: 'home' };
+  if (segments[0] === 'getting-started') {
+    return { category: 'getting-started', token: segments[1] || 'introduction' };
+  }
+  if (segments[0] === 'foundations') {
+    if (segments[1] === 'brand') return { category: 'brand', token: 'logo' };
+    if (segments[1]) return { category: 'foundations', token: segments[1] };
+    return { category: 'foundations', token: 'color' };
+  }
+  if (segments[0] === 'components') {
+    return { category: 'components', token: segments[1] || 'button' };
+  }
+  if (segments[0] === 'content') {
+    return { category: 'content', token: segments[1] || 'content-overview' };
+  }
+  if (segments[0] === 'resources') {
+    return { category: 'resources', token: segments[1] || 'resources-overview' };
+  }
+  if (segments[0] === 'overview') {
+    return { category: 'getting-started', token: 'introduction' };
+  }
+  return { category: 'getting-started', token: 'introduction' };
+}
 
 export default function AppShell({
   docs,
@@ -33,53 +67,23 @@ export default function AppShell({
   contentTree?: ContentTree | null;
   docsRouteSection?: string | null;
   docsRouteFile?: string | null;
-  docMeta?: DocFrontmatter | null;
+  docMeta?: DocMetaForClient | null;
   children?: React.ReactNode;
 }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const getRouteState = (path: string) => {
-    const segments = path.split('/').filter(Boolean);
-    if (contentTree && segments[0] === 'docs' && segments.length >= 3) {
-      const section = decodeURIComponent(segments[1]);
-      const file = decodeURIComponent(segments[2]);
-      return { category: section, token: file };
-    }
-    if (segments.length === 0) return { category: 'home', token: 'home' };
-    if (segments[0] === 'getting-started') {
-      return { category: 'getting-started', token: segments[1] || 'introduction' };
-    }
-    if (segments[0] === 'foundations') {
-      if (segments[1] === 'brand') return { category: 'brand', token: 'logo' };
-      if (segments[1]) return { category: 'foundations', token: segments[1] };
-      return { category: 'foundations', token: 'color' };
-    }
-    if (segments[0] === 'components') {
-      return { category: 'components', token: segments[1] || 'button' };
-    }
-    if (segments[0] === 'content') {
-      return { category: 'content', token: segments[1] || 'content-overview' };
-    }
-    if (segments[0] === 'resources') {
-      return { category: 'resources', token: segments[1] || 'resources-overview' };
-    }
-    if (segments[0] === 'overview') {
-      return { category: 'getting-started', token: 'introduction' };
-    }
-    return { category: 'getting-started', token: 'introduction' };
-  };
-
   const initialRouteState =
     contentTree && docsRouteSection && docsRouteFile
       ? { category: docsRouteSection, token: docsRouteFile }
-      : getRouteState(pathname);
+      : getRouteState(pathname, contentTree);
   const [category, setCategory] = useState<string>(initialRouteState.category);
   const [activeToken, setActiveToken] = useState<string>(initialRouteState.token);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [prevPathname, setPrevPathname] = useState<string>('');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [pendingRoute, setPendingRoute] = useState<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
   const docIds = useMemo(() => new Set(docs.map((doc) => doc.id)), [docs]);
   const docRouteMap = useMemo(() => {
@@ -147,12 +151,14 @@ export default function AppShell({
   }, [category, activeToken, docIds, contentTree]);
 
   useEffect(() => {
+    setPendingRoute(null);
     const hash = typeof window !== 'undefined' ? window.location.hash.replace('#', '') : '';
-    const nextState = getRouteState(pathname);
+    const nextState = getRouteState(pathname, contentTree);
     setCategory(nextState.category);
     setActiveToken(hash || nextState.token);
-  }, [pathname]);
+  }, [pathname, contentTree]);
 
+  // 约定：AppShell 单例，hashchange 仅注册一次；多实例时改为模块级单监听 + 回调 Set
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const handleHashChange = () => {
@@ -183,6 +189,7 @@ export default function AppShell({
       }
     });
   }, []);
+  // 约定：AppShell 单例，scroll 仅注册一次
   useEventListener(typeof window !== 'undefined' ? window : null, 'scroll', onScrollHighlight, { passive: true });
   useEffect(() => {
     return () => {
@@ -201,16 +208,12 @@ export default function AppShell({
     }
   }, [mobileOpen]);
 
-  // ESC 键关闭 drawer
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && mobileOpen) {
-        setMobileOpen(false);
-      }
-    };
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
-  }, [mobileOpen]);
+  // 注册到全局快捷键（单一 keydown 监听，由 GlobalShortcutsProvider 分发）
+  const shortcuts = useGlobalShortcuts();
+  if (shortcuts) {
+    shortcuts.drawer.closeRef.current = () => setMobileOpen(false);
+    shortcuts.drawer.isOpenRef.current = mobileOpen;
+  }
 
   // 检测是否为移动端（使用断点 768px）
   // 使用 matchMedia 确保稳定判断，避免 resize 时频繁触发；lastMobileRef 避免 isMobile 依赖导致 effect 重跑
@@ -282,6 +285,26 @@ export default function AppShell({
     setActiveToken(id);
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   }, []);
+
+  // NavDrawer 稳定回调，减少子组件无效重渲染
+  const handleNavDrawerClose = useCallback(() => setMobileOpen(false), []);
+  const handleNavDrawerCategoryChange = useCallback((id: string) => setCategory(id), []);
+  const handleNavDrawerTokenChange = useCallback((id: string) => {
+    setActiveToken(id);
+    setMobileOpen(false);
+    setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  }, []);
+
+  // 待导航路由：点击 tab 即将 router.push 时设置，pathname 更新后清除；仅 path 变化时设，避免同页 hash 闪骨架屏
+  const handleNavigationStart = useCallback(
+    (route: string) => {
+      const routePath = route.split('#')[0];
+      if (routePath !== pathname) setPendingRoute(route);
+    },
+    [pathname]
+  );
 
   // 根据 doc id 确定路由（contentTree 时用 Map 查找，否则走静态 fallback）
   const getDocRouteFallback = useCallback((docId: string): string => {
@@ -434,18 +457,9 @@ export default function AppShell({
         isOpen={isMobile && mobileOpen}
         activeCategory={category}
         activeToken={activeToken}
-        onClose={() => setMobileOpen(false)}
-        onCategoryChange={(id) => {
-          setCategory(id);
-          // 切换 section 时不关闭 drawer，让用户看到新的二级列表
-        }}
-        onTokenChange={(id) => {
-          setActiveToken(id);
-          setMobileOpen(false);
-          setTimeout(() => {
-            document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-          }, 100);
-        }}
+        onClose={handleNavDrawerClose}
+        onCategoryChange={handleNavDrawerCategoryChange}
+        onTokenChange={handleNavDrawerTokenChange}
         contentTree={contentTree}
       />
 
@@ -463,15 +477,22 @@ export default function AppShell({
                 category={category}
                 activeToken={activeToken}
                 onTokenChange={handleTokenChange}
+                onNavigationStart={handleNavigationStart}
                 contentTree={contentTree}
               />
             </div>
           </aside>
         )}
         
-        {/* 内容区：由 RSC 传入的文档内容（DocContent）或 OverviewContent */}
+        {/* 内容区：待导航时显示骨架屏，否则由 RSC 传入的文档内容 */}
         <main className="content" id="main-content">
-          {children ?? null}
+          {pendingRoute != null ? (
+            <div className="page-skeleton-wrapper doc">
+              <ContentSkeleton />
+            </div>
+          ) : (
+            children ?? null
+          )}
         </main>
       </div>
     </div>

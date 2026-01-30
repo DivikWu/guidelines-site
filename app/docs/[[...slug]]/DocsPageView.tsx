@@ -3,7 +3,7 @@
 import { useContentTree } from '@/contexts/ContentTreeContext';
 import AppShell from '@/components/AppShell';
 import type { DocPage } from '@/data/docs';
-import type { DocFrontmatter } from '@/lib/content/loaders';
+import type { DocMetaForClient } from '@/lib/content/loaders';
 
 export default function DocsPageView({
   doc,
@@ -15,7 +15,7 @@ export default function DocsPageView({
   doc: DocPage;
   section: string;
   file: string;
-  docMeta?: DocFrontmatter;
+  docMeta?: DocMetaForClient;
   children?: React.ReactNode;
 }) {
   const tree = useContentTree();

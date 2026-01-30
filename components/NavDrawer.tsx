@@ -7,6 +7,52 @@ import { getSectionIcon } from '../config/content-icons';
 import Icon from './Icon';
 import type { ContentTree } from '@/lib/content/tree';
 
+/** 展示名：仅显示 "_" 之后的文本（模块级，与 TokenNav 一致） */
+function displayLabel(raw: string): string {
+  const i = raw.indexOf('_');
+  return i >= 0 ? raw.slice(i + 1) : raw;
+}
+
+/** 模块级纯函数：根据 contentTree 或静态配置返回 item 路由 */
+function getItemRoute(itemId: string, sectionId: string, contentTree: ContentTree | null): string | null {
+  if (contentTree) {
+    return `/docs/${encodeURIComponent(sectionId)}/${encodeURIComponent(itemId)}`;
+  }
+  if (sectionId === 'home' && itemId === 'home') return '/';
+  if (sectionId === 'getting-started') return `/getting-started/${itemId}`;
+  if (sectionId === 'brand') return `/foundations/brand${itemId !== 'logo' ? `#${itemId}` : ''}`;
+  if (sectionId === 'foundations') return `/foundations/${itemId}`;
+  if (sectionId === 'components') return `/components/${itemId}`;
+  if (sectionId === 'content') return `/content${itemId !== 'content-overview' ? `#${itemId}` : ''}`;
+  if (sectionId === 'resources') return `/resources${itemId !== 'resources-overview' ? `#${itemId}` : ''}`;
+  return null;
+}
+
+/** 模块级纯函数：根据 contentTree 或静态配置返回 section 首项路由 */
+function getSectionRoute(sectionId: string, contentTree: ContentTree | null): string | null {
+  if (contentTree) {
+    const section = contentTree.sections.find((s) => s.id === sectionId);
+    const firstFile = section?.items[0];
+    if (section && firstFile) {
+      return `/docs/${encodeURIComponent(sectionId)}/${encodeURIComponent(firstFile.id)}`;
+    }
+    return null;
+  }
+  if (sectionId === 'home') return '/';
+  if (sectionId === 'getting-started') return '/getting-started/introduction';
+  if (sectionId === 'brand') return '/foundations/brand';
+  if (sectionId === 'foundations') return '/foundations';
+  if (sectionId === 'components') return '/components';
+  if (sectionId === 'content') return '/content';
+  if (sectionId === 'resources') return '/resources';
+  return null;
+}
+
+/** 模块级纯函数：判断 section 是否来自 contentTree */
+function isContentTreeSection(s: { id: string }, contentTree: ContentTree | null): boolean {
+  return Boolean(contentTree && contentTree.sections.some((sec) => sec.id === s.id));
+}
+
 interface NavDrawerProps {
   isOpen: boolean;
   activeCategory: string;
@@ -43,61 +89,6 @@ export default function NavDrawer({
     return navigationConfig.filter(section => section.id !== 'home');
   }, [contentTree]);
 
-  // 路由映射函数（与 TokenNav 保持一致）
-  const getItemRoute = (itemId: string, sectionId: string) => {
-    if (contentTree) {
-      return `/docs/${encodeURIComponent(sectionId)}/${encodeURIComponent(itemId)}`;
-    }
-    if (sectionId === 'home' && itemId === 'home') return '/';
-    if (sectionId === 'getting-started') {
-      return `/getting-started/${itemId}`;
-    }
-    if (sectionId === 'brand') {
-      return `/foundations/brand${itemId !== 'logo' ? `#${itemId}` : ''}`;
-    }
-    if (sectionId === 'foundations') {
-      return `/foundations/${itemId}`;
-    }
-    if (sectionId === 'components') {
-      return `/components/${itemId}`;
-    }
-    if (sectionId === 'content') {
-      return `/content${itemId !== 'content-overview' ? `#${itemId}` : ''}`;
-    }
-    if (sectionId === 'resources') {
-      return `/resources${itemId !== 'resources-overview' ? `#${itemId}` : ''}`;
-    }
-    return null;
-  };
-
-  const getSectionRoute = (sectionId: string) => {
-    if (contentTree) {
-      const section = contentTree.sections.find((s) => s.id === sectionId);
-      const firstFile = section?.items[0];
-      if (section && firstFile) {
-        return `/docs/${encodeURIComponent(sectionId)}/${encodeURIComponent(firstFile.id)}`;
-      }
-      return null;
-    }
-    if (sectionId === 'home') return '/';
-    if (sectionId === 'getting-started') return '/getting-started/introduction';
-    if (sectionId === 'brand') return '/foundations/brand';
-    if (sectionId === 'foundations') return '/foundations';
-    if (sectionId === 'components') return '/components';
-    if (sectionId === 'content') return '/content';
-    if (sectionId === 'resources') return '/resources';
-    return null;
-  };
-
-  const isContentTreeSection = (s: { id: string; label: string; items: { id: string; label: string }[] }) =>
-    contentTree && contentTree.sections.some((sec) => sec.id === s.id);
-
-  /** 展示名：仅显示 "_" 之后的文本，与 content tree label 规则一致 */
-  const displayLabel = (raw: string) => {
-    const i = raw.indexOf("_");
-    return i >= 0 ? raw.slice(i + 1) : raw;
-  };
-
   // 如果未打开，不渲染 overlay 和 panel，避免影响布局（放在所有 Hooks 之后以符合 Rules of Hooks）
   if (!isOpen) {
     return null;
@@ -112,7 +103,7 @@ export default function NavDrawer({
             {sections.map((section: { id: string; label: string; items: { id: string; label: string }[]; iconClass?: string }) => {
               const isExpanded = expandedSectionId === section.id;
               const isActive = activeCategory === section.id;
-              const useContentTree = isContentTreeSection(section);
+              const useContentTree = isContentTreeSection(section, contentTree);
               return (
               <div key={section.id} className="nav-drawer__section">
                 <button
@@ -156,7 +147,7 @@ export default function NavDrawer({
                         type="button"
                         className="nav-drawer__subitem"
                         onClick={() => {
-                          const route = getItemRoute(item.id, section.id);
+                          const route = getItemRoute(item.id, section.id, contentTree);
                           if (route) {
                             router.push(route);
                           }
@@ -312,7 +303,7 @@ export default function NavDrawer({
           gap: 8px;
         }
 
-        /* 二级项（Figma TAB/S 36px） */
+        /* 二级项（Figma TAB/S 36px）；content-visibility 减轻长列表离屏绘制 */
         .nav-drawer__subitem {
           display: flex;
           align-items: center;
@@ -329,6 +320,8 @@ export default function NavDrawer({
           font-weight: var(--body-m-font-weight, var(--fw-regular));
           line-height: var(--body-m-line-height, 20px);
           text-align: left;
+          content-visibility: auto;
+          contain-intrinsic-size: 0 36px;
         }
 
         .nav-drawer__subitem:active {

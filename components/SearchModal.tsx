@@ -49,7 +49,6 @@ const LATEST_ID_SET = new Set<string>(LATEST_IDS);
 
 const SEARCH_MODAL_SKELETON_ITEMS = [1, 2, 3].map((i) => (
   <div key={i} className="search-modal__skeleton-item">
-    <div className="search-modal__skeleton-icon" />
     <div className="search-modal__skeleton-content">
       <div className="search-modal__skeleton-title" />
       <div className="search-modal__skeleton-desc" />
@@ -257,12 +256,6 @@ export default function SearchModal({
           onClick={() => handleSelect(item)}
           onMouseEnter={() => setSelectedIndex(index)}
         >
-          <div className="search-modal__item-icon">
-            <Icon 
-              name={item.type === 'component' ? 'ds-icon-dashboard-circle' : item.type === 'resource' ? 'ds-icon-check-list' : 'ds-icon-book-02'} 
-              size={20} 
-            />
-          </div>
           <div className="search-modal__item-content">
             <div className="search-modal__item-title">
               {highlightText(item.title || item.id)}
@@ -276,8 +269,8 @@ export default function SearchModal({
               </div>
             )}
           </div>
-          <div className="search-modal__item-enter" aria-hidden="true">
-            <Icon name="ds-icon-arrow-right-01" size={16} />
+          <div className="search-modal__item-enter" aria-hidden="true" title="回车选择">
+            ⏎
           </div>
         </button>
       </li>
@@ -348,7 +341,7 @@ export default function SearchModal({
           />
             
             <div className="search-modal__input-return" aria-hidden="true">
-              RETURN
+              Enter
             </div>
 
             {/* 清空按钮 */}

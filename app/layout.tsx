@@ -5,6 +5,7 @@ import './globals.css';
 import Script from 'next/script';
 import { BasePathProvider } from '../contexts/BasePathContext';
 import { TokenProvider } from '../components/TokenProvider';
+import { GlobalShortcutsProvider } from '../contexts/GlobalShortcutsContext';
 import { SearchProvider } from '../components/SearchProvider';
 import TopLoadingBar from '../components/TopLoadingBar';
 
@@ -55,7 +56,9 @@ export default function RootLayout({
         />
         <BasePathProvider basePath={basePath}>
           <TokenProvider>
-            <SearchProvider>{children}</SearchProvider>
+            <GlobalShortcutsProvider>
+              <SearchProvider>{children}</SearchProvider>
+            </GlobalShortcutsProvider>
           </TokenProvider>
         </BasePathProvider>
       </body>

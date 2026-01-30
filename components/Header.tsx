@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, useState, useCallback, startTransition } from 'react';
+import { memo, useEffect, useLayoutEffect, useRef, useState, useCallback, startTransition } from 'react';
 import { useEventListener } from '@/hooks/useEventListener';
 import { usePathname } from 'next/navigation';
 import { useTokenTheme } from './TokenProvider';
@@ -25,16 +25,16 @@ interface HeaderProps {
   onToggleDesktopSidebar?: () => void;
 }
 
-function Header({ 
-  onToggleSidebar, 
+const Header = memo(function Header({
+  onToggleSidebar,
   isOpen = false,
-  docs = [], 
+  docs = [],
   onSearchSelect,
   isOverview = false,
   showMenuButton = false,
   showExtraActions = false,
   showSearchSlot = false,
-  onToggleDesktopSidebar
+  onToggleDesktopSidebar,
 }: HeaderProps) {
   const { theme, toggle } = useTokenTheme();
   
@@ -150,6 +150,7 @@ function Header({
       }
     });
   }, []);
+  // 约定：Header 单例，scroll 仅注册一次
   useEventListener(mounted ? window : null, 'scroll', handleScroll, { passive: true });
   useEffect(() => {
     if (!mounted) return;
@@ -226,14 +227,17 @@ function Header({
     setShowResults(results.length > 0);
   }, [docs]);
 
-  // 防抖搜索
+  const performSearchRef = useRef(performSearch);
+  performSearchRef.current = performSearch;
+
+  // 防抖搜索：仅依赖 searchQuery，避免 docs 引用变化重置 timer
   useEffect(() => {
     const timer = setTimeout(() => {
-      performSearch(searchQuery);
+      performSearchRef.current(searchQuery);
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, performSearch]);
+  }, [searchQuery]);
 
   // 处理搜索输入
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -451,6 +455,6 @@ function Header({
       </div>
     </header>
   );
-}
+});
 
 export default Header;

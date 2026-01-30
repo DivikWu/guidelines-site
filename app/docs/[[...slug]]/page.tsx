@@ -1,10 +1,12 @@
+import dynamic from 'next/dynamic';
 import { redirect, notFound } from 'next/navigation';
 import { getContentTree } from '@/lib/content/tree';
 import { DEFAULT_CONTENT_DIR } from '@/lib/content/constants';
 import { getMarkdownAndFrontmatter } from '@/lib/content/loaders';
 import DocsPageView from './DocsPageView';
-import DocContent from '@/components/DocContent';
 import type { DocPage } from '@/data/docs';
+
+const DocContent = dynamic(() => import('@/components/DocContent'), { ssr: true });
 
 export function generateStaticParams() {
   // 固定使用项目 content/，与站内链接一致，避免 YDS_CONTENT_DIR 导致 param 不匹配
@@ -98,14 +100,17 @@ export default async function DocsSlugPage({ params }: PageProps) {
 
   const normalizedMarkdown = rewriteWikiLinks(markdown, tree);
   const doc: DocPage = { id: fileDecoded, markdown: normalizedMarkdown };
+  const docMetaForClient = docMeta
+    ? { status: docMeta.status, last_updated: docMeta.last_updated }
+    : undefined;
   return (
     <DocsPageView
       doc={doc}
       section={sectionDecoded}
       file={fileDecoded}
-      docMeta={docMeta}
+      docMeta={docMetaForClient}
     >
-      <DocContent page={doc} hidden={false} docMeta={docMeta} />
+      <DocContent page={doc} hidden={false} docMeta={docMetaForClient} />
     </DocsPageView>
   );
 }

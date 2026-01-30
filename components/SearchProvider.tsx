@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
-import { useEventListener } from '@/hooks/useEventListener';
+import { useGlobalShortcuts } from '@/contexts/GlobalShortcutsContext';
 
 interface SearchContextType {
   isOpen: boolean;
@@ -37,26 +37,13 @@ export function SearchProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const toggleSearchRef = useRef(toggleSearch);
-  const closeSearchRef = useRef(closeSearch);
-  toggleSearchRef.current = toggleSearch;
-  closeSearchRef.current = closeSearch;
-
-  // 全局快捷键：稳定 handler + useEventListener，passive: false 以 allow preventDefault
-  const handleKeyDown = useCallback((e: Event) => {
-    const ev = e as KeyboardEvent;
-    if (ev.repeat) return;
-    const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform);
-    const isCmdK = (isMac && ev.metaKey && ev.key === 'k') || (!isMac && ev.ctrlKey && ev.key === 'k');
-    if (isCmdK) {
-      ev.preventDefault();
-      toggleSearchRef.current();
-    }
-    if (ev.key === 'Escape' && isOpenRef.current) {
-      closeSearchRef.current();
-    }
-  }, []);
-  useEventListener(typeof window !== 'undefined' ? window : null, 'keydown', handleKeyDown, { passive: false });
+  // 注册到全局快捷键（单一 keydown 监听，由 GlobalShortcutsProvider 分发）
+  const shortcuts = useGlobalShortcuts();
+  if (shortcuts) {
+    shortcuts.search.toggleRef.current = toggleSearch;
+    shortcuts.search.closeRef.current = closeSearch;
+    shortcuts.search.isOpenRef.current = isOpen;
+  }
 
   const pathname = usePathname();
   useEffect(() => {

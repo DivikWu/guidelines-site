@@ -14,9 +14,9 @@ export default function Icon({ name, className = '', title, size = 20 }: IconPro
     <i
       className={iconClassName}
       style={{ fontSize: `${size}px` }}
-      role={title ? 'img' : undefined}
+      role={title ? 'img' : 'presentation'}
       aria-label={title || undefined}
-      aria-hidden={title ? undefined : 'true'}
+      aria-hidden={title ? 'false' : 'true'}
     />
   );
 }

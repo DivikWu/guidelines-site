@@ -9,18 +9,25 @@ const TokenContext = createContext<{ theme: Theme; toggle: () => void }>({
   toggle: () => {}
 });
 
+/** 与根 layout 内联脚本同一 key，保证主题单一数据源 */
+const THEME_STORAGE_KEY = 'yami-theme';
+
 export const TokenProvider = ({ children }: { children: React.ReactNode }) => {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof document === 'undefined') return 'light';
-    const t = document.documentElement.dataset.theme;
-    return (t === 'dark' || t === 'light') ? t : 'light';
+    try {
+      const t = localStorage.getItem(THEME_STORAGE_KEY);
+      return (t === 'dark' || t === 'light') ? t : 'light';
+    } catch {
+      return 'light';
+    }
   });
 
   const toggle = useCallback(() => {
     setTheme((prev) => {
       const next = prev === 'light' ? 'dark' : 'light';
       try {
-        localStorage.setItem('yami-theme', next);
+        localStorage.setItem(THEME_STORAGE_KEY, next);
       } catch (e) {
         // ignore
       }

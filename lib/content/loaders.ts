@@ -1,8 +1,15 @@
+import { cache } from "react";
 import fs from "node:fs";
 import path from "node:path";
 import { getContentRoot, LOCAL_CONTENT_DIR } from "./constants";
 
 const MAPPING_PATH = path.join(process.cwd(), "scripts/content-mapping.json");
+
+/** 请求级缓存：读并解析 content-mapping.json，同请求内只读一次盘 */
+const getContentMapping = cache(function getContentMapping(): Record<string, string> | null {
+  if (!fs.existsSync(MAPPING_PATH)) return null;
+  return JSON.parse(fs.readFileSync(MAPPING_PATH, "utf-8")) as Record<string, string>;
+});
 
 /** 去掉 front matter（--- 之间的文档标签），只返回正文供渲染 */
 function stripFrontMatter(raw: string): string {
@@ -35,13 +42,11 @@ function parseFrontmatterFields(block: string): {
   };
 }
 
-/** 根据 canonical 路径从 content-mapping 反查 Obsidian 源路径 */
+/** 根据 canonical 路径从 content-mapping 反查 Obsidian 源路径（使用请求级缓存的 mapping） */
 function getSourcePathForCanonical(canonicalPath: string): string | null {
-  if (!fs.existsSync(MAPPING_PATH)) return null;
+  const mapping = getContentMapping();
+  if (!mapping) return null;
   const normalized = canonicalPath.replace(/\\/g, "/");
-  const mapping: Record<string, string> = JSON.parse(
-    fs.readFileSync(MAPPING_PATH, "utf-8")
-  );
   for (const [source, canonical] of Object.entries(mapping)) {
     if (canonical.replace(/\\/g, "/") === normalized) return source;
   }
@@ -85,11 +90,15 @@ export type DocFrontmatter = {
   description?: string;
 };
 
+/** 仅序列化到客户端的字段，减少 RSC 边界体积 */
+export type DocMetaForClient = Pick<DocFrontmatter, 'status' | 'last_updated'>;
+
 /**
  * 从 content 根目录读取 md 的 front matter，返回 title、description（异步版本，用于并行加载）。
+ * 使用 React.cache() 做请求级去重，同请求内同 path 只执行一次 I/O。
  * @returns Promise<{ title, description }>
  */
-export async function getDocTitleAndDescriptionAsync(
+export const getDocTitleAndDescriptionAsync = cache(async function getDocTitleAndDescriptionAsync(
   relativePath: string,
   contentRoot?: string
 ): Promise<{ title: string; description: string | null }> {
@@ -128,17 +137,14 @@ export async function getDocTitleAndDescriptionAsync(
     title: t !== undefined && t !== "" ? t : "",
     description: d !== undefined && d !== "" ? d : null,
   };
-}
+});
 
 /**
- * 从 content 根目录读取 md 的 front matter，返回 category、status、last_updated。
- * 不存在或无法解析时返回空对象。
- */
-/**
  * 从文档 frontmatter 取 title、description；仅用 frontmatter，缺失则为空。
+ * 使用 React.cache() 做请求级去重。
  * @returns title（缺失时 ""）、description（缺失时 null）
  */
-export function getDocTitleAndDescription(
+export const getDocTitleAndDescription = cache(function getDocTitleAndDescription(
   relativePath: string,
   contentRoot?: string
 ): { title: string; description: string | null } {
@@ -166,9 +172,10 @@ export function getDocTitleAndDescription(
     title: t !== undefined && t !== "" ? t : "",
     description: d !== undefined && d !== "" ? d : null,
   };
-}
+});
 
-export function getDocFrontmatter(
+/** 从文档 frontmatter 取完整字段；使用 React.cache() 做请求级去重 */
+export const getDocFrontmatter = cache(function getDocFrontmatter(
   relativePath: string,
   contentRoot?: string
 ): DocFrontmatter {
@@ -190,13 +197,14 @@ export function getDocFrontmatter(
   const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
   if (!match) return {};
   return parseFrontmatterFields(match[1]);
-}
+});
 
 /**
  * 从 content 根目录按相对路径读取一个 md 文件，一次 I/O 同时返回正文与 frontmatter。
  * 不存在或非文件时返回 { markdown: null, frontmatter: {} }。
+ * 使用 React.cache() 做请求级去重，同请求内同 path 只执行一次 I/O。
  */
-export function getMarkdownAndFrontmatter(
+export const getMarkdownAndFrontmatter = cache(function getMarkdownAndFrontmatter(
   relativePath: string,
   contentRoot?: string
 ): { markdown: string | null; frontmatter: DocFrontmatter } {
@@ -219,4 +227,4 @@ export function getMarkdownAndFrontmatter(
   const fm = fmMatch ? parseFrontmatterFields(fmMatch[1]) : {};
   const markdown = fmMatch ? raw.slice(fmMatch[0].length).trimStart() : raw;
   return { markdown, frontmatter: fm };
-}
+});

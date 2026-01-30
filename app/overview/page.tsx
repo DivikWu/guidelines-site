@@ -1,7 +1,9 @@
+import dynamic from 'next/dynamic';
 import AppShell from '../../components/AppShell';
 import OverviewContent from '../../components/OverviewContent';
-import DocContent from '../../components/DocContent';
 import { docs } from '../../data/docs';
+
+const DocContent = dynamic(() => import('../../components/DocContent'), { ssr: true });
 
 export default function OverviewPage() {
   const docsById = new Map(docs.map((d) => [d.id, d]));
