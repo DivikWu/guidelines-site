@@ -14,6 +14,7 @@
 - `app/`：Next.js App Router 页面与布局。
 - `components/`：可复用 UI 组件。
 - `docs/`：项目文档与规范说明的统一入口。
+- `docs/DEVELOPMENT.md`：开发流程、检查清单与常见问题，面向站点维护者。
 - `tokens/`：设计 Token 源文件与 README。
 - `styles/`：主题、Token 生成后的 CSS 样式。
 - `scripts/`：构建与维护脚本（如 token 生成、路径修复）。
@@ -24,7 +25,11 @@
 - `docs/regression/`：回归测试文档（SOP、PR Checklist、测试策略）。
 - `docs/_legacy/`：历史遗留文档与非当前生产使用的静态文件。
 
+## 命名约定（docs 内部）
+- 建议：新文档使用小写+连字符或下划线（如 `perf-fix-plan.md`、`report_ui_fix.md`），便于跨平台与链接稳定。
+- 现有文档未强制重命名，避免破坏已有链接；命名不一致项见 `docs/misc/_to_review.md` 中的建议。
+
 ## 维护建议
-- 新文档优先放入 `docs/` 子目录，避免根目录新增散落文档。
+- 新文档优先放入 `docs/` 子目录（guides/、reference/、decisions/、reports/、specs/、regression/、misc/），避免根目录新增散落文档。
 - 如需对外引用文档，请使用稳定路径（例如 `docs/reports/...`）。
 
