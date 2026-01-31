@@ -1,8 +1,10 @@
 import fs from "node:fs";
 import path from "node:path";
 import { getContentRoot, DEFAULT_CONTENT_DIR } from "./constants";
-import { getContentTree } from "./tree";
+import { getContentTree, normalizeDocId } from "./tree";
 import type { ContentTree } from "./tree";
+import { getDocTitleAndDescriptionAsync } from "./loaders";
+import type { RecentUpdate } from "@/data/home";
 
 const DOCS_SUBDIR = "docs";
 
@@ -88,12 +90,47 @@ function findNavIndexPath(contentRoot: string): string | null {
   return fs.existsSync(fallback) ? fallback : null;
 }
 
-/** 解析表格行：按 | 分割，去掉首尾空，得到单元格 */
+/** 解析表格行：按 | 分割，但保留 [[...]] 中的 |，去掉首尾空，得到单元格 */
 function parseTableRow(line: string): string[] {
-  return line
-    .split("|")
-    .map((c) => c.trim())
-    .filter((_, i, arr) => i > 0 && i < arr.length - 1);
+  const cells: string[] = [];
+  let current = '';
+  let inWikiLink = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    const nextChar = line[i + 1];
+    
+    // 检测 [[ 开始
+    if (char === '[' && nextChar === '[') {
+      inWikiLink = true;
+      current += '[[';
+      i++; // 跳过下一个 [
+      continue;
+    }
+    
+    // 检测 ]] 结束
+    if (char === ']' && nextChar === ']' && inWikiLink) {
+      current += ']]';
+      i++; // 跳过下一个 ]
+      inWikiLink = false;
+      continue;
+    }
+    
+    // 在 wikilink 中的 | 不作为分隔符
+    if (char === '|' && !inWikiLink) {
+      cells.push(current.trim());
+      current = '';
+      continue;
+    }
+    
+    current += char;
+  }
+  
+  // 添加最后一个单元格
+  cells.push(current.trim());
+  
+  // 去掉首尾空单元格（表格两端的 |）
+  return cells.filter((c, i) => i > 0 && i < cells.length - 1);
 }
 
 /** 从链接单元格提取 [[target|label]] 或 [[target]] */
@@ -230,4 +267,123 @@ export async function getQuickStartCardsFromIndex(
     href: getFirstDocHref(tree, QUICK_START_SECTIONS[i]),
     iconName: QUICK_START_ICONS[i],
   }));
+}
+
+/** Recent Update 条目（解析自索引文档） */
+interface RecentUpdateEntry {
+  wikilink: string;    // 原始 wikilink 文本
+  description: string; // 表格中的描述
+  status: 'Released' | 'Not Started' | 'Review' | 'Draft';
+  docPath: string;     // B_品牌/B01_🏷️ Logo使用规范
+}
+
+/** 解析「## 最近更新」后的表格 */
+function parseRecentUpdatesTable(markdown: string): RecentUpdateEntry[] {
+  const out: RecentUpdateEntry[] = [];
+  const lines = markdown.split(/\r?\n/);
+  let afterRecentUpdates = false;
+  const tableRows: string[][] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.startsWith("## 最近更新")) {
+      afterRecentUpdates = true;
+      tableRows.length = 0;
+      continue;
+    }
+    if (!afterRecentUpdates) continue;
+    if (line.startsWith("## ") || line.startsWith("> [!")) break;
+    if (!line.trim().startsWith("|")) continue;
+    
+    const cells = parseTableRow(line);
+    if (cells.length >= 4) tableRows.push(cells);
+  }
+
+  // 跳过表头(row 0)和分隔行(row 1)
+  for (let i = 2; i < tableRows.length; i++) {
+    const row = tableRows[i];
+    // 表格列顺序: 0=标题, 1=描述, 2=状态, 3=文档路径
+    out.push({
+      wikilink: row[0]?.trim() || '',
+      description: row[1]?.trim() || '',
+      status: (row[2]?.trim() as any) || 'Draft',
+      docPath: row[3]?.trim() || '',
+    });
+  }
+  
+  return out;
+}
+
+/** 从索引文档获取最近更新列表 */
+export async function getRecentUpdatesFromIndex(
+  contentRoot?: string
+): Promise<RecentUpdate[]> {
+  const root = contentRoot ?? getContentRoot();
+  const tree = getContentTree(contentRoot ?? DEFAULT_CONTENT_DIR);
+  const indexPath = findNavIndexPath(root);
+
+  if (!indexPath || !fs.existsSync(indexPath)) {
+    console.warn('[Recent Updates] 内容索引文件不存在，返回空列表');
+    return [];
+  }
+
+  const raw = await fs.promises.readFile(indexPath, "utf-8");
+  const body = stripFrontMatter(raw);
+  const entries = parseRecentUpdatesTable(body);
+
+  if (entries.length === 0) {
+    console.warn('[Recent Updates] 索引文件中未找到"最近更新"区块');
+    return [];
+  }
+
+  const results = await Promise.all(
+    entries.map(async (entry) => {
+      // 解析 docPath: "B_品牌/B01_🏷️ Logo使用规范"
+      const pathMatch = entry.docPath.match(/^([^/]+)\/(.+)$/);
+      if (!pathMatch) {
+        console.warn(`[Recent Updates] Invalid docPath format: ${entry.docPath}`);
+        return null;
+      }
+      
+      const [, sectionId, fileNameWithEmoji] = pathMatch;
+      const fileId = normalizeDocId(fileNameWithEmoji);
+      
+      // ✅ 第一重验证：检查文档在 content tree 中是否存在
+      const section = tree.sections.find((s) => s.id === sectionId);
+      const item = section?.items.find((i) => i.id === fileId);
+      
+      if (!item) {
+        console.warn(
+          `[Recent Updates] Document not found in tree: ${sectionId}/${fileId}`
+        );
+        return null;
+      }
+      
+      // ✅ 第二重验证：读取 frontmatter，确保文件可读
+      const contentPath = `docs/${sectionId}/${fileNameWithEmoji}${fileNameWithEmoji.endsWith('.md') ? '' : '.md'}`;
+      const { title: fmTitle, description: fmDesc } = 
+        await getDocTitleAndDescriptionAsync(contentPath, contentRoot);
+      
+      if (!fmTitle) {
+        console.warn(`[Recent Updates] Failed to read document: ${contentPath}`);
+        return null;
+      }
+      
+      // 解析 wikilink 的 label 作为 fallback
+      const wikilinkParsed = parseWikiLinkCell(entry.wikilink);
+      const title = fmTitle || wikilinkParsed?.label || fileId;
+      const description = fmDesc || entry.description || null;
+      
+      return {
+        id: `recent-${fileId}`,
+        title,
+        description,
+        status: entry.status,
+        href: `/docs/${encodeURIComponent(sectionId)}/${encodeURIComponent(item.id)}`,
+      };
+    })
+  );
+
+  // ✅ 过滤掉不存在或无法读取的文档
+  return results.filter((r): r is RecentUpdate => r !== null);
 }
