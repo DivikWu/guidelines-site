@@ -543,6 +543,7 @@ body {
   gap: 4px;
   padding: var(--spacing-100, 8px);
   background: var(--yami-color-palette-neutral-50);
+  border-right: 1px solid var(--divider-section, var(--divider-normal, var(--border-subtle, var(--color-border))));
 }
 
 .tree-nav__section {
