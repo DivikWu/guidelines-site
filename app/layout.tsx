@@ -34,14 +34,6 @@ export default function RootLayout({
           href={`${fontBasePath}/icofont.css`}
           as="style"
         />
-        {/* 预加载字体文件，提升加载性能 */}
-        <link
-          rel="preload"
-          href={`${fontBasePath}/icofont.woff2`}
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
         {/* 导入字体 CSS */}
         <link rel="stylesheet" href={`${fontBasePath}/icofont.css`} />
       </head>

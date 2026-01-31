@@ -2,9 +2,8 @@
 title: Token 平台映射
 description: Design Token 在 Web、iOS、Android 等平台的输出格式
 category: 资源
-status: published
-last_updated: 01/27/2026
-sort_order: 64
+status: Draft
+last_updated: 2026-01-31
 ---
 
 # 🔗 Token 平台映射

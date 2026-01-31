@@ -348,19 +348,22 @@ const Header = memo(function Header({
   const showSearchIcon = !isSearchExpanded && (!shouldDeferSearchIcon || isSearchHidden);
 
   return (
-    <header 
+    <header
       className={finalClassName}
       ref={headerRef}
+      suppressHydrationWarning
     >
       <div 
         ref={sidebarButtonWrapperRef}
         className={sidebarButtonWrapperClassName}
+        suppressHydrationWarning
       >
         {onToggleDesktopSidebar && (
           <button 
             aria-label="面板" 
             title="面板"
             onClick={onToggleDesktopSidebar}
+            suppressHydrationWarning
           >
             <Icon 
               name="ds-icon-panel-left1" 

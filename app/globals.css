@@ -214,7 +214,7 @@ body {
 @media (min-width: 768px) {
   .app-nav-side {
     display: flex;
-    width: 296px; /* 56px (icon-nav) + 240px (token-nav) */
+    width: 240px;
     flex-shrink: 0;
     position: relative;
     z-index: 100;
@@ -225,13 +225,14 @@ body {
   .app-nav-side__inner {
     position: fixed;
     left: 0;
+    width: 240px;
     top: var(--header-height);
     height: calc(100vh - var(--header-height));
     display: flex;
-    width: 296px;
+    flex-direction: column;
     z-index: 100;
     transition: transform 0.3s ease-in-out;
-    overflow-y: auto; /* 侧边栏内部可滚动 */
+    overflow-y: auto;
     overflow-x: hidden;
   }
 
@@ -244,8 +245,7 @@ body {
     transform: translateX(-100%);
   }
 
-  .app-nav-side.collapsed .icon-nav,
-  .app-nav-side.collapsed .token-nav {
+  .app-nav-side.collapsed .tree-nav {
     opacity: 0;
     pointer-events: none;
   }
@@ -533,6 +533,249 @@ body {
   margin: 0;
 }
 
+/* Tree Navigation (PC + Mobile 共用树状层级导航) */
+.tree-nav {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  gap: 4px;
+  padding: var(--spacing-100, 8px);
+  background: var(--yami-color-palette-neutral-50);
+}
+
+.tree-nav__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  height: fit-content;
+}
+
+.tree-nav__trigger {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-100, 8px);
+  height: 40px;
+  width: 100%;
+  padding: var(--spacing-100, 8px);
+  padding-right: 12px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-full, 999px);
+  cursor: pointer;
+  color: var(--foreground-primary, var(--color-text-primary));
+  font-family: var(--body-m-font-family, var(--font-body));
+  font-size: var(--body-m-size, 14px);
+  font-weight: var(--body-m-font-weight, var(--fw-regular));
+  line-height: var(--body-m-line-height, 20px);
+  text-align: left;
+}
+
+.tree-nav__trigger.active {
+  background: var(--fill-secondary, var(--state-hover));
+}
+
+.tree-nav__trigger:active {
+  background: var(--state-pressed);
+}
+
+.tree-nav__trigger:focus-visible {
+  outline: 2px solid var(--state-focus);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) {
+  .tree-nav__trigger:hover:not(:active) {
+    background: var(--fill-secondary, var(--state-hover));
+  }
+  .tree-nav__trigger:hover .tree-nav__trigger-count,
+  .tree-nav__trigger:focus-visible .tree-nav__trigger-count {
+    opacity: 1;
+  }
+}
+
+.tree-nav__trigger-count {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+  color: var(--foreground-secondary, var(--color-text-secondary));
+  font-size: inherit;
+  font-family: inherit;
+  transition: opacity var(--yami-animation-duration-fast, 150ms) var(--yami-animation-easing-ease-out, ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tree-nav__trigger-count {
+    transition: none;
+  }
+}
+
+.tree-nav__trigger-icon {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  color: inherit;
+}
+
+.tree-nav__trigger-icon .iconfont {
+  color: inherit;
+}
+
+.tree-nav__trigger .tree-nav__trigger-icon-original {
+  display: inline-flex;
+}
+
+.tree-nav__trigger .tree-nav__trigger-icon-right {
+  display: none;
+}
+
+.tree-nav__trigger .tree-nav__trigger-icon-down {
+  display: none;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* 通用 hover：所有 trigger 折叠态 hover 时显示右箭头 */
+.tree-nav__trigger:hover .tree-nav__trigger-icon-original {
+  display: none;
+}
+
+.tree-nav__trigger:hover .tree-nav__trigger-icon-right {
+  display: inline-flex;
+}
+
+.tree-nav__trigger.active.expanded:hover .tree-nav__trigger-icon-right {
+  display: none;
+}
+
+.tree-nav__trigger.active.expanded:hover .tree-nav__trigger-icon-down {
+  display: block;
+}
+
+.tree-nav__trigger.expanded.is-active-section:hover .tree-nav__trigger-icon-original {
+  display: none;
+}
+
+.tree-nav__trigger.expanded.is-active-section:hover .tree-nav__trigger-icon-right {
+  display: none;
+}
+
+.tree-nav__trigger.expanded.is-active-section:hover .tree-nav__trigger-icon-down {
+  display: block;
+}
+
+.tree-nav__trigger-label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.tree-nav__chevron {
+  margin-left: auto;
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  transform: rotate(0deg);
+  transition: transform var(--yami-animation-duration-fast, 150ms) var(--yami-animation-easing-ease-out, ease-out);
+}
+
+.tree-nav__chevron.expanded {
+  transform: rotate(-90deg);
+}
+
+.tree-nav__group {
+  display: grid;
+  grid-template-rows: 0fr;
+  padding-left: 20px;
+  overflow: hidden;
+  transition: grid-template-rows 200ms var(--yami-animation-easing-ease-out, ease-out);
+}
+
+.tree-nav__group.expanded {
+  grid-template-rows: 1fr;
+}
+
+.tree-nav__group-inner {
+  overflow: hidden;
+  min-height: 0; /* 允许 grid 子元素在 0fr 时收缩至 0 */
+  border-left: 2px solid var(--divider-normal, var(--border-subtle));
+  padding-left: 6px;
+  padding-top: 0;
+  padding-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tree-nav__group.expanded .tree-nav__group-inner {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.tree-nav__subitem {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  width: 100%;
+  padding: var(--spacing-100, 8px) var(--spacing-150, 12px);
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-full, 999px);
+  cursor: pointer;
+  color: var(--foreground-primary, var(--color-text-primary));
+  font-family: var(--body-m-font-family, var(--font-body));
+  font-size: var(--body-m-size, 14px);
+  font-weight: var(--body-m-font-weight, var(--fw-regular));
+  line-height: var(--body-m-line-height, 20px);
+  text-align: left;
+  content-visibility: auto;
+  contain-intrinsic-size: 0 36px;
+}
+
+.tree-nav__subitem:not(.active) {
+  color: var(--foreground-secondary, var(--color-text-secondary));
+}
+
+.tree-nav__subitem.active {
+  background: var(--state-selected);
+  color: var(--foreground-primary);
+  font-weight: var(--fw-medium);
+}
+
+.tree-nav__subitem:active {
+  background: var(--state-pressed);
+}
+
+.tree-nav__subitem:hover:not(:active) {
+  background: var(--state-hover);
+}
+
+.tree-nav__subitem:focus-visible {
+  outline: 2px solid var(--state-focus);
+  outline-offset: 2px;
+}
+
+.tree-nav__subitem-label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+[data-theme='dark'] .tree-nav {
+  background: var(--background-page);
+}
+
 /* 包裹 fixed header，避免 Next.js layout-router 的 auto-scroll 警告 */
 .header-wrapper {
   /* 仅作包裹，fixed 子元素已脱离流，不占空间 */
@@ -579,11 +822,12 @@ body {
   }
 }
 
-/* 桌面端：当按钮可见时，占据空间 */
+/* 桌面端：当按钮可见时，占据空间；与 logo 间距 8px */
 @media (min-width: 768px) {
   .header__sidebar-button-wrapper--visible {
     min-width: 40px;
     width: 40px;
+    margin-right: 8px;
   }
 
   /* 路由切换动画：仅在首页↔规范页切换时触发 */
@@ -642,6 +886,8 @@ body {
   width: auto;
   max-width: 200px;
   transform: translateX(0);
+  padding-left: 8px;
+  padding-right: 8px;
   /* Logo 的移动由 flexbox 布局自然实现，跟随按钮容器的宽度变化 */
 }
 
@@ -653,6 +899,7 @@ body {
   text-decoration: none;
   color: inherit;
 }
+
 .brand-logo__img {
   width: 40px;
   height: 40px;
@@ -1724,7 +1971,7 @@ ul.typo-ul {
   }
 
   /* 隐藏所有桌面侧栏 */
-  .icon-nav, .token-nav, .app-nav-side {
+  .app-nav-side {
     display: none !important;
   }
 

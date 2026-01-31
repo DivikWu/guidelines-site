@@ -4,8 +4,7 @@ import dynamic from 'next/dynamic';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
 import Header from './Header';
-import IconNav from './IconNav';
-import TokenNav from './TokenNav';
+import TreeNav from './TreeNav';
 import NavDrawer from './NavDrawer';
 import ContentSkeleton, { type ContentSkeletonVariant } from './ContentSkeleton';
 import { useSearch } from './SearchProvider';
@@ -114,7 +113,7 @@ export default function ShellWithSkeleton({
 
   return (
     <div className="app-shell" suppressHydrationWarning>
-      <div className="header-wrapper">
+      <div className="header-wrapper" suppressHydrationWarning>
         <Header
           onToggleSidebar={handleToggleMobileSidebar}
           isOpen={mobileOpen}
@@ -153,14 +152,10 @@ export default function ShellWithSkeleton({
         {!isMobile && (
           <aside className={`app-nav-side ${sidebarCollapsed ? 'collapsed' : ''}`}>
             <div className="app-nav-side__inner">
-              <IconNav
+              <TreeNav
                 activeCategory={category}
-                onCategoryChange={handleCategoryChange}
-                contentTree={null}
-              />
-              <TokenNav
-                category={category}
                 activeToken={activeToken}
+                onCategoryChange={handleCategoryChange}
                 onTokenChange={handleTokenChange}
                 contentTree={null}
               />

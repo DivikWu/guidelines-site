@@ -2,9 +2,8 @@
 title: Token 命名规范
 description: Design Token 的命名规则与约定
 category: 资源
-status: published
-last_updated: 01/27/2026
-sort_order: 62
+status: Draft
+last_updated: 2026-01-31
 ---
 
 # 📝 Token 命名规范

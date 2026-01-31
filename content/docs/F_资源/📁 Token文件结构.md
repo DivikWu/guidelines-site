@@ -2,9 +2,8 @@
 title: Token 文件结构
 description: Design Token 的文件组织与层级结构
 category: 资源
-status: published
-last_updated: 01/27/2026
-sort_order: 63
+status: Draft
+last_updated: 2026-01-31
 ---
 
 # 📁 Token 文件结构

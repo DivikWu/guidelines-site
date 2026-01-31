@@ -2,9 +2,8 @@
 title: Token 更新日志
 description: Design Token 的版本变更历史与迁移指南
 category: 资源
-status: published
-last_updated: 01/27/2026
-sort_order: 65
+status: Draft
+last_updated: 2026-01-31
 ---
 
 # 📜 Token 更新日志

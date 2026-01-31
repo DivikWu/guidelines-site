@@ -16,31 +16,32 @@ const SearchModal = dynamic(
 import type { QuickStartCard } from '@/lib/content/nav-index';
 import type { RecentUpdate } from '@/data/home';
 
+/** 搜索用 doc id -> docs 路径。section 入口类用 section 级路径；具体文档用完整路径，与 content/docs/ 结构一致。 */
 const docIdToDocsPath: Record<string, string> = {
-  overview: '/docs/A_快速开始/A01_介绍',
-  changelog: '/docs/A_快速开始/A05_更新日志',
-  'update-process': '/docs/A_快速开始/A04_常见问题',
-  logo: '/docs/B_品牌/Logo使用规范',
-  'brand-colors': '/docs/B_品牌/品牌色彩策略',
-  typeface: '/docs/B_品牌/品牌原则',
-  color: '/docs/C_基础规范/颜色系统',
-  typography: '/docs/C_基础规范/字体排版',
-  spacing: '/docs/C_基础规范/间距',
-  layout: '/docs/C_基础规范/布局',
-  radius: '/docs/C_基础规范/圆角',
-  elevation: '/docs/C_基础规范/层级与阴影',
-  iconography: '/docs/C_基础规范/图标',
-  motion: '/docs/C_基础规范/动效',
-  button: '/docs/D_组件/按钮',
-  tabs: '/docs/D_组件/标签页',
-  filter: '/docs/D_组件/筛选器',
-  badge: '/docs/D_组件/徽标',
-  heading: '/docs/D_组件/标题',
-  navbar: '/docs/D_组件/组件原则',
-  'product-card': '/docs/D_组件/业务组件',
-  forms: '/docs/D_组件/组件模板',
-  'patterns-overview': '/docs/D_组件/组件原则',
-  'resources-overview': '/docs/F_资源/Token概述',
+  overview: '/docs/A_快速开始',
+  changelog: '/docs/A_快速开始/A06_更新日志',
+  'update-process': '/docs/A_快速开始/A04_更新流程',
+  logo: '/docs/B_品牌',
+  'brand-colors': '/docs/B_品牌',
+  typeface: '/docs/B_品牌',
+  color: '/docs/C_基础规范/C01_颜色',
+  typography: '/docs/C_基础规范/C02_字体排版',
+  spacing: '/docs/C_基础规范/C03_间距',
+  layout: '/docs/C_基础规范/C04_布局',
+  radius: '/docs/C_基础规范/C05_圆角',
+  elevation: '/docs/C_基础规范/C06_层级与阴影',
+  iconography: '/docs/C_基础规范/C07_图标',
+  motion: '/docs/C_基础规范/C08_动效',
+  button: '/docs/D_组件/D01_按钮',
+  tabs: '/docs/D_组件/D04_标签页',
+  filter: '/docs/D_组件/D03_筛选器',
+  badge: '/docs/D_组件/D02_徽标',
+  heading: '/docs/D_组件',
+  navbar: '/docs/D_组件',
+  'product-card': '/docs/D_组件/D16_商品卡片',
+  forms: '/docs/D_组件',
+  'patterns-overview': '/docs/D_组件',
+  'resources-overview': '/docs/F_资源',
 };
 
 export default function HomePageClient({
@@ -65,7 +66,7 @@ export default function HomePageClient({
     const title = titleMatch ? titleMatch[1].trim() : doc.id;
     const descriptionMatch = doc.markdown.replace(/^#\s+.+$/m, '').trim().match(/^([^#\n].+)$/m);
     const description = descriptionMatch ? descriptionMatch[1].trim().slice(0, 60) + '...' : undefined;
-    const href = docIdToDocsPath[doc.id] ?? '/docs/A_快速开始/A01_介绍';
+    const href = docIdToDocsPath[doc.id] ?? '/docs/A_快速开始';
     return {
       id: doc.id,
       type: (doc.id.includes('button') || doc.id.includes('tabs') || doc.id.includes('badge') ||
@@ -91,7 +92,7 @@ export default function HomePageClient({
 
   return (
     <>
-      <div className="header-wrapper">
+      <div className="header-wrapper" suppressHydrationWarning>
         <Header
           onToggleSidebar={() => {}}
           isOpen={false}

@@ -2,8 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import Header from './Header';
-import IconNav from './IconNav';
-import TokenNav from './TokenNav';
+import TreeNav from './TreeNav';
 import NavDrawer from './NavDrawer';
 import ContentSkeleton from './ContentSkeleton';
 import type { SearchItem } from './SearchModal';
@@ -270,12 +269,12 @@ export default function AppShell({
   }, []);
 
   // 稳定 onToggleDesktopSidebar 的引用，只在 isMobile 变化时更新
-  // 确保切换 IconNav 时按钮显示状态不会改变
+  // 确保切换 TreeNav 时按钮显示状态不会改变
   const onToggleDesktopSidebar = useMemo(() => {
     return !isMobile ? toggleSidebar : undefined;
   }, [isMobile, toggleSidebar]);
 
-  // 稳定 onCategoryChange 函数引用，防止 IconNav 切换时触发 Header 重新渲染
+  // 稳定 onCategoryChange 函数引用，防止 TreeNav 切换时触发 Header 重新渲染
   const handleCategoryChange = useCallback((id: string) => {
     setCategory(id);
   }, []);
@@ -429,7 +428,7 @@ export default function AppShell({
 
   return (
     <div className="app-shell" suppressHydrationWarning>
-      <div className="header-wrapper">
+      <div className="header-wrapper" suppressHydrationWarning>
         <Header 
           onToggleSidebar={handleToggleMobileSidebar} 
           isOpen={mobileOpen}
@@ -468,17 +467,13 @@ export default function AppShell({
         {!isMobile && (
           <aside className={`app-nav-side ${sidebarCollapsed ? 'collapsed' : ''}`}>
             <div className="app-nav-side__inner">
-              <IconNav 
+              <TreeNav
                 activeCategory={category}
-                onCategoryChange={handleCategoryChange}
-                contentTree={contentTree}
-              />
-              <TokenNav
-                category={category}
                 activeToken={activeToken}
+                onCategoryChange={handleCategoryChange}
                 onTokenChange={handleTokenChange}
-                onNavigationStart={handleNavigationStart}
                 contentTree={contentTree}
+                onNavigationStart={handleNavigationStart}
               />
             </div>
           </aside>

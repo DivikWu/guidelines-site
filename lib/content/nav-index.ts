@@ -1,7 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { getContentRoot, DEFAULT_CONTENT_DIR } from "./constants";
-import { getContentTree, normalizeDocId } from "./tree";
+import { getContentTree } from "./tree";
+import type { ContentTree } from "./tree";
 
 const DOCS_SUBDIR = "docs";
 
@@ -25,6 +26,43 @@ const QUICK_START_IDS = [
   "content",
   "resources",
 ] as const;
+
+/** 与 QUICK_START_IDS 顺序一致的 section id，用于从 tree 计算首文档 href */
+const QUICK_START_SECTIONS = [
+  "A_快速开始",
+  "B_品牌",
+  "C_基础规范",
+  "D_组件",
+  "E_内容策略",
+  "F_资源",
+] as const;
+
+const DEFAULT_QUICK_START_TITLES = [
+  "快速开始",
+  "品牌",
+  "基础规范",
+  "组件",
+  "内容策略",
+  "资源",
+] as const;
+
+const DEFAULT_QUICK_START_DESCRIPTIONS = [
+  "快速了解设计系统的整体结构、使用原则与协作方式",
+  "统一视觉语言，确保品牌在所有触点中的一致性与识别度",
+  "系统化定义颜色、字体、间距、布局等基础规则",
+  "可复用的 UI 组件库，覆盖常见业务场景与状态定义",
+  "指导文案、信息层级与内容结构",
+  "设计与开发所需的工具、模板与外部资源",
+] as const;
+
+/** 从 content tree 获取 section 首文档的 href，section 为空时返回 section 级路径作为 fallback */
+function getFirstDocHref(tree: ContentTree, sectionId: string): string {
+  const section = tree.sections.find((s) => s.id === sectionId);
+  const first = section?.items[0];
+  return first
+    ? `/docs/${encodeURIComponent(sectionId)}/${encodeURIComponent(first.id)}`
+    : `/docs/${encodeURIComponent(sectionId)}`;
+}
 
 export interface QuickStartCard {
   id: string;
@@ -139,43 +177,26 @@ function parseNavIndexTable(markdown: string): { title: string; description: str
   return out;
 }
 
-/** 从 content tree 构建 doc id -> { sectionId, fileId } */
-function buildDocIdToHref(tree: ReturnType<typeof getContentTree>): (docId: string) => string | null {
-  const map = new Map<string, { sectionId: string; fileId: string }>();
-  for (const section of tree.sections) {
-    for (const item of section.items) {
-      if (!map.has(item.id)) map.set(item.id, { sectionId: section.id, fileId: item.id });
-    }
-  }
-  return (docId: string) => {
-    const v = map.get(docId);
-    return v ? `/docs/${encodeURIComponent(v.sectionId)}/${encodeURIComponent(v.fileId)}` : null;
-  };
-}
-
-/** 与导航索引 6 条顺序一致；使用编码后的 URL 保证链接可正常打开 */
-const FALLBACK_HREFS = [
-  `/docs/${encodeURIComponent("A_快速开始")}/${encodeURIComponent("A01_介绍")}`,
-  `/docs/${encodeURIComponent("B_品牌")}/${encodeURIComponent("品牌原则")}`,
-  `/docs/${encodeURIComponent("C_基础规范")}/${encodeURIComponent("颜色系统")}`,
-  `/docs/${encodeURIComponent("D_组件")}/${encodeURIComponent("按钮")}`,
-  `/docs/${encodeURIComponent("E_内容策略")}/${encodeURIComponent("内容原则")}`,
-  `/docs/${encodeURIComponent("F_资源")}/${encodeURIComponent("Token概述")}`,
-];
-
-/** 从导航索引文件解析「导航索引」区块（支持表格或 **标题**+描述 格式），得到 QuickStartCard[]；失败或缺失时返回空数组。读文件与 getContentTree 并行执行。 */
+/** 从导航索引文件解析「导航索引」区块（支持表格或 **标题**+描述 格式），得到 QuickStartCard[]；失败或缺失时返回空数组。href 由 content tree 计算首文档，同步后内容变化自动适配。 */
 export async function getQuickStartCardsFromIndex(
   contentRoot?: string
 ): Promise<QuickStartCard[]> {
   const root = contentRoot ?? getContentRoot();
-  const indexPath = findNavIndexPath(root);
-  if (!indexPath || !fs.existsSync(indexPath)) return [];
-
-  const rawPromise = fs.promises.readFile(indexPath, "utf-8");
   const tree = getContentTree(contentRoot ?? DEFAULT_CONTENT_DIR);
-  const raw = await rawPromise;
+  const indexPath = findNavIndexPath(root);
+
+  if (!indexPath || !fs.existsSync(indexPath)) {
+    return QUICK_START_IDS.map((id, i) => ({
+      id,
+      title: DEFAULT_QUICK_START_TITLES[i],
+      description: DEFAULT_QUICK_START_DESCRIPTIONS[i],
+      href: getFirstDocHref(tree, QUICK_START_SECTIONS[i]),
+      iconName: QUICK_START_ICONS[i],
+    }));
+  }
+
+  const raw = await fs.promises.readFile(indexPath, "utf-8");
   const body = stripFrontMatter(raw);
-  const resolveHref = buildDocIdToHref(tree);
 
   // 优先解析表格格式（含 wikilink）
   const tableEntries = parseNavIndexTable(body);
@@ -184,20 +205,29 @@ export async function getQuickStartCardsFromIndex(
       id: QUICK_START_IDS[i],
       title: entry.title,
       description: entry.description,
-      href: resolveHref(normalizeDocId(entry.wikilinkTarget)) ?? FALLBACK_HREFS[i],
+      href: getFirstDocHref(tree, QUICK_START_SECTIONS[i]),
       iconName: QUICK_START_ICONS[i],
     }));
   }
 
-  // 回退：解析 **标题** + 描述 段落格式（与 00_📚内容索引.md 当前结构一致）
+  // 回退：解析 **标题** + 描述 段落格式
   const boldEntries = parseNavIndexBoldFormat(body);
-  if (boldEntries.length === 0) return [];
+  if (boldEntries.length >= 6) {
+    return boldEntries.slice(0, 6).map((entry, i) => ({
+      id: QUICK_START_IDS[i] ?? `nav-${i}`,
+      title: entry.title,
+      description: entry.description,
+      href: getFirstDocHref(tree, QUICK_START_SECTIONS[i]),
+      iconName: QUICK_START_ICONS[i] ?? QUICK_START_ICONS[0],
+    }));
+  }
 
-  return boldEntries.slice(0, 6).map((entry, i) => ({
-    id: QUICK_START_IDS[i] ?? `nav-${i}`,
-    title: entry.title,
-    description: entry.description,
-    href: FALLBACK_HREFS[i] ?? FALLBACK_HREFS[0],
-    iconName: QUICK_START_ICONS[i] ?? QUICK_START_ICONS[0],
+  // 索引解析失败：仍返回 6 张卡片，使用默认 title/description，href 从 tree 计算
+  return QUICK_START_IDS.map((id, i) => ({
+    id,
+    title: DEFAULT_QUICK_START_TITLES[i],
+    description: DEFAULT_QUICK_START_DESCRIPTIONS[i],
+    href: getFirstDocHref(tree, QUICK_START_SECTIONS[i]),
+    iconName: QUICK_START_ICONS[i],
   }));
 }

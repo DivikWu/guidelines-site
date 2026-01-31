@@ -1,5 +1,11 @@
-import RedirectToDocs from '@/components/RedirectToDocs';
+import { redirect } from 'next/navigation';
+import { getContentTree } from '@/lib/content/tree';
+import { DEFAULT_CONTENT_DIR } from '@/lib/content/constants';
 
 export default function BrandPage() {
-  return <RedirectToDocs path="/docs/B_品牌/品牌原则" />;
+  const tree = getContentTree(DEFAULT_CONTENT_DIR);
+  const section = tree.sections.find((s) => s.id === 'B_品牌');
+  const first = section?.items[0];
+  if (first) redirect(`/docs/${encodeURIComponent('B_品牌')}/${encodeURIComponent(first.id)}`);
+  redirect('/');
 }

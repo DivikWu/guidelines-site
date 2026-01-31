@@ -14,6 +14,7 @@ export function generateStaticParams() {
   const params: { slug: string[] }[] = [];
   const seen = new Set<string>();
   for (const section of tree.sections) {
+    params.push({ slug: [section.id] });
     for (const item of section.items) {
       // 开发与静态导出时 Next 均按编码后的 URL 匹配，需返回编码后的 slug
       const decoded = [section.id, item.id];
@@ -77,6 +78,14 @@ export default async function DocsSlugPage({ params }: PageProps) {
 
   if (!slug || slug.length < 2) {
     const treeForRedirect = getContentTree(DEFAULT_CONTENT_DIR);
+    if (slug?.length === 1) {
+      const sectionDecoded = decodeURIComponent(slug[0]);
+      const sectionNode = treeForRedirect.sections.find((s) => s.id === sectionDecoded);
+      const firstFile = sectionNode?.items[0];
+      if (firstFile) {
+        redirect(`/docs/${encodeURIComponent(sectionDecoded)}/${encodeURIComponent(firstFile.id)}`);
+      }
+    }
     const firstSection = treeForRedirect.sections[0];
     const firstFile = firstSection?.items[0];
     if (firstSection && firstFile) {
