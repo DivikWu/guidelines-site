@@ -1550,13 +1550,17 @@ body {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--color-ui-primary);
-}
-.doc-status__value[data-status="draft"]::before {
   background: var(--color-text-secondary);
 }
+/* 发布状态：绿色圆点 */
+.doc-status__value[data-status="Published"]::before,
 .doc-status__value[data-status="published"]::before {
   background: var(--yami-color-badge-success);
+}
+/* 未发布/草稿：灰色圆点 */
+.doc-status__value[data-status="Draft"]::before,
+.doc-status__value[data-status="draft"]::before {
+  background: var(--color-text-secondary);
 }
 
 /* Logo page specific styles */

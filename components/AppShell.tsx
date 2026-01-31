@@ -12,7 +12,7 @@ const SearchModal = dynamic(
   () => import('./SearchModal').then((m) => ({ default: m.default })),
   { ssr: false }
 );
-import { useState, useEffect, useRef, useMemo, useCallback, startTransition } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, startTransition } from 'react';
 import { useEventListener } from '@/hooks/useEventListener';
 import { usePathname, useRouter } from 'next/navigation';
 import { DocPage } from '../data/docs';
@@ -84,6 +84,9 @@ export default function AppShell({
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [pendingRoute, setPendingRoute] = useState<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const sidebarScrollRef = useRef<HTMLDivElement>(null);
+  const saveSidebarScrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const SIDEBAR_SCROLL_KEY = 'yds-sidebar-scroll';
   const docIds = useMemo(() => new Set(docs.map((doc) => doc.id)), [docs]);
   const docRouteMap = useMemo(() => {
     if (!contentTree) return null;
@@ -213,6 +216,29 @@ export default function AppShell({
     shortcuts.drawer.closeRef.current = () => setMobileOpen(false);
     shortcuts.drawer.isOpenRef.current = mobileOpen;
   }
+
+  // 切换文档时恢复侧栏滚动位置；在绘制前同步执行，避免先显示顶部再跳到保存位置导致的跳动
+  useLayoutEffect(() => {
+    if (isMobile) return;
+    const el = sidebarScrollRef.current;
+    if (!el) return;
+    const saved = sessionStorage.getItem(SIDEBAR_SCROLL_KEY);
+    if (saved !== null) {
+      const top = parseInt(saved, 10);
+      if (!isNaN(top)) el.scrollTop = top;
+    }
+  }, [isMobile, pathname]);
+
+  // 侧栏滚动时防抖保存位置，供下次挂载恢复
+  const handleSidebarScroll = useCallback(() => {
+    const el = sidebarScrollRef.current;
+    if (!el) return;
+    if (saveSidebarScrollTimeoutRef.current) clearTimeout(saveSidebarScrollTimeoutRef.current);
+    saveSidebarScrollTimeoutRef.current = setTimeout(() => {
+      sessionStorage.setItem(SIDEBAR_SCROLL_KEY, String(el.scrollTop));
+      saveSidebarScrollTimeoutRef.current = null;
+    }, 150);
+  }, []);
 
   // 检测是否为移动端（使用断点 768px）
   // 使用 matchMedia 确保稳定判断，避免 resize 时频繁触发；lastMobileRef 避免 isMobile 依赖导致 effect 重跑
@@ -466,7 +492,11 @@ export default function AppShell({
         {/* 桌面端稳定侧栏容器：无论导航是否固定，此容器始终占位，防止布局跳动 */}
         {!isMobile && (
           <aside className={`app-nav-side ${sidebarCollapsed ? 'collapsed' : ''}`}>
-            <div className="app-nav-side__inner">
+            <div
+              ref={sidebarScrollRef}
+              className="app-nav-side__inner"
+              onScroll={handleSidebarScroll}
+            >
               <TreeNav
                 activeCategory={category}
                 activeToken={activeToken}
