@@ -43,27 +43,27 @@
   --yami-button-padding-horizontal-small: 16px;
 
   /* color */
-  --yami-color-background-dark: #1A1A1A;
-  --yami-color-background-hero-dark: #151515;
+  --yami-color-background-dark: #141414;
+  --yami-color-background-hero-dark: #0E0E0E;
   --yami-color-background-light: #FFFFFF;
-  --yami-color-background-page-dark: #0F0F0F;
+  --yami-color-background-page-dark: #0A0A0A;
   --yami-color-badge-error: #FF4D4F;
   --yami-color-badge-primary: #E00000;
   --yami-color-badge-secondary: #666666;
   --yami-color-badge-success: #52C41A;
   --yami-color-badge-warning: #FAAD14;
-  --yami-color-border-dark: #333333;
+  --yami-color-border-dark: #262626;
   --yami-color-border-light: #E5E5E5;
-  --yami-color-border-strong-dark: #333333;
+  --yami-color-border-strong-dark: #262626;
   --yami-color-border-strong-light: #E5E5E5;
   --yami-color-border-subtle-dark: #2A2A2A;
   --yami-color-border-subtle-light: #EBEBEB;
   --yami-color-brand-primary: #FF0000;
   --yami-color-campaign-primary: #FF6B00;
   --yami-color-campaign-secondary: #FF9500;
-  --yami-color-code-bg-dark: #333333;
+  --yami-color-code-bg-dark: #1A1A1A;
   --yami-color-code-bg-light: #F5F5F5;
-  --yami-color-code-border-dark: #2A2A2A;
+  --yami-color-code-border-dark: #262626;
   --yami-color-code-border-light: #EBEBEB;
   --yami-color-code-text-dark: #E5E5E5;
   --yami-color-code-text-light: #1A1A1A;
@@ -78,6 +78,12 @@
   --yami-color-overlay-black: rgba(0, 0, 0, 1);
   --yami-color-overlay-dark: rgba(0, 0, 0, 0.65);
   --yami-color-overlay-light: rgba(0, 0, 0, 0.45);
+  --yami-color-overlay-on-dark-02: rgba(255, 255, 255, 0.02);
+  --yami-color-overlay-on-dark-04: rgba(255, 255, 255, 0.04);
+  --yami-color-overlay-on-dark-06: rgba(255, 255, 255, 0.06);
+  --yami-color-overlay-on-dark-08: rgba(255, 255, 255, 0.08);
+  --yami-color-overlay-on-dark-10: rgba(255, 255, 255, 0.10);
+  --yami-color-overlay-on-dark-12: rgba(255, 255, 255, 0.12);
   --yami-color-overlay-white: rgba(255, 255, 255, 1);
   --yami-color-palette-black-0: #00000000;
   --yami-color-palette-black-100: #0000000A;
@@ -175,7 +181,7 @@
   --yami-color-state-pressed-light: rgba(0, 0, 0, 0.12);
   --yami-color-state-selected-dark: rgba(255, 255, 255, 0.08);
   --yami-color-state-selected-light: rgba(0, 0, 0, 0.04);
-  --yami-color-surface-dark: #2A2A2A;
+  --yami-color-surface-dark: #141414;
   --yami-color-surface-light: #FFFFFF;
   --yami-color-text-primary-dark: #E5E5E5;
   --yami-color-text-primary-light: #1A1A1A;

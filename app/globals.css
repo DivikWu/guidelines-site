@@ -1,16 +1,8 @@
 /* 字体定义已在 layout.tsx 中导入 */
+/* 无障碍：主文 --foreground-primary 与主背景 --background-primary 在浅/深色下均需满足 WCAG AA（正文 4.5:1，大字 3:1） */
 
 :root {
-  /* color semantics -> tokens */
-  --color-text-primary: var(--yami-color-text-primary-light);
-  --color-text-secondary: var(--yami-color-text-secondary-light);
-  --color-surface: var(--yami-color-surface-light);
-  --color-bg: var(--yami-color-background-light);
-  --color-border: var(--yami-color-border-light);
-  --color-brand: var(--yami-color-brand-primary);
-  --color-ui-primary: var(--yami-color-ui-primary);
-  
-  /* Semantic tokens for components - Light mode */
+  /* Semantic tokens for components - Light mode（主命名；组件优先使用 --foreground-* / --background-*） */
   --foreground-primary: var(--yami-color-text-primary-light);
   --foreground-secondary: var(--yami-color-text-secondary-light);
   --foreground-tertiary: var(--yami-color-text-tertiary-light);
@@ -28,7 +20,16 @@
   --code-bg: var(--yami-color-code-bg-light);
   --code-text: var(--yami-color-code-text-light);
   --code-border: var(--yami-color-code-border-light);
-  
+
+  /* 兼容别名：--color-* 指向语义变量，逐步迁移到 --foreground-* / --background-* */
+  --color-text-primary: var(--foreground-primary);
+  --color-text-secondary: var(--foreground-secondary);
+  --color-surface: var(--background-secondary);
+  --color-bg: var(--background-primary);
+  --color-border: var(--border-normal);
+  --color-brand: var(--yami-color-brand-primary);
+  --color-ui-primary: var(--yami-color-ui-primary);
+
   /* SearchModal/Palette specific tokens - Light */
   --palette-surface: var(--yami-color-surface-light);
   --palette-surface-hover: rgba(0, 0, 0, 0.02);
@@ -87,15 +88,9 @@
   color-scheme: light;
 }
 
-/* 深色模式：覆盖 theme.css 的映射。border/divider/fill 使用透明白以提升可见度，可考虑后续收纳入 tokens.json */
+/* 深色模式：语义变量引用 Token；border/divider/fill 使用 overlay-on-dark 系列（tokens.json） */
 [data-theme='dark'] {
-  --color-text-primary: var(--yami-color-text-primary-dark);
-  --color-text-secondary: var(--yami-color-text-secondary-dark);
-  --color-surface: var(--yami-color-surface-dark);
-  --color-bg: var(--yami-color-background-dark);
-  --color-border: var(--yami-color-border-dark);
-  
-  /* Semantic tokens for components - Dark mode */
+  /* Semantic tokens - Dark：一律引用 Token，数值只在 tokens 层 */
   --foreground-primary: var(--yami-color-text-primary-dark);
   --foreground-secondary: var(--yami-color-text-secondary-dark);
   --foreground-tertiary: var(--yami-color-text-tertiary-dark);
@@ -103,11 +98,11 @@
   --background-hero: var(--yami-color-background-hero-dark);
   --background-primary: var(--yami-color-background-page-dark);
   --background-secondary: var(--yami-color-surface-dark);
-  --border-subtle: rgba(255, 255, 255, 0.08); /* 提升可见度: 原 #2A2A2A -> 8% 白色 */
-  --border-normal: rgba(255, 255, 255, 0.12); /* 提升可见度: 原 #333333 -> 12% 白色 */
-  --divider-normal: rgba(255, 255, 255, 0.12);
-  --divider-section: rgba(255, 255, 255, 0.08);
-  --fill-secondary: rgba(255, 255, 255, 0.06); /* 深色模式 surface-2 */
+  --border-subtle: var(--yami-color-overlay-on-dark-08);
+  --border-normal: var(--yami-color-overlay-on-dark-12);
+  --divider-normal: var(--yami-color-overlay-on-dark-12);
+  --divider-section: var(--yami-color-overlay-on-dark-08);
+  --fill-secondary: var(--yami-color-overlay-on-dark-06);
   --state-hover: var(--yami-color-state-hover-dark);
   --state-selected: var(--yami-color-state-selected-dark);
   --state-pressed: var(--yami-color-state-pressed-dark);
@@ -115,21 +110,28 @@
   --code-bg: var(--yami-color-code-bg-dark);
   --code-text: var(--yami-color-code-text-dark);
   --code-border: var(--yami-color-code-border-dark);
-  
+
   /* Input semantic tokens - Dark */
   --input-background: var(--background-secondary);
   --input-border: var(--border-normal);
   --input-border-focus: var(--state-focus);
-  
-  /* SearchModal/Palette specific tokens - Dark */
+
+  /* SearchModal/Palette - Dark：引用 overlay-on-dark Token */
   --palette-surface: var(--yami-color-surface-dark);
-  --palette-surface-hover: rgba(255, 255, 255, 0.02);
-  --palette-item-hover: rgba(255, 255, 255, 0.06);
-  --palette-item-selected: rgba(255, 255, 255, 0.10); /* 明显区分 hover */
-  --palette-border: rgba(255, 255, 255, 0.10);
-  --palette-icon-bg: rgba(255, 255, 255, 0.06); /* 占位块使用透明白 */
-  --palette-icon-bg-hover: rgba(255, 255, 255, 0.10);
-  --palette-placeholder-bg: rgba(255, 255, 255, 0.04); /* skeleton/placeholder */
+  --palette-surface-hover: var(--yami-color-overlay-on-dark-02);
+  --palette-item-hover: var(--yami-color-overlay-on-dark-06);
+  --palette-item-selected: var(--yami-color-overlay-on-dark-10);
+  --palette-border: var(--yami-color-overlay-on-dark-10);
+  --palette-icon-bg: var(--yami-color-overlay-on-dark-06);
+  --palette-icon-bg-hover: var(--yami-color-overlay-on-dark-10);
+  --palette-placeholder-bg: var(--yami-color-overlay-on-dark-04);
+
+  /* 兼容别名：--color-* 指向语义变量 */
+  --color-text-primary: var(--foreground-primary);
+  --color-text-secondary: var(--foreground-secondary);
+  --color-surface: var(--background-secondary);
+  --color-bg: var(--background-primary);
+  --color-border: var(--yami-color-border-dark);
 
   color-scheme: dark;
 }
@@ -221,24 +223,28 @@ body {
     display: flex;
     width: 240px;
     flex-shrink: 0;
+    min-height: calc(100vh - var(--header-height));
     position: relative;
     z-index: 100;
     transition: width 0.3s ease-in-out;
   }
 
-  /* 稳定性核心：内部层使用 sticky 粘性定位，外层在文档流中稳定占位 */
+  /* 稳定性核心：内部层使用 sticky 粘性定位，外层在文档流中稳定占位；背景画在固定层以撑满视口 */
   .app-nav-side__inner {
     position: fixed;
     left: 0;
     width: 240px;
     top: var(--header-height);
     height: calc(100vh - var(--header-height));
+    min-height: calc(100vh - var(--header-height));
     display: flex;
     flex-direction: column;
     z-index: 100;
     transition: transform 0.3s ease-in-out;
     overflow-y: auto;
     overflow-x: hidden;
+    background: var(--yami-color-palette-neutral-50);
+    border-right: 1px solid var(--divider-section, var(--divider-normal, var(--border-subtle, var(--color-border))));
   }
 
   /* 收起状态 */
@@ -258,6 +264,13 @@ body {
   /* 收起时内容区域扩展 */
   .app-body:has(.app-nav-side.collapsed) .content {
     margin-left: 0;
+  }
+
+  /* 桌面侧栏：背景由 inner 负责，tree-nav 透明并强制填满 */
+  .app-nav-side__inner > .tree-nav {
+    background: transparent;
+    border-right: none;
+    flex: 1 1 0%;
   }
 }
 
@@ -788,6 +801,14 @@ body {
 
 [data-theme='dark'] .tree-nav {
   background: var(--background-page);
+}
+
+[data-theme='dark'] .app-nav-side__inner {
+  background: var(--background-page);
+}
+
+[data-theme='dark'] .app-nav-side__inner > .tree-nav {
+  background: transparent;
 }
 
 /* 包裹 fixed header，避免 Next.js layout-router 的 auto-scroll 警告 */
@@ -1436,12 +1457,13 @@ body {
 }
 [data-theme='dark'] .doc-table-wrap {
   border-color: var(--border-subtle);
+  background: var(--background-secondary);
 }
 [data-theme='dark'] .doc-table__head {
   background: var(--fill-secondary);
 }
 [data-theme='dark'] .doc-table__body .doc-table__row:hover {
-  background: var(--state-hover);
+  background: var(--state-selected);
 }
 
 /* Doc markdown horizontal rule (hr) */
@@ -3138,6 +3160,8 @@ nextjs-portal {
   width: 100%;
   max-width: var(--yami-layout-breakpoint-m-min);
   padding: var(--yami-spacing-300);
+  padding-left: 16px;
+  padding-right: 16px;
   margin: 0 auto;
   padding-bottom: calc(var(--yami-spacing-300) + var(--yami-spacing-100));
 }
@@ -3146,8 +3170,8 @@ nextjs-portal {
   display: flex;
   flex-direction: column;
   gap: var(--yami-spacing-050);
-  padding-left: 16px;
-  padding-right: 16px;
+  padding-left: 4px;
+  padding-right: 4px;
 }
 
 .section-title {
@@ -3281,6 +3305,8 @@ nextjs-portal {
   width: 100%;
   max-width: var(--yami-layout-breakpoint-m-min);
   padding: var(--yami-spacing-300);
+  padding-left: 16px;
+  padding-right: 16px;
   margin: 0 auto;
   padding-bottom: calc(var(--yami-spacing-300) + var(--yami-spacing-100));
 }
@@ -3291,8 +3317,8 @@ nextjs-portal {
   align-items: center;
   gap: var(--yami-spacing-050);
   margin-bottom: var(--yami-spacing-200);
-  padding-left: 16px;
-  padding-right: 16px;
+  padding-left: 4px;
+  padding-right: 4px;
 }
 
 .recent-updates-section__view-toggle {
@@ -3452,49 +3478,6 @@ nextjs-portal {
 
 .recent-updates-list .recent-updates-card__description {
   display: none;
-}
-
-.recent-updates-card__tags {
-  display: flex;
-  align-items: center;
-  gap: var(--yami-spacing-050);
-}
-
-.recent-updates-list .recent-updates-card__tags {
-  flex-shrink: 0;
-}
-
-.status-tag {
-  display: inline-flex;
-  align-items: center;
-  height: var(--yami-badge-size-standard-height);
-  padding: 0 calc(var(--yami-spacing-150) / 2);
-  border-radius: var(--yami-border-radius-small);
-  font-family: var(--yami-typography-font-family-brand);
-  font-size: var(--yami-typography-caption-medium-font-size-desktop);
-  font-weight: var(--yami-typography-caption-medium-font-weight);
-  line-height: var(--yami-typography-caption-medium-line-height-desktop);
-  white-space: nowrap;
-}
-
-.status-tag--released {
-  background: var(--yami-color-palette-emerald-50);
-  color: var(--yami-color-badge-success);
-}
-
-.status-tag--not-started {
-  background: var(--yami-color-palette-neutral-100);
-  color: var(--yami-color-badge-secondary);
-}
-
-.status-tag--review {
-  background: var(--yami-color-palette-yellow-50);
-  color: var(--yami-color-badge-warning);
-}
-
-.status-tag--draft {
-  background: var(--yami-color-palette-blue-50);
-  color: var(--yami-color-palette-blue-600);
 }
 
 .recent-updates-card__cta {

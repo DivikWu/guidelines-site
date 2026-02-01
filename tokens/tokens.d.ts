@@ -107,6 +107,14 @@ type TokensRoot = {
   white: TokenValue;
   light: TokenValue;
   dark: TokenValue;
+  onDark: {
+  '02': TokenValue;
+  '04': TokenValue;
+  '06': TokenValue;
+  '08': TokenValue;
+  '10': TokenValue;
+  '12': TokenValue;
+};
 };
   state: {
   hover: {

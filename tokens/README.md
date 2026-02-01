@@ -126,6 +126,14 @@ function Button() {
 document.documentElement.setAttribute('data-theme', 'dark');
 ```
 
+## 主题与深色模式
+
+- **变量来源**：`tokens.css` 提供原子 Token（如 `--yami-color-text-primary-light`）；`theme.css` 做 Token → 语义变量映射（如 `--foreground-primary`）；`globals.css` 负责组件级覆盖与深色下的 border/divider/fill（使用 `overlay.onDark` 系列）。
+- **深色叠加 Token**：`color.overlay.onDark` 下提供 02、04、06、08、10、12（对应 2%–12% 白叠加），用于深色模式的边框、分割线、填充等，修改透明度时只需改 `tokens.json` 后重新生成。
+- **首帧防闪**：根 layout 内联脚本在 CSS 加载前设置 `data-theme`、`color-scheme`、`meta theme-color`，并注入 `critical-dark-vars`；其数值与 tokens/globals 一致，后续可从 `tokens.json` 生成以保持同步。
+- **组件命名**：优先使用语义变量 `--foreground-*` / `--background-*` / `--border-*` / `--state-*`；`--color-text-primary` 等为兼容别名，指向上述语义变量。
+- **对比度**：主文（`--foreground-primary`）与主背景（`--background-primary`）在浅色/深色下均应满足 WCAG AA（正文 4.5:1，大字号 3:1）；修改 Token 时需注意对比度不退化。
+
 ## 令牌结构
 
 ### 色彩 (Color)
@@ -136,7 +144,7 @@ document.documentElement.setAttribute('data-theme', 'dark');
 - `text`: 文本色（主要/次要/辅助，支持主题）
 - `border`: 边框色（支持主题）
 - `badge`: 徽章色（主要/次要/成功/警告/错误）
-- `overlay`: 遮罩色（支持主题）
+- `overlay`: 遮罩色（支持主题）；`overlay.onDark.02`–`12` 为深色背景上的白叠加（2%–12%），用于边框/分割线/填充等
 - `campaign`: 营销色
 
 ### 字体 (Typography)

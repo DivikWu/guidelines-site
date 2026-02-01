@@ -87,32 +87,25 @@
   --text-secondary: var(--yami-color-text-secondary-light);
 }
 
+/* 深色模式：仅做 Token -> 语义变量映射。border/divider/fill 由 globals.css 用 overlay-on-dark Token 定义 */
 [data-theme='dark'] {
   --background-primary: var(--yami-color-background-dark);
   --background-secondary: var(--yami-color-surface-dark);
   --foreground-primary: var(--yami-color-text-primary-dark);
   --foreground-secondary: var(--yami-color-text-secondary-dark);
   --foreground-tertiary: var(--yami-color-text-tertiary-dark);
-  --border-normal: var(--yami-color-border-dark);
-  --border-subtle: var(--yami-color-border-subtle-dark);
-  --border-strong: var(--yami-color-border-strong-dark);
-  --divider-normal: var(--yami-color-border-dark);
-  --divider-section: var(--yami-color-divider-section-dark);
   --text-primary: var(--yami-color-text-primary-dark);
   --text-secondary: var(--yami-color-text-secondary-dark);
-  
-  /* State 交互态（深色模式使用透明白叠加） */
+
   --state-hover: var(--yami-color-state-hover-dark);
   --state-selected: var(--yami-color-state-selected-dark);
   --state-pressed: var(--yami-color-state-pressed-dark);
   --state-focus: var(--yami-color-state-focus-dark);
-  
-  /* Icon 图标 */
+
   --icon-primary: var(--yami-color-icon-primary-dark);
   --icon-secondary: var(--yami-color-icon-secondary-dark);
   --icon-muted: var(--yami-color-icon-muted-dark);
-  
-  /* Code 代码 */
+
   --code-bg: var(--yami-color-code-bg-dark);
   --code-text: var(--yami-color-code-text-dark);
   --code-border: var(--yami-color-code-border-dark);

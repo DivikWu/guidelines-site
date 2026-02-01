@@ -12,36 +12,6 @@ export default function RecentUpdatesSection({ updates }: { updates?: RecentUpda
   const recentUpdates = updates ?? [];
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
 
-  const getStatusTagClass = (status: string) => {
-    switch (status) {
-      case 'Released':
-        return 'status-tag status-tag--released';
-      case 'Not Started':
-        return 'status-tag status-tag--not-started';
-      case 'Review':
-        return 'status-tag status-tag--review';
-      case 'Draft':
-        return 'status-tag status-tag--draft';
-      default:
-        return 'status-tag';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'Released':
-        return 'Released';
-      case 'Not Started':
-        return 'Not Started';
-      case 'Review':
-        return 'Review';
-      case 'Draft':
-        return 'Draft';
-      default:
-        return status;
-    }
-  };
-
   return (
     <section className="recent-updates-section">
       <div className="recent-updates-section__container">
@@ -76,11 +46,6 @@ export default function RecentUpdatesSection({ updates }: { updates?: RecentUpda
                 {update.description != null && update.description !== '' && (
                   <p className="recent-updates-card__description">{update.description}</p>
                 )}
-              </div>
-              <div className="recent-updates-card__tags">
-                <span className={getStatusTagClass(update.status)}>
-                  {getStatusText(update.status)}
-                </span>
               </div>
             </Link>
           ))}
