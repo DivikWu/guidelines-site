@@ -553,6 +553,10 @@ body {
 
 .nav-drawer-panel .tree-nav {
   border-right: none;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .tree-nav__section {

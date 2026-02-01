@@ -64,10 +64,12 @@ export default function NavDrawer({
         }
 
         .nav-drawer__fullscreen-content {
-          padding: 56px 0 40px 0;
+          padding: 56px 0 0 0;
           flex: 1;
+          min-height: 0;
           width: 100%;
-          height: 100%;
+          display: flex;
+          flex-direction: column;
         }
 
         [data-theme='dark'] .nav-drawer-panel {
