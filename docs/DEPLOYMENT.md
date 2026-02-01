@@ -33,3 +33,23 @@ GITHUB_PAGES=true NEXT_PUBLIC_BASE_PATH=/guidelines-site npm run build
 ```
 
 构建完成后 `out/` 即静态站点；可用任意静态服务器在本地挂载 `out/` 并加上 basePath 前缀做验证。
+
+## 深色模式 / CSS 加载排查
+
+若部署后深色模式下首屏或「Token 来源」等 callout 区块对比度异常、文字几乎不可见，可按以下步骤排查。
+
+### 1. Network：确认 CSS 是否全部加载
+
+1. 打开部署站点（如 **https://divikwu.github.io/guidelines-site/**），F12 → **Network**，筛选 **CSS**。
+2. 确认所有 CSS 请求状态为 **200**，无 404/500。
+3. 确认请求 URL 带正确 basePath（如 `/guidelines-site/_next/static/...`），与 [next.config.mjs](../next.config.mjs) 中 `assetPrefix` 一致。
+
+### 2. 深色变量是否生效
+
+1. 切换到深色模式，打开含「Token 来源」的文档页。
+2. 在 **Elements** 里选中 `html`，确认有 `data-theme="dark"`。
+3. 选中 `.doc-callout` 或 `.doc-callout__body`，在 **Computed** 中查看 `color`、`background`：应来自 `--foreground-secondary`、`--fill-secondary` 等，且值为深色 token（如 #CCCCCC、rgba(255,255,255,0.06)）。若为浅色或未定义，说明主 CSS 中 `[data-theme='dark']` 未生效，需结合上一步看是否有 CSS 未加载。
+
+### 3. 内联兜底是否存在
+
+深色模式下在 **Elements** 中查找 `<style id="critical-dark-vars">`，确认存在且内容包含关键深色变量。若主 CSS 404，该 style 仍会存在，可验证首屏是否依赖它。

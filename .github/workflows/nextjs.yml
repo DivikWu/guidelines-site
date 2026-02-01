@@ -60,7 +60,10 @@ jobs:
         run: |
           ls -la out/
           if [ -f out/index.html ]; then echo "index.html present at root"; else echo "Note: index.html not at root (trailingSlash may use index/ or other)"; fi
-    
+
+      - name: Verify out CSS
+        run: node scripts/verify-out-css.mjs
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

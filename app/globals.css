@@ -83,6 +83,8 @@
 
   /* home hero background - 已改用纯 CSS 点阵，此变量保留用于向后兼容 */
   --home-hero-pattern-size: 16px;
+
+  color-scheme: light;
 }
 
 /* 深色模式：覆盖 theme.css 的映射。border/divider/fill 使用透明白以提升可见度，可考虑后续收纳入 tokens.json */
@@ -128,6 +130,8 @@
   --palette-icon-bg: rgba(255, 255, 255, 0.06); /* 占位块使用透明白 */
   --palette-icon-bg-hover: rgba(255, 255, 255, 0.10);
   --palette-placeholder-bg: rgba(255, 255, 255, 0.04); /* skeleton/placeholder */
+
+  color-scheme: dark;
 }
 
 /* 顶部加载进度条：固定顶部，不占布局高度，Primary 色 */
@@ -1492,6 +1496,10 @@ body {
   font-size: var(--fs-body);
   line-height: 20px;
   color: var(--foreground-secondary, var(--color-text-secondary));
+}
+
+[data-theme='dark'] .doc-callout__body {
+  color: var(--yami-color-text-secondary-dark);
 }
 
 .doc-callout__body .typo-p {

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "rm -rf .next-dev && next dev -H 127.0.0.1",
-    "build": "next build --webpack && node scripts/fix-font-paths.js",
+    "build": "next build --webpack && node scripts/fix-font-paths.js && node scripts/verify-out-css.mjs",
     "start": "next start",
     "lint": "eslint .",
     "lint:structure": "node scripts/check-structure.mjs",
