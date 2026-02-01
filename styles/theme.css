@@ -1,7 +1,8 @@
 /**
  * YAMI Design System Theme CSS Variables
  * 版本: 1.0.0
- * 描述: 设计系统主题变量，基于 tokens.json 生成
+ * 描述: Token -> 语义变量映射层，不做数值覆盖。
+ *       globals.css 负责组件级覆盖与特殊场景（如 SearchModal palette）。
  */
 
 :root {

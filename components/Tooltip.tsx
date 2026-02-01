@@ -122,23 +122,23 @@ export default function Tooltip({
           {content}
           <style jsx>{`
             .tooltip-container {
-              background: var(--yami-color-palette-black-1000, #000000);
-              color: var(--yami-color-text-primary-dark, #FFFFFF);
-              padding: var(--spacing-050, 4px) var(--spacing-100, 8px);
-              border-radius: var(--radius-sm, 4px);
-              font-size: var(--yami-typography-caption-medium-font-size-desktop, 12px);
-              line-height: var(--yami-typography-caption-medium-line-height-desktop, 16px);
-              font-weight: var(--yami-typography-font-weight-regular, 400);
-              box-shadow: var(--shadow-1, 0 1px 2px 0 rgba(0, 0, 0, 0.05));
+              background: var(--yami-color-palette-black-1000);
+              color: var(--yami-color-text-primary-dark);
+              padding: var(--spacing-050) var(--spacing-100);
+              border-radius: var(--radius-sm);
+              font-size: var(--yami-typography-caption-medium-font-size-desktop);
+              line-height: var(--yami-typography-caption-medium-line-height-desktop);
+              font-weight: var(--yami-typography-font-weight-regular);
+              box-shadow: var(--shadow-1);
               white-space: nowrap;
               pointer-events: auto;
               animation: tooltipFadeIn 0.15s ease-out;
             }
 
             [data-theme='dark'] .tooltip-container {
-              background: var(--yami-color-surface-dark, #2A2A2A);
-              border: 1px solid var(--yami-color-border-subtle-dark, rgba(255, 255, 255, 0.08));
-              color: var(--yami-color-text-primary-dark, #FFFFFF);
+              background: var(--background-secondary);
+              border: 1px solid var(--border-subtle);
+              color: var(--foreground-primary);
             }
 
             @keyframes tooltipFadeIn {

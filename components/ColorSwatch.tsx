@@ -29,7 +29,9 @@ export default function ColorSwatch({ name, value, description }: ColorSwatchPro
 
   const rgb = hexToRgb(value);
   const luminance = rgb ? getLuminance(rgb.r, rgb.g, rgb.b) : 0;
-  const textColor = luminance > 0.5 ? '#1A1A1A' : '#FFFFFF';
+  const textColor = luminance > 0.5
+    ? 'var(--yami-color-text-primary-light)'
+    : 'var(--yami-color-text-primary-dark)';
 
   return (
     <div className="color-swatch">

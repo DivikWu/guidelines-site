@@ -46,7 +46,8 @@ export default function NavDrawer({
           position: fixed;
           inset: 0;
           width: 100vw;
-          height: 100vh;
+          min-height: 100vh;
+          height: 100dvh;
           background: var(--background-primary, var(--color-bg));
           z-index: 1060;
           transform: translateY(-100%);
@@ -63,7 +64,7 @@ export default function NavDrawer({
         }
 
         .nav-drawer__fullscreen-content {
-          padding: calc(var(--header-height) + var(--spacing-100, 8px)) var(--spacing-100, 8px) var(--spacing-600, 48px);
+          padding: 56px 0 40px 0;
           flex: 1;
           width: 100%;
           height: 100%;
