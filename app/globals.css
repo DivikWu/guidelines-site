@@ -1668,6 +1668,9 @@ ol.typo-ol {
   margin-top: 8px;
   margin-bottom: 0px;
 }
+ol.typo-ol {
+  padding-left: 20px;
+}
 .typo-li { 
   font-size: var(--fs-body); 
   line-height: var(--lh-body); 
