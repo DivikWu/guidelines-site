@@ -1,5 +1,6 @@
 import React, { Children, isValidElement, memo, ReactNode } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 import { DocPage } from '../data/docs';
 import type { DocMetaForClient } from '@/lib/content/loaders';
@@ -154,7 +155,7 @@ const DOC_MARKDOWN_COMPONENTS = {
 const DocContentBody = memo(function DocContentBody({ page }: { page: DocPage }) {
   return (
     <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
+      remarkPlugins={[remarkGfm, remarkBreaks]}
       components={DOC_MARKDOWN_COMPONENTS}
     >
       {page.markdown}

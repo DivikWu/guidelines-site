@@ -1,6 +1,6 @@
 import dynamic from 'next/dynamic';
 import { redirect, notFound } from 'next/navigation';
-import { getContentTree } from '@/lib/content/tree';
+import { getContentTree, normalizeDocId } from '@/lib/content/tree';
 import { DEFAULT_CONTENT_DIR } from '@/lib/content/constants';
 import { getMarkdownAndFrontmatter } from '@/lib/content/loaders';
 import DocsPageView from './DocsPageView';
@@ -58,18 +58,20 @@ function rewriteWikiLinks(markdown: string, tree: ReturnType<typeof getContentTr
     if (target.includes('/')) {
       const [sectionId, fileId] = target.split('/');
       if (sectionId && fileId) {
+        const normalizedFileId = normalizeDocId(fileId);
         const text = label || fileId;
-        return `[${text}](/docs/${encodeURIComponent(sectionId)}/${encodeURIComponent(fileId)})`;
+        return `[${text}](/docs/${encodeURIComponent(sectionId)}/${encodeURIComponent(normalizedFileId)})`;
       }
     }
 
-    const sectionId = docIdToSection.get(target);
+    const normalizedTarget = normalizeDocId(target);
+    const sectionId = docIdToSection.get(normalizedTarget);
     if (!sectionId) {
       // 未找到目标，保留纯文本以避免生成无效链接
       return label || target;
     }
     const text = label || target;
-    return `[${text}](/docs/${encodeURIComponent(sectionId)}/${encodeURIComponent(target)})`;
+    return `[${text}](/docs/${encodeURIComponent(sectionId)}/${encodeURIComponent(normalizedTarget)})`;
   });
 }
 
