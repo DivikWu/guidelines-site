@@ -1,4 +1,5 @@
 import React, { Children, isValidElement, memo, ReactNode } from 'react';
+import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
@@ -141,6 +142,30 @@ const DOC_MARKDOWN_COMPONENTS = {
   th: ({ node: _n, ...props }: MarkdownElProps<'th'>) => <th className="doc-table__cell doc-table__cell--head" {...props} />,
   td: ({ node: _n, ...props }: MarkdownElProps<'td'>) => <td className="doc-table__cell" {...props} />,
   hr: ({ node: _n, ...props }: MarkdownElProps<'hr'>) => <hr className="doc-hr" {...props} />,
+  a: ({ node: _n, href, children, ...props }: MarkdownElProps<'a'>) => {
+    const isInternal =
+      href != null &&
+      href.startsWith('/') &&
+      !href.startsWith('//') &&
+      !/^https?:\/\//i.test(href);
+    if (isInternal && href) {
+      const processedHref =
+        !href.endsWith('/') && !/\.[a-z0-9]+$/i.test(href)
+          ? `${href}/`
+          : href;
+      return <Link href={processedHref} {...props}>{children}</Link>;
+    }
+    return (
+      <a
+        href={href || '#'}
+        target="_blank"
+        rel="noopener noreferrer"
+        {...props}
+      >
+        {children}
+      </a>
+    );
+  },
   code: ({ node: _n, className, children, ...props }: { node?: unknown; className?: string; children?: ReactNode }) => {
     const isInline = !className;
     return isInline ? (
