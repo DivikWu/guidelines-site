@@ -1551,7 +1551,7 @@ body {
   margin-bottom: 0;
   margin-left: 0;
   margin-right: 0;
-  padding-left: 12px;
+  padding-left: 8px;
   border-left: 4px solid var(--border-subtle, var(--color-border));
   color: var(--foreground-secondary);
 }
@@ -1674,6 +1674,16 @@ ol.typo-ol {
   margin: 0 0 2px;
   text-align: left;
 }
+
+/* 待办列表：去除前导圆点，仅保留复选框 */
+ul.contains-task-list {
+  list-style: none;
+  padding-left: 0;
+}
+ul.contains-task-list li {
+  list-style: none;
+}
+
 .token-inline {
   background: var(--code-bg);
   padding: 2px 4px;
@@ -1698,7 +1708,10 @@ ol.typo-ol {
 
 .token-block {
   display: block;
-  padding: var(--spacing-200);
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 12px;
+  padding-right: 12px;
   background: var(--code-bg);
   border: 1px solid var(--code-border);
   border-radius: var(--radius-md);
