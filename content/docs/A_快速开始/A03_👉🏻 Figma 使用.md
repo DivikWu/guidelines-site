@@ -1,5 +1,6 @@
 ---
 title: Figma 使用
+title_en: Figma Usage
 description: 在 Figma 中使用设计系统的组件库、样式库与协作规范
 category: 快速开始
 status: Published
@@ -23,6 +24,8 @@ last_updated: 2026-01-31
 - 非必要不 Detach，保持与系统同步
 - 使用 Variant 表达不同状态与尺寸
 - 方案确认并进入开发前，优先回归标准组件
+
+
 ## 使用 Variant 与状态
 
 - 使用 Variant 表达默认、悬浮、激活、禁用等状态
@@ -31,11 +34,13 @@ last_updated: 2026-01-31
 
 > 如果需要新增状态，请推动系统演进，而不是临时绕过。
 
+
 ## 使用样式与 Token
 
 - 始终使用系统提供的颜色、文字和效果样式
 - 避免直接填写颜色值或字号
 - 基于 Token 的样式可以保证一致性并降低维护成本
+
 
 ## 更新与同步
 

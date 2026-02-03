@@ -1,12 +1,14 @@
-import dynamic from 'next/dynamic';
+import React from 'react';
 import { redirect, notFound } from 'next/navigation';
 import { getContentTree, normalizeDocId } from '@/lib/content/tree';
 import { DEFAULT_CONTENT_DIR } from '@/lib/content/constants';
 import { getMarkdownAndFrontmatter } from '@/lib/content/loaders';
+import { parseMarkdownWithPreviewDirective } from '@/lib/content/preview-directive';
+import DocContent, { DocContentBody } from '@/components/DocContent';
 import DocsPageView from './DocsPageView';
 import type { DocPage } from '@/data/docs';
-
-const DocContent = dynamic(() => import('@/components/DocContent'), { ssr: true });
+import type { DocMetaForClient } from '@/lib/content/loaders';
+import { ComponentPreviewSlot } from '@/components/doc-preview';
 
 export function generateStaticParams() {
   // 固定使用项目 content/，与站内链接一致，避免 YDS_CONTENT_DIR 导致 param 不匹配
@@ -111,9 +113,52 @@ export default async function DocsSlugPage({ params }: PageProps) {
 
   const normalizedMarkdown = rewriteWikiLinks(markdown, tree);
   const doc: DocPage = { id: fileDecoded, markdown: normalizedMarkdown };
-  const docMetaForClient = docMeta
+  const docMetaForClient: DocMetaForClient | undefined = docMeta
     ? { status: docMeta.status, last_updated: docMeta.last_updated }
     : undefined;
+
+  const segments = parseMarkdownWithPreviewDirective(normalizedMarkdown);
+  const hasMeta = docMetaForClient && (docMetaForClient.status != null || docMetaForClient.last_updated != null);
+
+  const children =
+    segments.length === 1 && segments[0].type === 'markdown'
+      ? (
+          <DocContent
+            page={doc}
+            hidden={false}
+            docMeta={docMetaForClient}
+          />
+        )
+      : (
+          <article id={`${fileDecoded}-seg-0`} className="doc">
+            {segments.map((seg, i) => {
+              if (seg.type === 'markdown') {
+                return (
+                  <DocContentBody
+                    key={`seg-${i}`}
+                    page={{ id: `${fileDecoded}-seg-${i}`, markdown: seg.content }}
+                  />
+                );
+              }
+              return (
+                <ComponentPreviewSlot key={`preview-${i}-${seg.previewType}`} previewType={seg.previewType} />
+              );
+            })}
+            {hasMeta && (
+              <footer className="doc-status">
+                {docMetaForClient!.status != null && (
+                  <span className="doc-status__value" data-status={docMetaForClient!.status}>
+                    {docMetaForClient!.status.charAt(0).toUpperCase() + docMetaForClient!.status.slice(1).toLowerCase()}
+                  </span>
+                )}
+                {docMetaForClient!.last_updated != null && (
+                  <span className="doc-status__date">{docMetaForClient!.last_updated}</span>
+                )}
+              </footer>
+            )}
+          </article>
+        );
+
   return (
     <DocsPageView
       doc={doc}
@@ -121,7 +166,7 @@ export default async function DocsSlugPage({ params }: PageProps) {
       file={fileDecoded}
       docMeta={docMetaForClient}
     >
-      <DocContent page={doc} hidden={false} docMeta={docMetaForClient} />
+      {children}
     </DocsPageView>
   );
 }

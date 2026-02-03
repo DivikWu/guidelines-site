@@ -36,6 +36,11 @@ export default function RootLayout({
         />
         {/* 导入字体 CSS */}
         <link rel="stylesheet" href={`${fontBasePath}/icofont.css`} />
+        {/* 代码区等宽字体 Fira Code */}
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap"
+        />
       </head>
       <body data-layout="root">
         <TopLoadingBar />

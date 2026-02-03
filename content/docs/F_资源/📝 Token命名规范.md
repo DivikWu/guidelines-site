@@ -1,5 +1,6 @@
 ---
 title: Token 命名规范
+title_en: Token Naming
 description: Design Token 的命名规则与约定
 category: 资源
 status: Draft

@@ -1,5 +1,6 @@
 ---
 title: Token 文件结构
+title_en: Token Structure
 description: Design Token 的文件组织与层级结构
 category: 资源
 status: Draft

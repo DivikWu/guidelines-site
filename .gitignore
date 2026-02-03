@@ -27,4 +27,4 @@ pnpm-debug.log*
 .cursor
 
 # obsidian
-content/.obsidian
+content/**/.obsidian

@@ -1,5 +1,6 @@
 ---
 title: UI 文案规范
+title_en: UI Copy
 description: 界面文案的书写规则、大小写与标点规范
 category: 内容策略
 status: Draft

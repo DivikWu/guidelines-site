@@ -102,6 +102,7 @@ const DOC_MARKDOWN_COMPONENTS = {
   h1: ({ node: _n, ...props }: MarkdownElProps<'h1'>) => <h1 className="typo-h1" {...props} />,
   h2: ({ node: _n, ...props }: MarkdownElProps<'h2'>) => <h2 className="typo-h2" {...props} />,
   h3: ({ node: _n, ...props }: MarkdownElProps<'h3'>) => <h3 className="typo-h3" {...props} />,
+  h4: ({ node: _n, ...props }: MarkdownElProps<'h4'>) => <h4 className="typo-h4" {...props} />,
   p: ({ node: _n, ...props }: MarkdownElProps<'p'>) => <p className="typo-p" {...props} />,
   ul: ({ node: _n, ...props }: MarkdownElProps<'ul'>) => <ul className="typo-ul" {...props} />,
   ol: ({ node: _n, ...props }: MarkdownElProps<'ol'>) => <ol className="typo-ol" {...props} />,
@@ -217,4 +218,5 @@ const DocContent = memo(function DocContent({
   );
 });
 
+export { DocContentBody };
 export default DocContent;

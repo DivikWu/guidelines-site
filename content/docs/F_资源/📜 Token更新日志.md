@@ -1,5 +1,6 @@
 ---
 title: Token 更新日志
+title_en: Token Changelog
 description: Design Token 的版本变更历史与迁移指南
 category: 资源
 status: Draft
