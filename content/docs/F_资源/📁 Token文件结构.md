@@ -196,7 +196,7 @@ tokens/
 
 ### shadows.json
 
-```shadow-tokens
+```json
 {
   "elevation": {
     "100": {
