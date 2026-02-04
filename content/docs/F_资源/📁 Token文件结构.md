@@ -231,17 +231,14 @@ tokens/
 
 ### 构建流程
 
-```
-Figma Variables
-      ↓
-  tokens/*.json（源文件）
-      ↓
-  Style Dictionary（构建）
-      ↓
-  ├── CSS Variables
-  ├── SCSS Variables
-  ├── Swift Constants
-  └── Android Resources
+```mermaid
+graph TD
+    A[Figma Variables] --> B["tokens/*.json (源文件)"]
+    B --> C["Style Dictionary (构建)"]
+    C --> D[CSS Variables]
+    C --> E[SCSS Variables]
+    C --> F[Swift Constants]
+    C --> G[Android Resources]
 ```
 
 ---

@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm';
 import { DocPage } from '../data/docs';
 import type { DocMetaForClient } from '@/lib/content/loaders';
 import FileTree from './FileTree';
+import MermaidRenderer from './MermaidRenderer';
 
 const CALLOUT_REGEX = /^\s*\[!(\w+)\]\s*([\s\S]*)$/;
 const CALLOUT_TYPES = ['info', 'note', 'tip', 'warning', 'danger', 'example', 'quote'];
@@ -171,9 +172,14 @@ const DOC_MARKDOWN_COMPONENTS = {
   code: ({ node: _n, className, children, ...props }: { node?: unknown; className?: string; children?: ReactNode }) => {
     const isInline = !className;
     const isFileTree = className === 'language-filetree';
+    const isMermaid = className === 'language-mermaid';
 
     if (isFileTree) {
       return <FileTree content={String(children)} />;
+    }
+
+    if (isMermaid) {
+      return <MermaidRenderer content={String(children)} />;
     }
 
     return isInline ? (

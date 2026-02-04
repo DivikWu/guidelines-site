@@ -13,6 +13,7 @@
     "sync:content:dev": "node scripts/sync-obsidian-content.mjs && echo '请重启 dev server (npm run dev) 以使新内容生效'"
   },
   "dependencies": {
+    "beautiful-mermaid": "^0.1.3",
     "next": "16.1.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
