@@ -5,7 +5,10 @@ import { useMemo } from 'react';
 import { COMPONENT_PREVIEW_REGISTRY, hasPreviewType } from './component-preview-registry';
 import { PreviewErrorBoundary } from './PreviewErrorBoundary';
 
-const dynamicCache: Record<string, ReturnType<typeof dynamic>> = {};
+import type { ComponentType } from 'react';
+import type { BasePreviewProps } from './types';
+
+const dynamicCache: Record<string, ComponentType<BasePreviewProps>> = {};
 
 function getLazyPreview(type: string) {
   if (!dynamicCache[type] && hasPreviewType(type)) {
@@ -16,7 +19,8 @@ function getLazyPreview(type: string) {
           <span className="doc-preview__loading-text">加载中…</span>
         </div>
       ),
-    });
+
+    }) as ComponentType<BasePreviewProps>;
   }
   return dynamicCache[type];
 }
