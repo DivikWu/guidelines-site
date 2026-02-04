@@ -51,179 +51,25 @@ tokens/
 
 存储原始设计值，不引用其他 Token。
 
-```json
-// base/colors.json
-{
-  "red": {
-    "500": { "value": "#FF0000" },
-    "600": { "value": "#E00000" }
-  },
-  "black": {
-    "87": { "value": "rgba(0,0,0,0.87)" },
-    "55": { "value": "rgba(0,0,0,0.55)" }
-  }
-}
-```
+
 
 ### 2. 语义层 (Semantic)
 
 通过引用基础 Token 建立语义映射。
 
-```json
-// semantic/colors.json
-{
-  "brand": {
-    "primary": { "value": "{red.500}" }
-  },
-  "ui": {
-    "primary": { "value": "{red.600}" }
-  },
-  "text": {
-    "primary": { "value": "{black.87}" },
-    "secondary": { "value": "{black.55}" }
-  }
-}
-```
+
 
 ### 3. 主题层 (Themes)
 
 定义不同主题下语义 Token 的具体映射。
 
-```json
-// themes/light.json
-{
-  "text": {
-    "primary": { "value": "{black.87}" }
-  },
-  "background": {
-    "primary": { "value": "#FFFFFF" }
-  }
-}
 
-// themes/dark.json
-{
-  "text": {
-    "primary": { "value": "rgba(255,255,255,0.87)" }
-  },
-  "background": {
-    "primary": { "value": "#121212" }
-  }
-}
-```
 
 ### 4. 平台层 (Platforms)
 
 由构建工具自动生成，供各平台消费。
 
----
 
-## 各类 Token 文件内容
-
-### colors.json（基础层）
-
-```json
-{
-  "red": {
-    "500": { "value": "#FF0000", "type": "color" },
-    "600": { "value": "#E00000", "type": "color" }
-  },
-  "blue": {
-    "50": { "value": "#F0F3FA", "type": "color" }
-  },
-  "sky": {
-    "50": { "value": "#EEF6FE", "type": "color" }
-  }
-}
-```
-
-### typography.json（语义层）
-
-```json
-{
-  "display": {
-    "l": {
-      "fontSize": { "value": "32px" },
-      "lineHeight": { "value": "40px" },
-      "fontWeight": { "value": "400" }
-    },
-    "m": {
-      "fontSize": { "value": "28px" },
-      "lineHeight": { "value": "36px" },
-      "fontWeight": { "value": "400" }
-    }
-  },
-  "heading": {
-    "l": {
-      "fontSize": { "value": "20px" },
-      "lineHeight": { "value": "28px" },
-      "fontWeight": { "value": "500" }
-    }
-  }
-}
-```
-
-### spacing.json
-
-```json
-{
-  "space": {
-    "0": { "value": "0px", "type": "spacing" },
-    "025": { "value": "2px", "type": "spacing" },
-    "050": { "value": "4px", "type": "spacing" },
-    "100": { "value": "8px", "type": "spacing" },
-    "150": { "value": "12px", "type": "spacing" },
-    "200": { "value": "16px", "type": "spacing" },
-    "300": { "value": "24px", "type": "spacing" },
-    "400": { "value": "32px", "type": "spacing" },
-    "600": { "value": "48px", "type": "spacing" }
-  }
-}
-```
-
-### radius.json
-
-```json
-{
-  "radius": {
-    "none": { "value": "0px", "type": "borderRadius" },
-    "small": { "value": "4px", "type": "borderRadius" },
-    "medium": { "value": "8px", "type": "borderRadius" },
-    "large": { "value": "12px", "type": "borderRadius" },
-    "full": { "value": "999px", "type": "borderRadius" }
-  }
-}
-```
-
-### shadows.json
-
-```json
-{
-  "elevation": {
-    "100": {
-      "value": "0px 1px 2px -1px rgba(0,0,0,0.04)",
-      "type": "boxShadow"
-    },
-    "200": {
-      "value": "0px 2px 4px -2px rgba(0,0,0,0.08)",
-      "type": "boxShadow"
-    },
-    "300": {
-      "value": "0px 4px 8px -4px rgba(0,0,0,0.12)",
-      "type": "boxShadow"
-    },
-    "400": {
-      "value": "0px 4px 12px -6px rgba(0,0,0,0.16)",
-      "type": "boxShadow"
-    },
-    "500": {
-      "value": "0px 8px 16px -8px rgba(0,0,0,0.24)",
-      "type": "boxShadow"
-    }
-  }
-}
-```
-
----
 
 ## 构建工具
 
