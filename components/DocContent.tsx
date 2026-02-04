@@ -7,6 +7,7 @@ import { DocPage } from '../data/docs';
 import type { DocMetaForClient } from '@/lib/content/loaders';
 import FileTree from './FileTree';
 import MermaidRenderer from './MermaidRenderer';
+import ShadowPreview from './ShadowPreview';
 
 const CALLOUT_REGEX = /^\s*\[!(\w+)\]\s*([\s\S]*)$/;
 const CALLOUT_TYPES = ['info', 'note', 'tip', 'warning', 'danger', 'example', 'quote'];
@@ -173,6 +174,7 @@ const DOC_MARKDOWN_COMPONENTS = {
     const isInline = !className;
     const isFileTree = className === 'language-filetree';
     const isMermaid = className === 'language-mermaid';
+    const isShadowTokens = className === 'language-shadow-tokens';
 
     if (isFileTree) {
       return <FileTree content={String(children)} />;
@@ -180,6 +182,10 @@ const DOC_MARKDOWN_COMPONENTS = {
 
     if (isMermaid) {
       return <MermaidRenderer content={String(children)} />;
+    }
+
+    if (isShadowTokens) {
+      return <ShadowPreview content={String(children)} />;
     }
 
     return isInline ? (
