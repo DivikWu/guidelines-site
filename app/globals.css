@@ -4302,3 +4302,70 @@ nextjs-portal {
     line-height: var(--yami-typography-display-small-line-height-mobile);
   }
 }
+
+/** FileTree Component Styles */
+.file-tree {
+  margin: var(--spacing-400) 0;
+  padding: var(--spacing-400);
+  background: var(--background-secondary, #F9F9F9);
+  border: 1px solid var(--border-subtle, rgba(0,0,0,0.06));
+  border-radius: var(--radius-md, 8px);
+  overflow-x: auto;
+}
+
+[data-theme='dark'] .file-tree {
+  background: var(--background-secondary, #141414);
+}
+
+.file-tree__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-050, 4px);
+  font-family: 'Fira Code', monospace;
+  font-size: 13px;
+}
+
+.file-tree__item {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  border-radius: var(--radius-sm, 4px);
+  transition: background-color 0.2s;
+  cursor: default;
+}
+
+.file-tree__item:hover {
+  background: var(--state-hover, rgba(0,0,0,0.02));
+}
+
+.file-tree__item-content {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-100, 8px);
+  width: 100%;
+}
+
+.file-tree__item-icon {
+  color: var(--foreground-secondary, #666);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.file-tree__item--folder .file-tree__item-name {
+  font-weight: var(--fw-medium, 500);
+  color: var(--foreground-primary, #111);
+}
+
+.file-tree__item--file .file-tree__item-name {
+  color: var(--foreground-secondary, #444);
+}
+
+.file-tree__item-comment {
+  margin-left: auto;
+  color: var(--foreground-tertiary, #999);
+  font-size: 12px;
+  font-style: italic;
+  padding-left: 16px;
+  white-space: nowrap;
+}

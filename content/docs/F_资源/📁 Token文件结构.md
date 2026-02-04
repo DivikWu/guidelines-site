@@ -15,7 +15,7 @@ last_updated: 2026-01-31
 
 ## 目录结构
 
-```
+```filetree
 tokens/
 ├── base/                    # 基础 Token（原始值）
 │   ├── colors.json          # 调色板
