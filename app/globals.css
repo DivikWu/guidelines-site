@@ -2126,7 +2126,7 @@ body {
 .doc-table__head .doc-table__cell--head {
   padding: 8px 12px;
   font-size: 14px;
-  line-height: 20px;
+  line-height: 24px;
   letter-spacing: 0;
   text-transform: uppercase;
   color: var(--code-text);
@@ -2350,8 +2350,8 @@ body {
 }
 
 .typo-h1 {
-  font-size: 24px;
-  line-height: 28px;
+  font-size: 32px;
+  line-height: 36px;
   font-weight: var(--fw-medium);
   padding: 2px 0;
   margin: 32px 0 0;
@@ -2359,8 +2359,8 @@ body {
 }
 
 .typo-h2 {
-  font-size: 20px;
-  line-height: 24px;
+  font-size: 22px;
+  line-height: 28px;
   font-weight: var(--fw-medium);
   padding: 2px 0;
   margin: 24px 0 0;
@@ -2368,8 +2368,8 @@ body {
 }
 
 .typo-h3 {
-  font-size: 16px;
-  line-height: 20px;
+  font-size: 18px;
+  line-height: 24px;
   font-weight: var(--fw-medium);
   padding: 2px 0;
   margin: 16px 0 0;
@@ -2378,7 +2378,7 @@ body {
 
 .typo-h4 {
   font-size: 14px;
-  line-height: 20px;
+  line-height: 24px;
   font-weight: var(--fw-medium);
   padding: 2px 0;
   margin: 12px 0 0;
@@ -2387,7 +2387,7 @@ body {
 
 .typo-p {
   font-size: 14px;
-  line-height: 20px;
+  line-height: 24px;
   padding: 2px 0;
   margin: 0;
   color: var(--color-text-primary);
@@ -2420,7 +2420,7 @@ ol.typo-ol {
 
 .typo-li {
   font-size: 14px;
-  line-height: 20px;
+  line-height: 24px;
   padding: 2px 0;
   margin: 0;
   text-align: left;
@@ -3547,7 +3547,7 @@ html[data-search-open="true"] .header .header__search input:focus {
 
 .search-bar__description {
   font-size: 14px;
-  line-height: 20px;
+  line-height: 24px;
   max-width: 600px;
   color: var(--foreground-secondary, var(--color-text-secondary));
   margin: 0;
@@ -3590,7 +3590,7 @@ html[data-search-open="true"] .header .header__search input:focus {
   color: var(--foreground-primary, var(--color-text-primary));
   font-family: inherit;
   font-size: 14px;
-  line-height: 20px;
+  line-height: 24px;
   box-shadow: var(--shadow-2);
   /* 默认带投影增强深度 */
   transition: background-color 200ms ease-out, border-color 200ms ease-out, color 200ms ease-out;
@@ -4494,4 +4494,130 @@ nextjs-portal {
   font-style: italic;
   padding-left: 16px;
   white-space: nowrap;
+}
+
+/* ==========================================================================
+   Color Palette Matrix Component
+   ========================================================================== */
+.color-palette-matrix {
+  margin: var(--spacing-200) 0;
+  width: 100%;
+  overflow-x: auto;
+  padding: var(--spacing-200);
+  border: 1px solid #EBEBEB;
+  border-radius: var(--radius-md, 8px);
+}
+
+.color-palette-matrix__grid {
+  display: grid;
+  grid-template-columns: max-content repeat(11, 52px);
+  gap: var(--spacing-050);
+  min-width: max-content;
+}
+
+.color-palette-matrix__row {
+  display: contents;
+}
+
+.color-palette-matrix__row--header>* {
+  margin-bottom: 4px;
+}
+
+.color-palette-matrix__label {
+  padding-right: var(--spacing-200);
+  font-family: var(--font-body);
+  font-size: var(--body-m-size, 14px);
+  color: var(--foreground-secondary);
+  font-weight: var(--fw-medium);
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background-color: var(--background-primary);
+  display: flex;
+  align-items: center;
+}
+
+.color-palette-matrix__label--corner {
+  visibility: hidden;
+}
+
+.color-palette-matrix__step-label {
+  width: 52px;
+  flex-shrink: 0;
+  text-align: center;
+  font-family: 'Menlo', 'Monaco', monospace;
+  font-size: 11px;
+  color: var(--foreground-tertiary);
+}
+
+.color-palette-matrix__cell {
+  width: 52px;
+  flex-shrink: 0;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.color-palette-matrix__swatch {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  position: relative;
+  border: 1px solid #EBEBEB;
+}
+
+.color-palette-matrix__swatch:hover {
+  transform: scale(1.15);
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.color-palette-matrix__swatch--empty {
+  background: var(--fill-secondary);
+  border: 1px dashed var(--border-subtle);
+  cursor: default;
+}
+
+.color-palette-matrix__swatch--empty:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Tooltip (Simple CSS version) */
+.color-palette-matrix__tooltip {
+  position: absolute;
+  bottom: calc(100% + 4.5px);
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  height: 24px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-family: 'Menlo', 'Monaco', monospace;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.color-palette-matrix__swatch:hover .color-palette-matrix__tooltip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+[data-theme='dark'] .color-palette-matrix__swatch {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme='dark'] .color-palette-matrix__tooltip {
+  background: rgba(255, 255, 255, 0.9);
+  color: black;
 }

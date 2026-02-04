@@ -5,13 +5,14 @@
 
 export type PreviewSegment =
   | { type: 'markdown'; content: string }
-  | { type: 'preview'; previewType: string };
+  | { type: 'preview'; previewType: string; tableData?: string };
 
-const DIRECTIVE_REGEX = /:::component-preview\s+type="(\w+)"\s*:::/g;
+const DIRECTIVE_REGEX = /:::component-preview\s+type="([\w-]+)"\s*:::/g;
 
 /**
  * 将整篇 markdown 按指令拆成有序片段（markdown | preview 交替）。
  * 指令行本身不会出现在任何 content 中。
+ * 如果 preview 指令后紧跟表格,会提取表格数据并隐藏表格。
  */
 export function parseMarkdownWithPreviewDirective(markdown: string): PreviewSegment[] {
   const segments: PreviewSegment[] = [];
@@ -26,8 +27,25 @@ export function parseMarkdownWithPreviewDirective(markdown: string): PreviewSegm
     if (before.length > 0) {
       segments.push({ type: 'markdown', content: before + '\n\n' });
     }
-    segments.push({ type: 'preview', previewType: match[1].toLowerCase() });
-    lastEnd = idx + match[0].length;
+
+    // 检查指令后是否有表格数据
+    const afterDirective = markdown.slice(idx + match[0].length);
+    const tableMatch = afterDirective.match(/^\s*\n(<!--[\s\S]*?-->\s*)?\n(\|[\s\S]+?\|)\n(?=\s*\n[^|])/);
+
+    let tableData: string | undefined;
+    let skipLength = match[0].length;
+
+    if (tableMatch) {
+      tableData = tableMatch[2]; // 提取表格内容(不包括注释)
+      skipLength += tableMatch[0].length - 1; // 跳过表格内容(-1 是因为要保留最后的换行)
+    }
+
+    segments.push({
+      type: 'preview',
+      previewType: match[1].toLowerCase(),
+      tableData
+    });
+    lastEnd = idx + skipLength;
   }
 
   const after = markdown.slice(lastEnd).trimStart();

@@ -30,10 +30,9 @@ tokens/
 │   └── components.json      # 组件级 Token
 │
 ├── themes/                  # 主题层
-│   ├── light.json           # 亮色主题
-│   └── dark.json            # 暗色主题
+│   └── light.json           # 亮色主题
 │
-└── platforms/               # 平台导出
+├── platforms/               # 平台导出
     ├── web/
     │   ├── variables.css    # CSS 变量
     │   └── tokens.scss      # SCSS 变量

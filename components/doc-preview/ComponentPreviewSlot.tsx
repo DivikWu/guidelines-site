@@ -23,9 +23,10 @@ function getLazyPreview(type: string) {
 
 interface ComponentPreviewSlotProps {
   previewType: string;
+  tableData?: string;
 }
 
-export default function ComponentPreviewSlot({ previewType }: ComponentPreviewSlotProps) {
+export default function ComponentPreviewSlot({ previewType, tableData }: ComponentPreviewSlotProps) {
   const LazyPreview = useMemo(() => getLazyPreview(previewType), [previewType]);
 
   if (!hasPreviewType(previewType)) {
@@ -48,7 +49,7 @@ export default function ComponentPreviewSlot({ previewType }: ComponentPreviewSl
         role="region"
         aria-label="组件示例"
       >
-        <LazyPreview />
+        <LazyPreview {...{ tableData }} />
       </section>
     </PreviewErrorBoundary>
   );

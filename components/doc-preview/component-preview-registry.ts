@@ -6,9 +6,10 @@ import type { ComponentType } from 'react';
  */
 export const COMPONENT_PREVIEW_REGISTRY: Record<
   string,
-  () => Promise<{ default: ComponentType<unknown> }>
+  () => Promise<{ default: ComponentType<any> }>
 > = {
   button: () => import('./ButtonPreviewSection').then((m) => ({ default: m.default })),
+  'color-palette': () => import('./ColorPalette').then((m) => ({ default: m.default })),
 };
 
 export function getPreviewTypes(): string[] {

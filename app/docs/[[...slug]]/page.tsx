@@ -123,41 +123,45 @@ export default async function DocsSlugPage({ params }: PageProps) {
   const children =
     segments.length === 1 && segments[0].type === 'markdown'
       ? (
-          <DocContent
-            page={doc}
-            hidden={false}
-            docMeta={docMetaForClient}
-          />
-        )
+        <DocContent
+          page={doc}
+          hidden={false}
+          docMeta={docMetaForClient}
+        />
+      )
       : (
-          <article id={`${fileDecoded}-seg-0`} className="doc">
-            {segments.map((seg, i) => {
-              if (seg.type === 'markdown') {
-                return (
-                  <DocContentBody
-                    key={`seg-${i}`}
-                    page={{ id: `${fileDecoded}-seg-${i}`, markdown: seg.content }}
-                  />
-                );
-              }
+        <article id={`${fileDecoded}-seg-0`} className="doc">
+          {segments.map((seg, i) => {
+            if (seg.type === 'markdown') {
               return (
-                <ComponentPreviewSlot key={`preview-${i}-${seg.previewType}`} previewType={seg.previewType} />
+                <DocContentBody
+                  key={`seg-${i}`}
+                  page={{ id: `${fileDecoded}-seg-${i}`, markdown: seg.content }}
+                />
               );
-            })}
-            {hasMeta && (
-              <footer className="doc-status">
-                {docMetaForClient!.status != null && (
-                  <span className="doc-status__value" data-status={docMetaForClient!.status}>
-                    {docMetaForClient!.status.charAt(0).toUpperCase() + docMetaForClient!.status.slice(1).toLowerCase()}
-                  </span>
-                )}
-                {docMetaForClient!.last_updated != null && (
-                  <span className="doc-status__date">{docMetaForClient!.last_updated}</span>
-                )}
-              </footer>
-            )}
-          </article>
-        );
+            }
+            return (
+              <ComponentPreviewSlot
+                key={`preview-${i}-${seg.previewType}`}
+                previewType={seg.previewType}
+                tableData={seg.tableData}
+              />
+            );
+          })}
+          {hasMeta && (
+            <footer className="doc-status">
+              {docMetaForClient!.status != null && (
+                <span className="doc-status__value" data-status={docMetaForClient!.status}>
+                  {docMetaForClient!.status.charAt(0).toUpperCase() + docMetaForClient!.status.slice(1).toLowerCase()}
+                </span>
+              )}
+              {docMetaForClient!.last_updated != null && (
+                <span className="doc-status__date">{docMetaForClient!.last_updated}</span>
+              )}
+            </footer>
+          )}
+        </article>
+      );
 
   return (
     <DocsPageView
