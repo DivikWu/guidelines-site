@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import tokensData from '../../tokens/tokens.json';
 import type { ColorPaletteProps } from './types';
 
@@ -20,11 +20,47 @@ interface ColorFamily {
 }
 
 /**
- * 解析 Markdown 表格数据
- * 支持两种表格格式:
- * 1. 色系在第一列: | 色系 | 50 | 100 | ... |
- * 2. 阶梯在第一列: | 阶梯 | Red | Yellow | ... |
+ * Swatch Component
+ * Handles individual color cell Interaction and copy.
  */
+function Swatch({ value, title }: { value: string; title: string }) {
+    const [copied, setCopied] = useState(false);
+
+    useEffect(() => {
+        if (copied) {
+            const timer = setTimeout(() => setCopied(false), 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [copied]);
+
+    const handleCopy = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        try {
+            await navigator.clipboard.writeText(value);
+            setCopied(true);
+        } catch (err) {
+            console.error('Failed to copy!', err);
+        }
+    };
+
+    return (
+        <div
+            className="color-palette-matrix__swatch"
+            style={{ backgroundColor: value }}
+            title={title}
+            onClick={handleCopy}
+        >
+            <div className="color-palette-matrix__tooltip">
+                <span>{copied ? 'Copied!' : value}</span>
+            </div>
+        </div>
+    );
+}
+
+/**
+ * 解析 Markdown 表格数据
+... (parseTableData function remains the same, assuming it was defined before)
+*/
 function parseTableData(tableData: string): ColorFamily[] {
     try {
         const lines = tableData.trim().split('\n');
@@ -65,7 +101,8 @@ function parseTableData(tableData: string): ColorFamily[] {
                 // 后续列是各个色系的值
                 for (let j = 0; j < colorNames.length && j + 1 < cells.length; j++) {
                     const value = cells[j + 1].replace(/`/g, '').trim();
-                    if (value && value.match(/^#[0-9A-Fa-f]{6}$/)) {
+                    // 支持 Hex (#RRGGBB) 和 RGBA (rgba(r, g, b, a)) 格式
+                    if (value && (value.match(/^#[0-9A-Fa-f]{6}$/) || value.match(/^rgba?\(/))) {
                         families[j].shades[step] = value;
                     }
                 }
@@ -87,7 +124,8 @@ function parseTableData(tableData: string): ColorFamily[] {
                 for (let j = 0; j < steps.length && j + 1 < cells.length; j++) {
                     const step = steps[j];
                     const value = cells[j + 1].replace(/`/g, '').trim();
-                    if (value && value.match(/^#[0-9A-Fa-f]{6}$/)) {
+                    // 支持 Hex (#RRGGBB) 和 RGBA (rgba(r, g, b, a)) 格式
+                    if (value && (value.match(/^#[0-9A-Fa-f]{6}$/) || value.match(/^rgba?\(/))) {
                         shades[step] = value;
                     }
                 }
@@ -153,8 +191,13 @@ export default function ColorPalette({ tableData }: ColorPaletteProps) {
         return null;
     }
 
+    // 检测是否包含 White Alpha,为整个容器添加深色背景
+    const hasWhiteAlpha = familiesToShow.some(f =>
+        f.name.toLowerCase().includes('white') && f.name.toLowerCase().includes('alpha')
+    );
+
     return (
-        <div className="color-palette-matrix">
+        <div className={`color-palette-matrix ${hasWhiteAlpha ? 'color-palette-matrix--dark-container' : ''}`}>
             <div className="color-palette-matrix__grid">
                 {/* Header Row */}
                 <div className="color-palette-matrix__row color-palette-matrix__row--header">
@@ -167,31 +210,30 @@ export default function ColorPalette({ tableData }: ColorPaletteProps) {
                 </div>
 
                 {/* Color Rows */}
-                {familiesToShow.map((f) => (
-                    <div key={f.id} className="color-palette-matrix__row">
-                        <div className="color-palette-matrix__label">{f.name}</div>
-                        {DEFAULT_STEPS.map((step) => {
-                            const value = f.shades[step];
-                            return (
-                                <div key={step} className="color-palette-matrix__cell">
-                                    {value ? (
-                                        <div
-                                            className="color-palette-matrix__swatch"
-                                            style={{ backgroundColor: value }}
-                                            title={`${f.name} ${step}: ${value}`}
-                                        >
-                                            <div className="color-palette-matrix__tooltip">
-                                                <span>{value}</span>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="color-palette-matrix__swatch color-palette-matrix__swatch--empty" />
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-                ))}
+                {familiesToShow.map((f) => {
+                    // 为 White Alpha 添加深色背景
+                    const isDarkBg = f.name.toLowerCase().includes('white') && f.name.toLowerCase().includes('alpha');
+                    return (
+                        <div key={f.id} className={`color-palette-matrix__row ${isDarkBg ? 'color-palette-matrix__row--dark-bg' : ''}`}>
+                            <div className="color-palette-matrix__label">{f.name}</div>
+                            {DEFAULT_STEPS.map((step) => {
+                                const value = f.shades[step];
+                                return (
+                                    <div key={step} className="color-palette-matrix__cell">
+                                        {value ? (
+                                            <Swatch
+                                                value={value}
+                                                title={`${f.name} ${step}: ${value}`}
+                                            />
+                                        ) : (
+                                            <div className="color-palette-matrix__swatch color-palette-matrix__swatch--empty" />
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );

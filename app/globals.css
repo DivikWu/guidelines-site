@@ -12,7 +12,7 @@
   --border-normal: var(--yami-color-border-light);
   --divider-normal: var(--yami-color-border-light);
   --divider-section: var(--yami-color-divider-section-light);
-  --fill-secondary: var(--yami-color-palette-neutral-100);
+  --fill-secondary: var(--yami-color-palette-neutral-50);
   --state-hover: var(--yami-color-state-hover-light);
   --state-selected: var(--yami-color-state-selected-light);
   --state-pressed: var(--yami-color-state-pressed-light);
@@ -76,8 +76,8 @@
   --lh-h2: var(--yami-typography-heading-large-line-height-desktop);
   --fs-h3: var(--yami-typography-heading-medium-font-size-desktop);
   --lh-h3: var(--yami-typography-heading-medium-line-height-desktop);
-  --fs-body: var(--yami-typography-body-medium-font-size-desktop);
-  --lh-body: var(--yami-typography-body-large-line-height-desktop);
+  --fs-body: 14px;
+  --lh-body: 24px;
 
   --fw-regular: var(--yami-typography-font-weight-regular);
   --fw-medium: var(--yami-typography-font-weight-medium);
@@ -189,6 +189,11 @@ select,
 textarea,
 kbd {
   font-family: inherit;
+}
+
+strong,
+b {
+  font-weight: 500;
 }
 
 /* 全局图标字体颜色 */
@@ -1475,7 +1480,7 @@ body {
 
 /* 组件预览区（:::component-preview 指令） */
 .doc-preview-wrapper {
-  margin: var(--spacing-200) 0;
+  margin: 4px 0;
   max-width: 880px;
   width: 100%;
 }
@@ -2114,13 +2119,13 @@ body {
   width: 100%;
   min-width: max-content;
   border-collapse: collapse;
-  font-size: var(--fs-body);
-  line-height: var(--lh-body);
+  font-size: 14px;
+  line-height: 24px;
 }
 
 .doc-table__head {
   background: var(--fill-secondary, var(--yami-color-palette-neutral-100));
-  border-bottom: 1px solid var(--border-normal, var(--color-border));
+  border-bottom: 1px solid var(--border-subtle, var(--color-border));
 }
 
 .doc-table__head .doc-table__cell--head {
@@ -2478,13 +2483,14 @@ ul.contains-task-list li {
   border-radius: var(--radius-md);
   color: var(--code-text);
   font-family: 'Menlo', 'Monaco', monospace;
+  font-size: 12px;
   overflow-x: auto;
 }
 
 /* 文档内代码块：pre 为 markdown 代码块外层，缩小上下边距 */
 .doc pre {
-  margin-top: 2px;
-  margin-bottom: 2px;
+  margin-top: 8px;
+  margin-bottom: 8px;
 }
 
 /* Color Swatch 色卡 */
@@ -3231,7 +3237,7 @@ ul.contains-task-list li {
 .search-modal__highlight {
   background: rgba(255, 212, 0, 0.2);
   color: inherit;
-  font-weight: 700;
+  font-weight: 500;
   padding: 0 1px;
   border-radius: 2px;
 }
@@ -3258,7 +3264,7 @@ ul.contains-task-list li {
 
 .search-modal__empty-main {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--foreground-primary, var(--color-text-primary));
   margin-top: 0;
   margin-bottom: 0;
@@ -3533,7 +3539,7 @@ html[data-search-open="true"] .header .header__search input:focus {
   font-family: var(--font-brand, var(--font-body));
   font-size: 32px;
   font-style: normal;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 40px;
   /* 125% */
   width: fit-content;
@@ -3671,7 +3677,7 @@ html[data-search-open="true"] .header .header__search input:focus {
 
 .search-bar__tags-label {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--foreground-secondary, var(--color-text-secondary));
   margin-right: var(--spacing-050);
 }
@@ -3731,7 +3737,7 @@ nextjs-portal {
   .search-bar__title {
     font-size: 32px;
     line-height: 40px;
-    font-weight: 600;
+    font-weight: 500;
     height: 40px;
   }
 
@@ -4500,19 +4506,21 @@ nextjs-portal {
    Color Palette Matrix Component
    ========================================================================== */
 .color-palette-matrix {
-  margin: var(--spacing-200) 0;
+  margin: 0;
   width: 100%;
   overflow-x: auto;
-  padding: var(--spacing-200);
+  padding: var(--spacing-200) var(--spacing-200) var(--spacing-200) 0;
+  /* 增加上、右、下内间距，保持左侧为 0 以防 sticky 偏移（左侧间距由 label 承载） */
   border: 1px solid #EBEBEB;
   border-radius: var(--radius-md, 8px);
 }
 
 .color-palette-matrix__grid {
   display: grid;
-  grid-template-columns: max-content repeat(11, 52px);
+  grid-template-columns: 1fr repeat(11, 52px);
   gap: var(--spacing-050);
-  min-width: max-content;
+  min-width: 650px;
+  /* 保证最小显示宽度，防止窄屏下被挤压 */
 }
 
 .color-palette-matrix__row {
@@ -4524,7 +4532,9 @@ nextjs-portal {
 }
 
 .color-palette-matrix__label {
-  padding-right: var(--spacing-200);
+  padding: 0 var(--spacing-200);
+  /* 增加左侧内边距，提供背景遮挡并保持文字间距 */
+  box-sizing: border-box;
   font-family: var(--font-body);
   font-size: var(--body-m-size, 14px);
   color: var(--foreground-secondary);
@@ -4535,10 +4545,18 @@ nextjs-portal {
   background-color: var(--background-primary);
   display: flex;
   align-items: center;
+  justify-content: flex-start;
+  /* 确保文字向左对齐 */
+  width: 100%;
+  /* 撑满 grid 单元格 */
 }
 
 .color-palette-matrix__label--corner {
-  visibility: hidden;
+  visibility: visible;
+  background-color: var(--background-primary);
+  position: sticky;
+  left: 0;
+  z-index: 2;
 }
 
 .color-palette-matrix__step-label {
@@ -4566,7 +4584,7 @@ nextjs-portal {
   cursor: pointer;
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
   position: relative;
-  border: 1px solid #EBEBEB;
+  border: 1px solid transparent;
 }
 
 .color-palette-matrix__swatch:hover {
@@ -4614,10 +4632,53 @@ nextjs-portal {
 }
 
 [data-theme='dark'] .color-palette-matrix__swatch {
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: transparent;
 }
 
 [data-theme='dark'] .color-palette-matrix__tooltip {
   background: rgba(255, 255, 255, 0.9);
   color: black;
+}
+
+/* White Alpha 深色背景样式（与黑色底色一致） */
+.color-palette-matrix__row--dark-bg {
+  display: grid !important;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  background: var(--yami-color-background-page-dark, #0A0A0A);
+  border-radius: var(--radius-sm, 6px);
+  padding: var(--spacing-100) 0;
+  margin: var(--spacing-100) 0;
+}
+
+.color-palette-matrix__row--dark-bg .color-palette-matrix__label {
+  color: #ffffff;
+}
+
+.color-palette-matrix__row--dark-bg .color-palette-matrix__swatch {
+  border-color: transparent;
+}
+
+/* White Alpha 深色容器样式（与黑色底色一致） */
+.color-palette-matrix--dark-container {
+  background: var(--yami-color-background-page-dark, #0A0A0A) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.color-palette-matrix--dark-container .color-palette-matrix__step-label {
+  color: #999999;
+}
+
+.color-palette-matrix--dark-container .color-palette-matrix__label {
+  color: #ffffff;
+}
+
+.color-palette-matrix--dark-container .color-palette-matrix__row--dark-bg {
+  background: transparent;
+}
+
+/* 修复深色容器中的标签背景 */
+.color-palette-matrix--dark-container .color-palette-matrix__label,
+.color-palette-matrix--dark-container .color-palette-matrix__label--corner {
+  background-color: transparent !important;
 }

@@ -30,13 +30,13 @@ export function parseMarkdownWithPreviewDirective(markdown: string): PreviewSegm
 
     // 检查指令后是否有表格数据
     const afterDirective = markdown.slice(idx + match[0].length);
-    const tableMatch = afterDirective.match(/^\s*\n(<!--[\s\S]*?-->\s*)?\n(\|[\s\S]+?\|)\n(?=\s*\n[^|])/);
+    const tableMatch = afterDirective.match(/^\s*(?:<!--[\s\S]*?-->\s*)?(\|[\s\S]+?\|)\n(?=\s*\n[^|])/);
 
     let tableData: string | undefined;
     let skipLength = match[0].length;
 
     if (tableMatch) {
-      tableData = tableMatch[2]; // 提取表格内容(不包括注释)
+      tableData = tableMatch[1]; // 提取表格内容(不包括注释)
       skipLength += tableMatch[0].length - 1; // 跳过表格内容(-1 是因为要保留最后的换行)
     }
 
