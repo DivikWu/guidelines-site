@@ -2,12 +2,25 @@
 import '../styles/tokens.css';
 import '../styles/theme.css';
 import './globals.css';
+import { Fira_Code, Inter } from 'next/font/google';
 import Script from 'next/script';
 import { BasePathProvider } from '../contexts/BasePathContext';
 import { TokenProvider } from '../components/TokenProvider';
 import { GlobalShortcutsProvider } from '../contexts/GlobalShortcutsContext';
 import { SearchProvider } from '../components/SearchProvider';
 import TopLoadingBar from '../components/TopLoadingBar';
+
+const firaCode = Fira_Code({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-fira-code'
+});
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter'
+});
 
 export const metadata = {
   title: 'YAMI Design Guidelines | 设计规范',
@@ -26,7 +39,7 @@ export default function RootLayout({
   const fontBasePath = `${basePath}/fonts/icofont`;
   
   return (
-    <html lang="zh-CN" suppressHydrationWarning data-base-path={basePath}>
+    <html lang="zh-CN" suppressHydrationWarning data-base-path={basePath} className={`${firaCode.variable} ${inter.variable}`}>
       <head>
         {/* 预加载字体 CSS 文件，确保字体定义及时应用 */}
         <link
@@ -36,16 +49,6 @@ export default function RootLayout({
         />
         {/* 导入字体 CSS */}
         <link rel="stylesheet" href={`${fontBasePath}/icofont.css`} />
-        {/* 代码区等宽字体 Fira Code */}
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap"
-        />
-        {/* Mermaid 图表字体 Inter */}
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
-        />
       </head>
       <body data-layout="root">
         <TopLoadingBar />

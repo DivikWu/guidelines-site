@@ -1709,7 +1709,7 @@ body {
   min-width: 0;
   min-height: 0;
   display: flex;
-  font-family: 'Fira Code', ui-monospace, monospace;
+  font-family: var(--font-fira-code), ui-monospace, monospace;
   font-size: 0.8125rem;
   line-height: 1.6;
   overflow-x: auto;
@@ -2518,7 +2518,7 @@ ul.contains-task-list li input[type="checkbox"] {
   margin-bottom: 2px;
   min-height: 24px;
   border-radius: var(--radius-sm);
-  font-family: 'Fira Code', ui-monospace, monospace;
+  font-family: var(--font-fira-code), ui-monospace, monospace;
   font-size: 14px;
   line-height: 16px;
   color: var(--code-text);
@@ -2546,7 +2546,7 @@ ul.contains-task-list li input[type="checkbox"] {
   border: none;
   border-radius: var(--radius-md);
   color: var(--code-text);
-  font-family: 'Fira Code', ui-monospace, monospace;
+  font-family: var(--font-fira-code), ui-monospace, monospace;
   font-size: 14px;
   overflow-x: auto;
 }
@@ -2584,7 +2584,7 @@ ul.contains-task-list li input[type="checkbox"] {
 
 .color-swatch__value {
   font-size: 12px;
-  font-family: 'Fira Code', ui-monospace, monospace;
+  font-family: var(--font-fira-code), ui-monospace, monospace;
   opacity: 0.8;
 }
 
@@ -2629,7 +2629,7 @@ ul.contains-task-list li input[type="checkbox"] {
 }
 
 .typography-scale__token {
-  font-family: 'Fira Code', ui-monospace, monospace;
+  font-family: var(--font-fira-code), ui-monospace, monospace;
   font-size: 12px;
   color: var(--primary-ui, var(--yami-color-ui-primary));
   background: var(--fill-secondary, var(--yami-color-palette-neutral-100));
@@ -2642,7 +2642,7 @@ ul.contains-task-list li input[type="checkbox"] {
 .typography-scale__specs {
   font-size: 12px;
   color: var(--foreground-secondary, var(--color-text-secondary));
-  font-family: 'Fira Code', ui-monospace, monospace;
+  font-family: var(--font-fira-code), ui-monospace, monospace;
 }
 
 /* Spacing Scale 间距阶梯 */
@@ -2689,7 +2689,7 @@ ul.contains-task-list li input[type="checkbox"] {
 }
 
 .spacing-scale__token {
-  font-family: 'Fira Code', ui-monospace, monospace;
+  font-family: var(--font-fira-code), ui-monospace, monospace;
   font-size: 12px;
   color: var(--primary-ui, var(--yami-color-ui-primary));
 }
@@ -2697,7 +2697,7 @@ ul.contains-task-list li input[type="checkbox"] {
 .spacing-scale__value {
   font-size: 12px;
   color: var(--foreground-secondary, var(--color-text-secondary));
-  font-family: 'Fira Code', ui-monospace, monospace;
+  font-family: var(--font-fira-code), ui-monospace, monospace;
 }
 
 /* Radius Scale 圆角阶梯 */
@@ -2746,7 +2746,7 @@ ul.contains-task-list li input[type="checkbox"] {
 }
 
 .radius-scale__token {
-  font-family: 'Fira Code', ui-monospace, monospace;
+  font-family: var(--font-fira-code), ui-monospace, monospace;
   font-size: 12px;
   color: var(--primary-ui, var(--yami-color-ui-primary));
 }
@@ -2754,7 +2754,7 @@ ul.contains-task-list li input[type="checkbox"] {
 .radius-scale__value {
   font-size: 12px;
   color: var(--foreground-secondary, var(--color-text-secondary));
-  font-family: 'Fira Code', ui-monospace, monospace;
+  font-family: var(--font-fira-code), ui-monospace, monospace;
 }
 
 /* Tabs Component */
@@ -4516,7 +4516,7 @@ nextjs-portal {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-050, 4px);
-  font-family: 'Fira Code', monospace;
+  font-family: var(--font-fira-code), monospace;
   font-size: 13px;
 }
 
@@ -4627,7 +4627,7 @@ nextjs-portal {
   width: 52px;
   flex-shrink: 0;
   text-align: center;
-  font-family: 'Fira Code', ui-monospace, monospace;
+  font-family: var(--font-fira-code), ui-monospace, monospace;
   font-size: 11px;
   color: var(--foreground-tertiary);
 }
@@ -4683,7 +4683,7 @@ nextjs-portal {
   justify-content: center;
   border-radius: 9999px;
   font-size: 11px;
-  font-family: 'Fira Code', ui-monospace, monospace;
+  font-family: var(--font-fira-code), ui-monospace, monospace;
   white-space: nowrap;
   opacity: 0;
   pointer-events: none;

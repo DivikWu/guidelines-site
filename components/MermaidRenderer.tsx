@@ -54,10 +54,17 @@ const MermaidRenderer: React.FC<MermaidRendererProps> = ({ content }) => {
             try {
                 const result = await renderMermaid(content, {
                     ...getThemeOptions(),
-                    font: "'Inter', system-ui, sans-serif",
+                    font: 'Inter',
                     padding: 20
                 });
-                setSvg(result);
+                // beautiful-mermaid 会在 SVG 的 <style> 中注入 @import(Google Fonts)，
+                // 该外部 CSS 的 @import 顺序会触发浏览器报错；Inter 已由 next/font 在页面加载，
+                // 移除此处 @import 可避免请求并消除 "Define @import rules at the top" 报错。
+                const svgWithoutFontImport = result.replace(
+                    /@import\s+url\([^)]*fonts\.googleapis\.com[^)]*\)\s*;?\s*/gi,
+                    ''
+                );
+                setSvg(svgWithoutFontImport);
                 setError(null);
             } catch (err) {
                 console.error('Mermaid render error:', err);
