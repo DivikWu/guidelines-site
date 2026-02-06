@@ -51,8 +51,8 @@ YAMI 设计系统采用 Figma 推荐的三层 Token 架构:
 
 ```mermaid
 graph LR
-    A[Primitive Tokens<br/>原始层] --> B[Semantic Tokens<br/>语义层]
-    B --> C[Component Tokens<br/>组件层]
+    A[Primitive Tokens · 原始层] --> B[Semantic Tokens · 语义层]
+    B --> C[Component Tokens · 组件层]
     
     style A fill:#f0f3fa
     style B fill:#eef6fe
