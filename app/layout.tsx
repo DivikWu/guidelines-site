@@ -41,6 +41,11 @@ export default function RootLayout({
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&display=swap"
         />
+        {/* Mermaid 图表字体 Inter */}
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+        />
       </head>
       <body data-layout="root">
         <TopLoadingBar />

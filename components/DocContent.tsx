@@ -1,4 +1,5 @@
-import React, { Children, isValidElement, memo, ReactNode } from 'react';
+'use client';
+import React, { Children, isValidElement, memo, ReactNode, useEffect } from 'react';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
@@ -212,6 +213,55 @@ const DocContent = memo(function DocContent({
   docMeta?: DocMetaForClient;
 }) {
   const hasMeta = docMeta && (docMeta.status != null || docMeta.last_updated != null);
+  
+  // #region agent log
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const timer = setTimeout(() => {
+      let strong: HTMLElement | null = null;
+      try {
+        // 使用 getElementById 更安全地查找元素，避免 ID 包含特殊字符时的选择器问题
+        const article = document.getElementById(page.id);
+        if (article) {
+          strong = article.querySelector('.typo-ol .typo-li strong') as HTMLElement;
+        }
+      } catch (e) {
+        // 如果 getElementById 失败，忽略错误
+      }
+      if (!strong) {
+        strong = document.querySelector('.doc .typo-ol .typo-li strong') as HTMLElement;
+      }
+      if (!strong) {
+        const allStrongs = Array.from(document.querySelectorAll('.doc strong'));
+        fetch('http://127.0.0.1:7244/ingest/1f26b422-f826-460c-9c07-ec5fc241d990',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DocContent.tsx:useEffect',message:'Strong element not found',data:{pageId:page.id,allStrongsCount:allStrongs.length,articleIds:Array.from(document.querySelectorAll('article')).map(a=>a.id)},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'ALL'})}).catch(()=>{});
+        return;
+      }
+      const cs = window.getComputedStyle(strong);
+      const li = strong.closest('li');
+      const ol = strong.closest('ol');
+      const article = strong.closest('article');
+      const liCs = li ? window.getComputedStyle(li) : null;
+      const olCs = ol ? window.getComputedStyle(ol) : null;
+      const articleCs = article ? window.getComputedStyle(article) : null;
+      fetch('http://127.0.0.1:7244/ingest/1f26b422-f826-460c-9c07-ec5fc241d990',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DocContent.tsx:useEffect',message:'Strong computed styles',data:{strong:{lineHeight:cs.lineHeight,height:cs.height,fontSize:cs.fontSize,display:cs.display,verticalAlign:cs.verticalAlign,boxSizing:cs.boxSizing},li:liCs?{lineHeight:liCs.lineHeight,height:liCs.height,fontSize:liCs.fontSize,paddingTop:liCs.paddingTop,paddingBottom:liCs.paddingBottom}:null,ol:olCs?{lineHeight:olCs.lineHeight}:null,article:articleCs?{lineHeight:articleCs.lineHeight}:null},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-v3',hypothesisId:'H1'})}).catch(()=>{});
+      fetch('http://127.0.0.1:7244/ingest/1f26b422-f826-460c-9c07-ec5fc241d990',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DocContent.tsx:useEffect',message:'Strong inheritance check',data:{strongLineHeight:cs.lineHeight,liLineHeight:liCs?.lineHeight,strongFontSize:cs.fontSize,computedNormal:parseFloat(cs.fontSize)*1.2},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H2'})}).catch(()=>{});
+      const strongRect = strong.getBoundingClientRect();
+      const liRect = li?.getBoundingClientRect();
+      const allStyles = window.getComputedStyle(strong);
+      const styleSheet = Array.from(document.styleSheets).find(ss => {
+        try {
+          return Array.from(ss.cssRules || []).some((rule: any) => 
+            rule.selectorText && (rule.selectorText.includes('.doc strong') || rule.selectorText.includes('.doc b'))
+          );
+        } catch { return false; }
+      });
+      fetch('http://127.0.0.1:7244/ingest/1f26b422-f826-460c-9c07-ec5fc241d990',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DocContent.tsx:useEffect',message:'Strong bounding box',data:{strongHeight:strongRect.height,strongWidth:strongRect.width,liHeight:liRect?.height,lineHeightValue:cs.lineHeight,display:cs.display,height:cs.height,verticalAlign:cs.verticalAlign},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-v2',hypothesisId:'H4'})}).catch(()=>{});
+      fetch('http://127.0.0.1:7244/ingest/1f26b422-f826-460c-9c07-ec5fc241d990',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'DocContent.tsx:useEffect',message:'CSS rule check',data:{allComputedStyles:{display:allStyles.display,lineHeight:allStyles.lineHeight,height:allStyles.height,verticalAlign:allStyles.verticalAlign,fontSize:allStyles.fontSize,fontFamily:allStyles.fontFamily}},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix-v2',hypothesisId:'H3'})}).catch(()=>{});
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [page.id]);
+  // #endregion
+  
   return (
     <article id={page.id} className={`doc ${hidden ? 'doc--hidden' : ''}`}>
       <DocContentBody page={page} />

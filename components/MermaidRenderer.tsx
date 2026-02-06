@@ -54,7 +54,7 @@ const MermaidRenderer: React.FC<MermaidRendererProps> = ({ content }) => {
             try {
                 const result = await renderMermaid(content, {
                     ...getThemeOptions(),
-                    font: 'Inter, system-ui, sans-serif',
+                    font: "'Inter', system-ui, sans-serif",
                     padding: 20
                 });
                 setSvg(result);
